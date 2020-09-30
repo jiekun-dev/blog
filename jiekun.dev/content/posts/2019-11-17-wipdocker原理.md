@@ -1,0 +1,99 @@
+---
+title: (WIP)Docker原理
+author: 小黄鸭
+type: post
+date: 2019-11-17T04:57:23+00:00
+excerpt: 先开个坑，留个日志记录Docker原理的学习
+featured_image: /wp-content/uploads/2019/11/Screenshot-from-2019-11-17-12-56-26.png
+categories:
+  - 基础架构
+tags:
+  - Docker
+  - 原理
+
+---
+## Docker原理
+
+### 主题一：Docker容器的资源隔离和限制管理
+
+#### 概述
+
+Docker是基于Go实现的，它使用了`namespaces`来为不同容器提供独立环境。简单来说，当创建一个容器时，Docker创建了容器的一系列`namespaces`，不同容器只能在它所在的`namespaces`内操作相关资源，而察觉不到其他`namespaces`内存在的资源。  
+同时，Docker还使用了`control groups`(`cgroups`)来实现对资源使用的限制。
+
+#### namespaces
+
+从内核版本4.10开始，Linux有7种`namespace`:
+
+  * Mount
+  * Process ID
+  * Network
+  * Interprocess Communication
+  * UTS
+  * User ID
+  * Control group
+
+在`/proc/$PID/ns`下可以看到对应的`namespaces`链接:
+
+```
+# root@duck-MS-7A34:/proc/1172/ns# ll
+total 0
+dr-x--x--x 2 root root 0 11月 13 17:42 ./
+dr-xr-xr-x 9 gdm  gdm  0 11月 13 17:41 ../
+lrwxrwxrwx 1 root root 0 11月 13 17:42 cgroup -> 'cgroup:[4026531835]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 ipc -> 'ipc:[4026531839]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 mnt -> 'mnt:[4026531840]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 net -> 'net:[4026531992]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 pid -> 'pid:[4026531836]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 pid_for_children -> 'pid:[4026531836]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 user -> 'user:[4026531837]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 uts -> 'uts:[4026531838]'</code></pre>
+
+```
+如果两个进程指向的`namespace`编号相同，就说明它们在同一个`namespace`下。查看宿主机的其他进程的ns发现是指向同样编号的ns。
+
+在容器内查看：
+
+```
+# root@duck-MS-7A34:/proc/1172# docker run -it ubuntu /bin/bash
+# root@a21f7e39c31c:/proc/1/ns# ls -l
+total 0
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 cgroup -> 'cgroup:[4026531835]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 ipc -> 'ipc:[4026532665]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 mnt -> 'mnt:[4026532663]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 net -> 'net:[4026532669]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 pid -> 'pid:[4026532667]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 pid_for_children -> 'pid:[4026532667]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 user -> 'user:[4026531837]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 uts -> 'uts:[4026532664]'</code></pre>
+
+```
+可见容器内的进程是指向不同的namespaces的，他们之间的资源互不可见。
+
+#### cgroups
+
+cgroups是设计来为不同用户层面的资源管理提供一个统一化的接口，主要功能有：
+
+  * 资源限制
+  * 优先级分配
+  * 资源统计
+  * 任务控制
+
+cgroups的实现本质就是给任务挂上钩子，当任务运行的过程中涉及某种资源时，会触发钩子上所附带的子系统进行检测。
+
+以Memory相关控制为例，cgroup有对应的配置文件：
+
+```
+# root@duck-MS-7A34:/sys/fs/cgroup/memory# ls
+cgroup.clone_children  init.scope                  memory.kmem.max_usage_in_bytes      memory.kmem.tcp.usage_in_bytes   memory.numa_stat            memory.swappiness      system.slice
+cgroup.event_control   memory.failcnt              memory.kmem.slabinfo                memory.kmem.usage_in_bytes       memory.oom_control          memory.usage_in_bytes  tasks
+cgroup.procs           memory.force_empty          memory.kmem.tcp.failcnt             memory.limit_in_bytes            memory.pressure_level       memory.use_hierarchy   user.slice
+cgroup.sane_behavior   memory.kmem.failcnt         memory.kmem.tcp.limit_in_bytes      memory.max_usage_in_bytes        memory.soft_limit_in_bytes  notify_on_release
+ker                 memory.kmem.limit_in_bytes  memory.kmem.tcp.max_usage_in_bytes  memory.move_charge_at_immigrate  memory.stat                 release_agent</code></pre>
+
+```
+这些以资源开头（比如memory.limit\_in\_bytes）的文件就是相关的配置文件。
+
+当进程需要申请更多内存时，就会触发cgroup的用量检测，超过cgroup规定的限额就会拒绝用户的内存申请。如果进程需要的内存超过了它所属cgroup最大限额后，如果设置了OOM Control，那么进程就会收到OOM信号并结束，否则会被挂起，直到cgroup中其他进程释放了足够多的内存资源为止。
+
+再如memory.limit\_in\_bytes和memory.soft\_limit\_in_bytes控制，当进程超过了软限制之后，如果有其他进程需要申请资源，系统会优先回收超额的进程占用的内存资源。
