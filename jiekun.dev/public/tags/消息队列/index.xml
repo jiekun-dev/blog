@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>消息队列 on Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/</link>
+    <description>Recent content in 消息队列 on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Sun, 18 Aug 2019 04:35:28 +0000</lastBuildDate>
+    
+	<atom:link href="https://jiekun.dev/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>RabbitMQ入门学习笔记</title>
+      <link>https://jiekun.dev/posts/2019-08-18-rabbitmq%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
+      <pubDate>Sun, 18 Aug 2019 04:35:28 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-08-18-rabbitmq%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
+      <description>RabbitMQ简介 RabbitMQ是个消息中间件。
+ Producer：发送消息的程序称为生产者 Queue：消息在RabbitMQ中存储在队列，队列上限由内存和磁盘决定。队列本质上讲就是一个大的消息缓冲区，多个生产者可以发消息到同一个队列，多个消费者可以从同一个队列获取消息。 Consumer：等待接受消息的程序称为消费者  本文目标：
+ 了解RabbitMQ基础模型 了解RabbitMQ不同的Exchange类型  Hello World 官方教程使用Pika作为RabbitMQ的Python客户端。
+send.py:
+import pika # 连接本地RabbitMQ connection = pika.BlockingConnection( pika.ConnectionParameters(host=&#39;localhost&#39;)) channel = connection.channel() # 声明要将消息发送至的队列 channel.queue_declare(queue=&#39;hello&#39;) # 指定exchanger, routing_key 发送消息 channel.basic_publish(exchange=&#39;&#39;, routing_key=&#39;hello&#39;, body=&#39;Hello World!&#39;) print(&amp;quot; [x] Sent &#39;Hello World!&#39;&amp;quot;) nnection.close()&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; receive.py
+#!/usr/bin/env python import pika connection = pika.BlockingConnection( pika.ConnectionParameters(host=&#39;localhost&#39;)) channel = connection.channel() # 同样声明队列 channel.queue_declare(queue=&#39;hello&#39;) # 接收到消息时执行 def callback(ch, method, properties, body): print(&amp;quot; [x] Received %r&amp;quot; % body) channel.</description>
+    </item>
+    
+  </channel>
+</rss>

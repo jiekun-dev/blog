@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Sentinel on Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/tags/sentinel/</link>
+    <description>Recent content in Sentinel on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Fri, 31 Jan 2020 13:26:45 +0000</lastBuildDate>
+    
+	<atom:link href="https://jiekun.dev/tags/sentinel/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Redis哨兵故障转移</title>
+      <link>https://jiekun.dev/posts/2020-01-31-redis%E5%93%A8%E5%85%B5%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB/</link>
+      <pubDate>Fri, 31 Jan 2020 13:26:45 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-01-31-redis%E5%93%A8%E5%85%B5%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB/</guid>
+      <description>下线标记 Sentinel定期向Master节点发送PING命令，若在限定时间内没有收到有效回复，则会将该节点状态中的flags字段设为SRI_S_DOWN，即标记为主观下线状态，同时尝试向其他Sentinel询问节点状态。
+Sentinel使用：
+SENTINEL is-master-down-by-addr &amp;amp;lt;ip&amp;gt; &amp;amp;lt;port&amp;gt; &amp;amp;lt;current_epoch&amp;gt; &amp;amp;lt;runid&amp;gt;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 来询问其他Sentinel是否同意主服务器已下线，其他Sentinel按照以下格式回复:
+1) &amp;amp;lt;down_state&amp;gt; 2) &amp;amp;lt;leader_runid&amp;gt; 3) &amp;amp;lt;leader_epoch&amp;gt;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 若down_state为1，则说明同意下线状态。
+当有足够的Sentinel同意下线数量，Sentinel会将该Master节点状态中的flags字段设为SRI_O_DOWN，表示进入客观下线状态。
+选举领头Sentinel 当有Master节点被标记为客观下线，监视这个下线Master节点的各个Sentienl会进行协商，选举领头Sentinel进行故障转移操作。
+所有的该Master节点的Sentinel都有被选为领头节点的资格。每次选举中不管是否成功，Sentinel配置中的纪元epoch都要加1。
+在每个epoch内，各个Sentinel都可能成为领头，局部领头一旦设置，在当前epoch内就不能改变。
+每个发现Master节点进入客观下线的Sentinel都会要求其他Sentinel将自己设置为局部领头Sentinel。当一个Sentinel向对方发送is-master-down-by-addr命令且ip参数为*时，即表示希望对方将自己设置为领头。设置规则为先到先得，后续的申请都会被拒绝。对方收到申请后会响应命令回复，回复中的leader_runid和leader_epoch分别记录了局部领头的运行id和配置纪元。源Sentinel会判断对方响应的runid和epoch是否与自己对应，如果对应则说明对方将自己设置为局部领头。当某个Sentinel被半数以上的Sentinel设置为局部领头，那么这个Sentinel成为领头Sentinel。
+如果在时限内没有Sentinel拿到半数以上投票，则开始一个新的纪元重新进行选举。
+故障转移 领头Sentinel确定后，领头Sentinel对下线的Master节点进行故障转移：
+ 从下线Master节点的从服务器中挑选一个转为主服务器 让已经下线的节点的从服务器改为复制新的主服务器 将已经下线的节点设置为新的Master的从服务器  选择新Master服务器按照如下规则逐步过滤：
+ 删除已经下线的从服务器 删除最近5秒内没有回复过领头Sentinel的INFO命令的从服务器 删除与已下线主服务器断开连接超过down-after-milliseconds * 10毫秒的从服务器，以保证从服务器没有过早与主服务器断开连接 根据从服务器的优先级进行排序，优先级相同则按照复制偏移量排序，最后按照runid进行排序  Sentinel向新选出的主服务器发送slaveof no one命令，并且持续发送INFO命令观察服务器的角色是否从role变为master。
+当新Master的角色改变后，Sentinel向其他从服务器发送slaveof命令使他们复制新的主服务器。
+当旧的Master上线后，Sentinel也会向它发送slaveof命令，让他成为从服务器。</description>
+    </item>
+    
+  </channel>
+</rss>

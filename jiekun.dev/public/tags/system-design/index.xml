@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>System Design on Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/tags/system-design/</link>
+    <description>Recent content in System Design on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Sat, 15 Feb 2020 05:02:40 +0000</lastBuildDate>
+    
+	<atom:link href="https://jiekun.dev/tags/system-design/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>短链生成系统设计——Counter&#43;ZooKeeper&#43;Base62</title>
+      <link>https://jiekun.dev/posts/2020-02-15-%E7%9F%AD%E9%93%BE%E7%94%9F%E6%88%90%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1-counterzookeeperbase62/</link>
+      <pubDate>Sat, 15 Feb 2020 05:02:40 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-02-15-%E7%9F%AD%E9%93%BE%E7%94%9F%E6%88%90%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1-counterzookeeperbase62/</guid>
+      <description>我们最后设计出的系统架构如图所示，如果想了解最后的结论可以跳到最后一小节。这个系统理论上可以支持大流量的生成请求，分布式部署便于扩展。当然在使用的存储方案性能上没有过多的讨论，因为这次的重点是解决“唯一”、“分布式”的ID问题。
+准备设计 设计一个系统之前，我们应该对系统的需求有所了解。对于短链系统，首先应该有以下思考：
+ 我们需要什么样的短链接，具体是多短？ 短链系统的请求量有多大？ 这是个单实例还是分布式系统？  首先我们可以做一些假设，例如参考Twitter有3亿访问/月，我们假设有它的10%，也就是3千万/月，平均每日100万。
+然后再来假设生成的短链，一般格式为domain/unique_id，例如s-url.com/D28CZ63，我们假设Unique ID的长度最多为7位。
+下面我们根据这些假设条件来完成这个系统的设计。
+数据量计算 根据上面的假设，首先每个原始URL可以按照2KB估算（2048字符），而短URL可以按照17Byte估算；我们可能还需要记录创建时间和过期时间，分别是7Byte。因此可以大致估算每行记录的大小应该为2.031KB。
+我们一共有30M月访问，30M * 2.031KB = 60.7GB，每月约60GB数据，因此一年内估算为0.7TB，5年3.6TB数据量。
+唯一ID算法 我们需要的是一个短的（7位）唯一ID生成方案。考虑Base62和MD5，Base62即使用0-9A-Za-z一共62个字符，MD5使用0-9a-z，一般输出长度为32的字符串。
+使用MD5的话，因为输出长度固定，我们可能需要截取其前7位来作为唯一ID，这种情况下，首先不同的输入可能会输出相同的MD5，其次，不同的MD5的前7位也可能是相同的。这样的话会产生不少的Collision，需要业务上进行保障。而使用MD5的好处，也恰恰是如果不同用户提交相同输入，那么可以得到相同的ID而不需要重复生成新的短链ID，但是同样需要业务进行处理和保证。
+对于Base62，每一位有62个可能字符串，7位则是62^7=3521614606208种组合，每秒产生1000个ID的话也足够使用110年。同时在短URL的要求上，Base62接受输入，产生的输出长度会根据输入变化，因此不需要进行截取，而只需要想办法将7位ID的所有情况消耗完毕就可以满足大部分场景的要求。Base62伪代码如下：
+f base62_encode(deci): s = &#39;0-9A-Za-z&#39; hash_str = &#39;&#39; while deci &amp;gt; 0: hash_str = s[deci % 62] + hash_str deci /= 62 return hash_str&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 存储选择 一般我们会考虑使用RDBMS比如MySQl，或者NoSQL比如Redis。在关系型数据库中，横向扩展会比较麻烦，例如MySQL进行分表和分库，我们可能需要多个实例，而扩展需要一开始就设想好，但是这一点在NoSQL中会相对比较容易，例如使用一个Redis的Cluster，或许向里面添加节点会相对容易一点。而使用NoSQL我们可能需要考虑数据的最终一致性，还有数据的持久化等问题。
+同时根据业务场景，从性能上考虑如果在高峰期有大量短链生成请求需要写入到MySQL或许表现会比Redis差一些。
+对于将“长URL-短URL”的映射关系写入数据库的步骤，重点是确保这个短URL没有被其他长URL使用过。如果使用过，那么你需要想办法使用新的字符串生成这个短URL。
+先来想一下，这是一个两步操作，首先查询是否存在，然后写入。如果这是个串行，那么是可行的。如果这是一个并行操作，很显然，你可能查询的时候发现没有存在这个短URL，而其他Session也查到了同样的结果，最后大家都认为可以写入，然后写入过程中晚写的一方就会出问题。
+在RDBMS中我们可能可以通过一些提供的方法来解决这个问题，例如INSERT_IF_NOT_EXISTS，但是在NoSQL中是没有这些方法的，因为它的设计是要实现最终一致性，所以不会提供这种支持。
+基于以上分析和假设的方案 我们需要确定的内容主要是：
+ 生成算法 存储选择  目前罗列出来的方案主要包括：MD5，Base62，以及MySQL和Redis。
+如果使用MD5的话，需要使用能够解决哈希冲突的RDBMS，因为这个步骤在NoSQL上处理比较麻烦，所以会有MD5+MySQL的组合。这套组合实际上性能并不太满足需求，并且在扩展上会相对另外一组组合难度大些。
+那么另外一种就是我们打算使用的方案：Base62+Redis。如何将7位Base62的所有情况都用尽，我们可以采用一个计数器，从0-62^7的数字转为Base62，作为短链ID使用。这个方案在单实例上是很容易的，并且可以保证冲突问题。那么如何实现它的可扩展性呢？
+在接入大流量的情况下，我们必然需要部署多点的ID生成服务，那么根据思路，我们需要对应的计数来转换成Base62的唯一ID，如果不同的服务拿到了同样的计数，那么就会生成相同的ID，造成冲突，且因为分布式的部署，仍然能够正常写入。
+因此现在问题转化为如何让不同的服务拿到正确的计数。因为总的数字段是已知的（0-62^7），一个很简单的方法就是我们提前将这些数字进行分段，每个ID生成服务都拿到不同段的数字本地使用。例如：
+0-100000 100001-200000 200001-300000 300001-400000 400001-500000 500001-600000 .</description>
+    </item>
+    
+  </channel>
+</rss>

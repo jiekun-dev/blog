@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>页 on Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/tags/%E9%A1%B5/</link>
+    <description>Recent content in 页 on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Sat, 28 Dec 2019 10:23:47 +0000</lastBuildDate>
+    
+	<atom:link href="https://jiekun.dev/tags/%E9%A1%B5/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>[翻译] UUID方案很受欢迎，但是于性能不利</title>
+      <link>https://jiekun.dev/posts/2019-12-28-%E7%BF%BB%E8%AF%91-uuid%E6%96%B9%E6%A1%88%E5%BE%88%E5%8F%97%E6%AC%A2%E8%BF%8E%E4%BD%86%E6%98%AF%E4%BA%8E%E6%80%A7%E8%83%BD%E4%B8%8D%E5%88%A9/</link>
+      <pubDate>Sat, 28 Dec 2019 10:23:47 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-12-28-%E7%BF%BB%E8%AF%91-uuid%E6%96%B9%E6%A1%88%E5%BE%88%E5%8F%97%E6%AC%A2%E8%BF%8E%E4%BD%86%E6%98%AF%E4%BA%8E%E6%80%A7%E8%83%BD%E4%B8%8D%E5%88%A9/</guid>
+      <description>在网上搜索UUID方案和MySQL，你能查到一大堆结果，比如：
+ 存储UUID和Generated Columns 在MySQL中存储UUID值 InnoDB中的主键模型及它们对磁盘使用的影响 MySQL UUID Smackdown: UUID与整型的主键对比 GUID/UUID性能突破 用还是不用UUID？  所以对于资料如此完善的话题还需要更多讨论吗？很明显是要的。尽管很多文章都是提醒人们少用UUID方案，但它们还是很受欢迎。受欢迎的原因是UUID值可以很方便地由远程设备生成，并且冲突概率非常低。这篇文章里我的目标是总结其他人写的内容，并且尽可能提出一些新的观点。
+什么是UUID方案？ UUID即全局唯一标识符（Universally Unique IDentifier），在RFC 4122定义。它的格式是128位，16进制，由“-”分割成5部分。典型的UUID值如下：
+yves@laptop:~$ uuidgen 83fda883-86d9-4913-9729-91f20973fa52&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 官方来说，一共有5类UUID值，版本1-5,但最常见的是：基于时间的版本（版本1或版本2）和纯随机的版本（版本3）。基于时间的UUID方案将1970年1月1日以来的10ns数量编码成7.5字节（60位），分割为“time-low”-“time-mid”-“time-hi”的样式。空缺的4位是用在time-hi段作为prefix。这样前三段的64位就定下来了。后两段是时间序列即一个随时间改动而增加的值，和宿主唯一标识符（host unique identifier）。大多数时候，当前宿主网络的MAC地址都会被用来当作唯一标识符。
+在使用基于时间的UUID时，有几个重要的点需要考虑：
+ 在前三段的值生成后，就可以用来确认大致的时间 在连续的UUID值中会有大量重复的段 第一段“time-low”每过429秒就会耗尽重置 MySQL UUID函数产生的是版本1的值  以下是使用“uuidgen”Unix工具产生的基于时间的UUID值：
+yves@laptop:~$ for i in $(seq 1 500); do echo &amp;quot;$(date +%s): $(uuidgen -t)&amp;quot;; sleep 1; done 1573656803: 572e4122-0625-11ea-9f44-8c16456798f1 1573656804: 57c8019a-0625-11ea-9f44-8c16456798f1 1573656805: 586202b8-0625-11ea-9f44-8c16456798f1 ... 1573657085: ff86e090-0625-11ea-9f44-8c16456798f1 1573657086: 0020a216-0626-11ea-9f44-8c16456798f1 ... 1573657232: 56b943b2-0626-11ea-9f44-8c16456798f1 1573657233: 57534782-0626-11ea-9f44-8c16456798f1 1573657234: 57ed593a-0626-11ea-9f44-8c16456798f1 ...&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 第一段的值（在t=1573657086）重置，第二段值会增加。每过大约429秒就会在第一段看到类似的值。第三段值每年变1次。最后一段值在同一台的宿主机上是固定的，就是我的笔记本上的MAC地址：</description>
+    </item>
+    
+    <item>
+      <title>[翻译] InnoDB中的页合并与分裂</title>
+      <link>https://jiekun.dev/posts/2019-12-22-%E7%BF%BB%E8%AF%91-innodb%E4%B8%AD%E7%9A%84%E9%A1%B5%E5%90%88%E5%B9%B6%E4%B8%8E%E5%88%86%E8%A3%82/</link>
+      <pubDate>Sun, 22 Dec 2019 14:53:53 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-12-22-%E7%BF%BB%E8%AF%91-innodb%E4%B8%AD%E7%9A%84%E9%A1%B5%E5%90%88%E5%B9%B6%E4%B8%8E%E5%88%86%E8%A3%82/</guid>
+      <description>如果你找过任何一位MySQL顾问，问他对你的语句和/或数据库设计的建议，我保证他会跟你讲主键设计的重要性。特别是在使用InnoDB引擎的情景，他们肯定会给你解释索引合并和页分裂这些。这两个方面与性能息息相关，你应该在任何设计索引（不止是主键索引）的时候都将他们考虑在内。
+你可能觉得这些听起来挺莫名其妙，没准你也没错。这不是容易的事，特别是讲到关于内部实现的时候。通常你都不会需要处理这些事情，并且你也不想去着手他们。
+但是有时候这些问题又是必须搞清楚的。如果有这种情况，那这篇文章正适合你。
+我尝试用这篇文章将一些最不清晰、InnoDB内部的操作解释清楚：索引页的创建、页合并和页分裂。
+在InnoDB中，数据即索引（译注：索引组织数据）。你可能听过这种说法，但它具体是什么样的？
+文件表（File-Table）结构 假设你已经装好了MySQL最新的5.7版本（译注：文章发布于17年4月），并且你创建了一个windmills库（schema）和wmills表。在文件目录（通常是/var/lib/mysql/）你会看到以下内容：
+ta/ windmills/ wmills.ibd wmills.frm&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 这是因为从MySQL 5.6版本开始innodb_file_per_table参数默认设置为1。该配置下你的每一个表都会单独作为一个文件存储（如果有分区也可能有多个文件）。
+目录下要注意的是这个叫wmills.ibd的文件。这个文件由多个段（segments）组成，每个段和一个索引相关。
+文件的结构是不会随着数据行的删除而变化的，但段则会跟着构成它的更小一级单位——区的变化而变化。区仅存在于段内，并且每个区都是固定的1MB大小（页体积默认的情况下）。页则是区的下一级构成单位，默认体积为16KB。
+按这样算，一个区可以容纳最多64个页，一个页可以容纳2-N个行。行的数量取决于它的大小，由你的表结构定义。InnoDB要求页至少要有两个行，因此可以算出行的大小最多为8000 bytes。
+听起来就像俄罗斯娃娃（Matryoshka dolls）一样是么，没错！下面这张图能帮助你理解：
+根，分支与叶子 每个页（逻辑上讲即叶子节点）是包含了2-N行数据，根据主键排列。树有着特殊的页区管理不同的分支，即内部节点（INodes）。
+上图仅为示例，后文才是真实的结构描述。
+具体来看一下：
+ROOT NODE #3: 4 records, 68 bytes NODE POINTER RECORD ≥ (id=2) → #197 INTERNAL NODE #197: 464 records, 7888 bytes NODE POINTER RECORD ≥ (id=2) → #5 LEAF NODE #5: 57 records, 7524 bytes RECORD: (id=2) → (uuid=&amp;quot;884e471c-0e82-11e7-8bf6-08002734ed50&amp;quot;, millid=139, kwatts_s=1956, date=&amp;quot;2017-05-01&amp;quot;, location=&amp;quot;For beauty&#39;s pattern to succeeding men.</description>
+    </item>
+    
+  </channel>
+</rss>

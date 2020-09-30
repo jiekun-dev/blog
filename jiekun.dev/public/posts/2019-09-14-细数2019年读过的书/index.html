@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta name="theme-color" content="#494f5c">
+	<meta name="msapplication-TileColor" content="#494f5c">
+<meta itemprop="name" content="细数2019年读过的书">
+<meta itemprop="description" content="前言 嗯这里说的都是技术相关的书，虽然花里胡哨的沙雕小说也看了几本不过….
+DB方向 《Redis开发与运维》 Redis入门书籍，其实17年实习的时候就已经有在使用Redis，不过缺少一些基础的知识，比如知道Redis有5种数据类型但是不知道各自还有多种底层的数据结构实现。这本书相对还算比较浅（orz可能最后面比较难的地方还没看到就跳去另一本书了）所以看起来非常顺畅，能让人对Redis的基础功能都有所了解和掌握使用。
+《Redis设计和实现》 略微偏向源码解读的书，分为4部分：
+ Redis的数据结构 单机Feature的实现 多机Feature的实现 独立功能的实现  从《Redis开发与运维》了解到zset使用了ziplist和skiplist（实际上是redis mod的zskiplist）还不够，从《Redis设计和实现》进一步了解ziplist和skiplist是什么样的结构，为什么要使用skiplist和dict来实现zset。
+书里面各部分的内容基本都给出了对应的源码和注释，当然源码大都是某种数据结构的定义，具体相关的方法还是要到源码里面自己阅读才会有。不过这本书对Redis真的讲得非常详细，如果不用开发Redis，看完这本书基本能掌握Redis所有实践里面需要用到的Feature了。
+《深入理解Elasticsearch》 好吧这个书不应该先读的因为并不能看懂在讲的什么东西。反倒是在书里面反复提到了：
+《Elasticsearch服务器开发》 应该是Elasticsearch的入门书籍，除了官方文档以外比较可靠的书。具体来说了解了ES的工作原理，包括索引、结构等，当然少不了语法的介绍虽然都跳过了。不过对于想了解ES为什么能实现高速的模糊查询，了解完整的查询过程和数据存储的过程的人应该很实用。书里面也有介绍多机实现的集群方案，虽然读来读去还是搞不懂怎么样去优化大数据量的查询噗。
+编程语言 《Fluent Python》 这本啃的是影印版，也就是英文书。非常有意思的一本书，买之前定计划1个月看完结果到手发现根本不可能，除非忍不住。非常厚，啃完了第一部分介绍数据结构然后很后悔没有做读书笔记方便复习orz。第一部分对基本的数据结构有详细的讲解，很多奇怪的特性读完之后就豁然开朗，比如对list generator：
+ist1 = [[None] * 5 for _ in range(5)]&lt;/code&gt;&lt;/pre&gt; 为什么不能直接：
+ist1 = [[None] * 5 ] * 5&lt;/code&gt;&lt;/pre&gt; 还简洁易懂不是？（答：不是）
+入门Python看完廖雪峰老师的博客基本上该会用的都应该会用了，但是很多东西只会用是不行的，从这本书的学习中很多东西应该认识到必须从“用”转为“改造”才能打造出最适合的Feature。很多时候比如日常业务借助框架简单实现一些功能，如果缺乏对实现的思考，那这个功能其实在后续优化的过程中提升的空间是较为有限的。写的东西如果缺乏理解，一旦出现问题定位起来就会更困难。跟着这本书其实它一路解答疑惑一路也让读者有更多对Python的思考，了解实现才能在开发上更流畅。
+CS基础 说到CS基础真的如果非科班的同学没有尽早准备实际上在这块是会非常吃亏的。实习的时候觉得这些协议、架构、设计什么的跟开发有毛线关系，实际上真的会有影响的。很多东西不从源头出发，问题只能解决一半，解决表面。所以虽然时间很紧张但是还是必须要补牢基础知识。
+《图解HTTP》 这大概是最简单的HTTP协议介绍的书籍了吧。插图非常多，基本可以当漫画书看。从协议的大纲细到握手细节书里面都有介绍。但是也仅限于“介绍”。当然对于了解一个协议来说是足够用的了。
+《HTTP: The Definitive Guide》 可以看作上一本书的进阶，不过没有时间全部读，打印了HTTPS一章书了解了HTTPS的一些在《图解HTTP》里面没有解答或者描述不太透彻的问题。
+这本书（好吧其实就一章）看的是英文版，个人一直认为一些较为Official向的东西是不应该参考翻译的因为很多时候翻译并不能准确的express原书的意义（当然一些优秀的翻译是可靠的，但是并不想花时间去了解哪些靠谱哪些不行），而且因为看的内容比较短因此花了几个小时带着词典就把一章吃完了。能够补充《图解》的内容，推荐看完前书之后就接着看这本，差不多的内容可以跳过，把展开介绍的补充积累一下。
+《图解TCP/IP》 要摊牌了看这些书其实最初有部分原因还是因为应付面试。不过随着阅读发现原来网络真的可以这么有意思。
+和《图解HTTP》一样是本漫画书，而且个人比较关注TCP一节不过书的前半部分介绍网络模型的内容也比较详（长）细。
+学TCP可以具体看一下OSI模型和书中TCP/UDP的章节，不过看完之后我又补充看了TCP协议的原文，很多握手细节、握手异常情况一般在书里面是不会展开的，书上写着Client发Hello，Server回OK，然而有各种花里胡哨的Client发错人，发错握手批次等等的情况，不知道就不能算了解TCP了。
+所以这本书应该和协议原文搭配食用，效果更佳。
+中间件 《深入RabbitMQ》 消息队列肯定是在今年的学习计划之内的，因为不可能什么都靠Redis来玩，事实上Redis是个Cache的角色，它能当消息队列用但是真正遇上的消息队列的场景还是应该由对应的消息队列的实现来完成。
+RabbitMQ想要使用可以直接看官网的6章教程，点一下看半天学习不花一分钱，开箱即用的Pika包，各种基本类型的实现代码都有。看完疑问三连：什么是AMQP？什么是Exchange？bind key和route key不是一个东西吗？
+这本书名叫“深入”其实感觉还是属于入门类型的，从AMQP入手介绍了协议的基本知识，因为RabbitMQ是基于AMQP协议的，和平时接触最多的HTTP通信有共同点但也有很多不同。可以理解为RabbitMQ基于AMQP协议作了一些实现队列高可用和高性能上的扩展。掌握了AMQP之后很多RabbitMQ的Feature也相对通俗易懂了。">
+<meta itemprop="datePublished" content="2019-09-13T16:02:46&#43;00:00" />
+<meta itemprop="dateModified" content="2019-09-13T16:02:46&#43;00:00" />
+<meta itemprop="wordCount" content="65">
+
+
+
+<meta itemprop="keywords" content="读书," /><meta property="og:title" content="细数2019年读过的书" />
+<meta property="og:description" content="前言 嗯这里说的都是技术相关的书，虽然花里胡哨的沙雕小说也看了几本不过….
+DB方向 《Redis开发与运维》 Redis入门书籍，其实17年实习的时候就已经有在使用Redis，不过缺少一些基础的知识，比如知道Redis有5种数据类型但是不知道各自还有多种底层的数据结构实现。这本书相对还算比较浅（orz可能最后面比较难的地方还没看到就跳去另一本书了）所以看起来非常顺畅，能让人对Redis的基础功能都有所了解和掌握使用。
+《Redis设计和实现》 略微偏向源码解读的书，分为4部分：
+ Redis的数据结构 单机Feature的实现 多机Feature的实现 独立功能的实现  从《Redis开发与运维》了解到zset使用了ziplist和skiplist（实际上是redis mod的zskiplist）还不够，从《Redis设计和实现》进一步了解ziplist和skiplist是什么样的结构，为什么要使用skiplist和dict来实现zset。
+书里面各部分的内容基本都给出了对应的源码和注释，当然源码大都是某种数据结构的定义，具体相关的方法还是要到源码里面自己阅读才会有。不过这本书对Redis真的讲得非常详细，如果不用开发Redis，看完这本书基本能掌握Redis所有实践里面需要用到的Feature了。
+《深入理解Elasticsearch》 好吧这个书不应该先读的因为并不能看懂在讲的什么东西。反倒是在书里面反复提到了：
+《Elasticsearch服务器开发》 应该是Elasticsearch的入门书籍，除了官方文档以外比较可靠的书。具体来说了解了ES的工作原理，包括索引、结构等，当然少不了语法的介绍虽然都跳过了。不过对于想了解ES为什么能实现高速的模糊查询，了解完整的查询过程和数据存储的过程的人应该很实用。书里面也有介绍多机实现的集群方案，虽然读来读去还是搞不懂怎么样去优化大数据量的查询噗。
+编程语言 《Fluent Python》 这本啃的是影印版，也就是英文书。非常有意思的一本书，买之前定计划1个月看完结果到手发现根本不可能，除非忍不住。非常厚，啃完了第一部分介绍数据结构然后很后悔没有做读书笔记方便复习orz。第一部分对基本的数据结构有详细的讲解，很多奇怪的特性读完之后就豁然开朗，比如对list generator：
+ist1 = [[None] * 5 for _ in range(5)]&lt;/code&gt;&lt;/pre&gt; 为什么不能直接：
+ist1 = [[None] * 5 ] * 5&lt;/code&gt;&lt;/pre&gt; 还简洁易懂不是？（答：不是）
+入门Python看完廖雪峰老师的博客基本上该会用的都应该会用了，但是很多东西只会用是不行的，从这本书的学习中很多东西应该认识到必须从“用”转为“改造”才能打造出最适合的Feature。很多时候比如日常业务借助框架简单实现一些功能，如果缺乏对实现的思考，那这个功能其实在后续优化的过程中提升的空间是较为有限的。写的东西如果缺乏理解，一旦出现问题定位起来就会更困难。跟着这本书其实它一路解答疑惑一路也让读者有更多对Python的思考，了解实现才能在开发上更流畅。
+CS基础 说到CS基础真的如果非科班的同学没有尽早准备实际上在这块是会非常吃亏的。实习的时候觉得这些协议、架构、设计什么的跟开发有毛线关系，实际上真的会有影响的。很多东西不从源头出发，问题只能解决一半，解决表面。所以虽然时间很紧张但是还是必须要补牢基础知识。
+《图解HTTP》 这大概是最简单的HTTP协议介绍的书籍了吧。插图非常多，基本可以当漫画书看。从协议的大纲细到握手细节书里面都有介绍。但是也仅限于“介绍”。当然对于了解一个协议来说是足够用的了。
+《HTTP: The Definitive Guide》 可以看作上一本书的进阶，不过没有时间全部读，打印了HTTPS一章书了解了HTTPS的一些在《图解HTTP》里面没有解答或者描述不太透彻的问题。
+这本书（好吧其实就一章）看的是英文版，个人一直认为一些较为Official向的东西是不应该参考翻译的因为很多时候翻译并不能准确的express原书的意义（当然一些优秀的翻译是可靠的，但是并不想花时间去了解哪些靠谱哪些不行），而且因为看的内容比较短因此花了几个小时带着词典就把一章吃完了。能够补充《图解》的内容，推荐看完前书之后就接着看这本，差不多的内容可以跳过，把展开介绍的补充积累一下。
+《图解TCP/IP》 要摊牌了看这些书其实最初有部分原因还是因为应付面试。不过随着阅读发现原来网络真的可以这么有意思。
+和《图解HTTP》一样是本漫画书，而且个人比较关注TCP一节不过书的前半部分介绍网络模型的内容也比较详（长）细。
+学TCP可以具体看一下OSI模型和书中TCP/UDP的章节，不过看完之后我又补充看了TCP协议的原文，很多握手细节、握手异常情况一般在书里面是不会展开的，书上写着Client发Hello，Server回OK，然而有各种花里胡哨的Client发错人，发错握手批次等等的情况，不知道就不能算了解TCP了。
+所以这本书应该和协议原文搭配食用，效果更佳。
+中间件 《深入RabbitMQ》 消息队列肯定是在今年的学习计划之内的，因为不可能什么都靠Redis来玩，事实上Redis是个Cache的角色，它能当消息队列用但是真正遇上的消息队列的场景还是应该由对应的消息队列的实现来完成。
+RabbitMQ想要使用可以直接看官网的6章教程，点一下看半天学习不花一分钱，开箱即用的Pika包，各种基本类型的实现代码都有。看完疑问三连：什么是AMQP？什么是Exchange？bind key和route key不是一个东西吗？
+这本书名叫“深入”其实感觉还是属于入门类型的，从AMQP入手介绍了协议的基本知识，因为RabbitMQ是基于AMQP协议的，和平时接触最多的HTTP通信有共同点但也有很多不同。可以理解为RabbitMQ基于AMQP协议作了一些实现队列高可用和高性能上的扩展。掌握了AMQP之后很多RabbitMQ的Feature也相对通俗易懂了。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2019-09-14-%E7%BB%86%E6%95%B02019%E5%B9%B4%E8%AF%BB%E8%BF%87%E7%9A%84%E4%B9%A6/" />
+<meta property="article:published_time" content="2019-09-13T16:02:46+00:00" />
+<meta property="article:modified_time" content="2019-09-13T16:02:46+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="细数2019年读过的书"/>
+<meta name="twitter:description" content="前言 嗯这里说的都是技术相关的书，虽然花里胡哨的沙雕小说也看了几本不过….
+DB方向 《Redis开发与运维》 Redis入门书籍，其实17年实习的时候就已经有在使用Redis，不过缺少一些基础的知识，比如知道Redis有5种数据类型但是不知道各自还有多种底层的数据结构实现。这本书相对还算比较浅（orz可能最后面比较难的地方还没看到就跳去另一本书了）所以看起来非常顺畅，能让人对Redis的基础功能都有所了解和掌握使用。
+《Redis设计和实现》 略微偏向源码解读的书，分为4部分：
+ Redis的数据结构 单机Feature的实现 多机Feature的实现 独立功能的实现  从《Redis开发与运维》了解到zset使用了ziplist和skiplist（实际上是redis mod的zskiplist）还不够，从《Redis设计和实现》进一步了解ziplist和skiplist是什么样的结构，为什么要使用skiplist和dict来实现zset。
+书里面各部分的内容基本都给出了对应的源码和注释，当然源码大都是某种数据结构的定义，具体相关的方法还是要到源码里面自己阅读才会有。不过这本书对Redis真的讲得非常详细，如果不用开发Redis，看完这本书基本能掌握Redis所有实践里面需要用到的Feature了。
+《深入理解Elasticsearch》 好吧这个书不应该先读的因为并不能看懂在讲的什么东西。反倒是在书里面反复提到了：
+《Elasticsearch服务器开发》 应该是Elasticsearch的入门书籍，除了官方文档以外比较可靠的书。具体来说了解了ES的工作原理，包括索引、结构等，当然少不了语法的介绍虽然都跳过了。不过对于想了解ES为什么能实现高速的模糊查询，了解完整的查询过程和数据存储的过程的人应该很实用。书里面也有介绍多机实现的集群方案，虽然读来读去还是搞不懂怎么样去优化大数据量的查询噗。
+编程语言 《Fluent Python》 这本啃的是影印版，也就是英文书。非常有意思的一本书，买之前定计划1个月看完结果到手发现根本不可能，除非忍不住。非常厚，啃完了第一部分介绍数据结构然后很后悔没有做读书笔记方便复习orz。第一部分对基本的数据结构有详细的讲解，很多奇怪的特性读完之后就豁然开朗，比如对list generator：
+ist1 = [[None] * 5 for _ in range(5)]&lt;/code&gt;&lt;/pre&gt; 为什么不能直接：
+ist1 = [[None] * 5 ] * 5&lt;/code&gt;&lt;/pre&gt; 还简洁易懂不是？（答：不是）
+入门Python看完廖雪峰老师的博客基本上该会用的都应该会用了，但是很多东西只会用是不行的，从这本书的学习中很多东西应该认识到必须从“用”转为“改造”才能打造出最适合的Feature。很多时候比如日常业务借助框架简单实现一些功能，如果缺乏对实现的思考，那这个功能其实在后续优化的过程中提升的空间是较为有限的。写的东西如果缺乏理解，一旦出现问题定位起来就会更困难。跟着这本书其实它一路解答疑惑一路也让读者有更多对Python的思考，了解实现才能在开发上更流畅。
+CS基础 说到CS基础真的如果非科班的同学没有尽早准备实际上在这块是会非常吃亏的。实习的时候觉得这些协议、架构、设计什么的跟开发有毛线关系，实际上真的会有影响的。很多东西不从源头出发，问题只能解决一半，解决表面。所以虽然时间很紧张但是还是必须要补牢基础知识。
+《图解HTTP》 这大概是最简单的HTTP协议介绍的书籍了吧。插图非常多，基本可以当漫画书看。从协议的大纲细到握手细节书里面都有介绍。但是也仅限于“介绍”。当然对于了解一个协议来说是足够用的了。
+《HTTP: The Definitive Guide》 可以看作上一本书的进阶，不过没有时间全部读，打印了HTTPS一章书了解了HTTPS的一些在《图解HTTP》里面没有解答或者描述不太透彻的问题。
+这本书（好吧其实就一章）看的是英文版，个人一直认为一些较为Official向的东西是不应该参考翻译的因为很多时候翻译并不能准确的express原书的意义（当然一些优秀的翻译是可靠的，但是并不想花时间去了解哪些靠谱哪些不行），而且因为看的内容比较短因此花了几个小时带着词典就把一章吃完了。能够补充《图解》的内容，推荐看完前书之后就接着看这本，差不多的内容可以跳过，把展开介绍的补充积累一下。
+《图解TCP/IP》 要摊牌了看这些书其实最初有部分原因还是因为应付面试。不过随着阅读发现原来网络真的可以这么有意思。
+和《图解HTTP》一样是本漫画书，而且个人比较关注TCP一节不过书的前半部分介绍网络模型的内容也比较详（长）细。
+学TCP可以具体看一下OSI模型和书中TCP/UDP的章节，不过看完之后我又补充看了TCP协议的原文，很多握手细节、握手异常情况一般在书里面是不会展开的，书上写着Client发Hello，Server回OK，然而有各种花里胡哨的Client发错人，发错握手批次等等的情况，不知道就不能算了解TCP了。
+所以这本书应该和协议原文搭配食用，效果更佳。
+中间件 《深入RabbitMQ》 消息队列肯定是在今年的学习计划之内的，因为不可能什么都靠Redis来玩，事实上Redis是个Cache的角色，它能当消息队列用但是真正遇上的消息队列的场景还是应该由对应的消息队列的实现来完成。
+RabbitMQ想要使用可以直接看官网的6章教程，点一下看半天学习不花一分钱，开箱即用的Pika包，各种基本类型的实现代码都有。看完疑问三连：什么是AMQP？什么是Exchange？bind key和route key不是一个东西吗？
+这本书名叫“深入”其实感觉还是属于入门类型的，从AMQP入手介绍了协议的基本知识，因为RabbitMQ是基于AMQP协议的，和平时接触最多的HTTP通信有共同点但也有很多不同。可以理解为RabbitMQ基于AMQP协议作了一些实现队列高可用和高性能上的扩展。掌握了AMQP之后很多RabbitMQ的Feature也相对通俗易懂了。"/>
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+	<link rel="shortcut icon" href="/favicon.ico">
+
+	<title>细数2019年读过的书</title>
+	<link rel="stylesheet" href="https://jiekun.dev/css/style.min.eac77496566fd7d5768fd650ddb0b2b181ca6a2d7c5fdd6fe6b8ba4bf47e566f.css" integrity="sha256-6sd0llZv19V2j9ZQ3bCysYHKai18X91v5ri6S/R+Vm8=" crossorigin="anonymous">
+	
+</head>
+
+<body id="page">
+	
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile">
+					
+				<a href="https://jiekun.dev/posts/">Posts</a>
+				<a href="https://jiekun.dev/about-me/">About</a>
+
+				</nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/2014bduck" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:2014bduck" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a></span><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner thin animated fadeIn faster">
+		<h1>细数2019年读过的书</h1>
+		<div class="content">
+			<h2 id="前言">前言<a href="#前言" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>嗯这里说的都是技术相关的书，虽然花里胡哨的沙雕小说也看了几本不过….</p>
+<h2 id="db方向">DB方向<a href="#db方向" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h4 id="redis开发与运维">《Redis开发与运维》<a href="#redis开发与运维" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>Redis入门书籍，其实17年实习的时候就已经有在使用Redis，不过缺少一些基础的知识，比如知道Redis有5种数据类型但是不知道各自还有多种底层的数据结构实现。这本书相对还算比较浅（orz可能最后面比较难的地方还没看到就跳去另一本书了）所以看起来非常顺畅，能让人对Redis的基础功能都有所了解和掌握使用。</p>
+<h4 id="redis设计和实现">《Redis设计和实现》<a href="#redis设计和实现" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>略微偏向源码解读的书，分为4部分：</p>
+<ul>
+<li>Redis的数据结构</li>
+<li>单机Feature的实现</li>
+<li>多机Feature的实现</li>
+<li>独立功能的实现</li>
+</ul>
+<p>从《Redis开发与运维》了解到zset使用了ziplist和skiplist（实际上是redis mod的zskiplist）还不够，从《Redis设计和实现》进一步了解ziplist和skiplist是什么样的结构，为什么要使用skiplist和dict来实现zset。</p>
+<p>书里面各部分的内容基本都给出了对应的源码和注释，当然源码大都是某种数据结构的定义，具体相关的方法还是要到源码里面自己阅读才会有。不过这本书对Redis真的讲得非常详细，如果不用开发Redis，看完这本书基本能掌握Redis所有实践里面需要用到的Feature了。</p>
+<h4 id="深入理解elasticsearch">《深入理解Elasticsearch》<a href="#深入理解elasticsearch" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>好吧这个书不应该先读的因为并不能看懂在讲的什么东西。反倒是在书里面反复提到了：</p>
+<h4 id="elasticsearch服务器开发">《<strong>Elasticsearch服务器开发</strong>》<a href="#elasticsearch服务器开发" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>应该是Elasticsearch的入门书籍，除了官方文档以外比较可靠的书。具体来说了解了ES的工作原理，包括索引、结构等，当然少不了语法的介绍虽然都跳过了。不过对于想了解ES为什么能实现高速的模糊查询，了解完整的查询过程和数据存储的过程的人应该很实用。书里面也有介绍多机实现的集群方案，虽然读来读去还是搞不懂怎么样去优化大数据量的查询噗。</p>
+<h2 id="编程语言">编程语言<a href="#编程语言" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h4 id="fluent-python">《Fluent Python》<a href="#fluent-python" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>这本啃的是影印版，也就是英文书。非常有意思的一本书，买之前定计划1个月看完结果到手发现根本不可能，除非忍不住。非常厚，啃完了第一部分介绍数据结构然后很后悔没有做读书笔记方便复习orz。第一部分对基本的数据结构有详细的讲解，很多奇怪的特性读完之后就豁然开朗，比如对list generator：</p>
+<pre><code>ist1 = [[None] * 5 for _ in range(5)]&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>为什么不能直接：</p>
+<pre><code>ist1 = [[None] * 5 ] * 5&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>还简洁易懂不是？（答：不是）</p>
+<p>入门Python看完廖雪峰老师的博客基本上该会用的都应该会用了，但是很多东西只会用是不行的，从这本书的学习中很多东西应该认识到必须从“用”转为“改造”才能打造出最适合的Feature。很多时候比如日常业务借助框架简单实现一些功能，如果缺乏对实现的思考，那这个功能其实在后续优化的过程中提升的空间是较为有限的。写的东西如果缺乏理解，一旦出现问题定位起来就会更困难。跟着这本书其实它一路解答疑惑一路也让读者有更多对Python的思考，了解实现才能在开发上更流畅。</p>
+<h2 id="cs基础">CS基础<a href="#cs基础" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>说到CS基础真的如果非科班的同学没有尽早准备实际上在这块是会非常吃亏的。实习的时候觉得这些协议、架构、设计什么的跟开发有毛线关系，实际上真的会有影响的。很多东西不从源头出发，问题只能解决一半，解决表面。所以虽然时间很紧张但是还是必须要补牢基础知识。</p>
+<h4 id="图解http">《图解HTTP》<a href="#图解http" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>这大概是最简单的HTTP协议介绍的书籍了吧。插图非常多，基本可以当漫画书看。从协议的大纲细到握手细节书里面都有介绍。但是也仅限于“介绍”。当然对于了解一个协议来说是足够用的了。</p>
+<h4 id="http-the-definitive-guide">《HTTP: The Definitive Guide》<a href="#http-the-definitive-guide" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>可以看作上一本书的进阶，不过没有时间全部读，打印了HTTPS一章书了解了HTTPS的一些在《图解HTTP》里面没有解答或者描述不太透彻的问题。</p>
+<p>这本书（好吧其实就一章）看的是英文版，个人一直认为一些较为Official向的东西是不应该参考翻译的因为很多时候翻译并不能准确的express原书的意义（当然一些优秀的翻译是可靠的，但是并不想花时间去了解哪些靠谱哪些不行），而且因为看的内容比较短因此花了几个小时带着词典就把一章吃完了。能够补充《图解》的内容，推荐看完前书之后就接着看这本，差不多的内容可以跳过，把展开介绍的补充积累一下。</p>
+<h4 id="图解tcpip">《图解TCP/IP》<a href="#图解tcpip" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>要摊牌了看这些书其实最初有部分原因还是因为应付面试。不过随着阅读发现原来网络真的可以这么有意思。</p>
+<p>和《图解HTTP》一样是本漫画书，而且个人比较关注TCP一节不过书的前半部分介绍网络模型的内容也比较详（长）细。</p>
+<p>学TCP可以具体看一下OSI模型和书中TCP/UDP的章节，不过看完之后我又补充看了TCP协议的原文，很多握手细节、握手异常情况一般在书里面是不会展开的，书上写着Client发Hello，Server回OK，然而有各种花里胡哨的Client发错人，发错握手批次等等的情况，不知道就不能算了解TCP了。</p>
+<p>所以这本书应该和协议原文搭配食用，效果更佳。</p>
+<h2 id="中间件">中间件<a href="#中间件" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h4 id="深入rabbitmq">《<strong>深入RabbitMQ</strong>》<a href="#深入rabbitmq" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>消息队列肯定是在今年的学习计划之内的，因为不可能什么都靠Redis来玩，事实上Redis是个Cache的角色，它能当消息队列用但是真正遇上的消息队列的场景还是应该由对应的消息队列的实现来完成。</p>
+<p>RabbitMQ想要使用可以直接看官网的6章教程，点一下看半天学习不花一分钱，开箱即用的Pika包，各种基本类型的实现代码都有。看完疑问三连：什么是AMQP？什么是Exchange？bind key和route key不是一个东西吗？</p>
+<p>这本书名叫“深入”其实感觉还是属于入门类型的，从AMQP入手介绍了协议的基本知识，因为RabbitMQ是基于AMQP协议的，和平时接触最多的HTTP通信有共同点但也有很多不同。可以理解为RabbitMQ基于AMQP协议作了一些实现队列高可用和高性能上的扩展。掌握了AMQP之后很多RabbitMQ的Feature也相对通俗易懂了。</p>
+
+		</div>
+	</main>
+
+	<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+		<p>&copy; 2020 <a href="https://jiekun.dev">杰坤</a> &#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+		<p>
+			Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> &#183; Theme <a href="https://github.com/Track3/hermit" target="_blank" rel="noopener">Hermit</a> &#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		</p>
+	</footer>
+
+
+
+	<script src="https://jiekun.dev/js/bundle.min.4a9a0ac3d2217822c7865b4161e6c2a71de1d70492264337755427898dd718f6.js" integrity="sha256-SpoKw9IheCLHhltBYebCpx3h1wSSJkM3dVQniY3XGPY=" crossorigin="anonymous"></script>
+	
+
+</body>
+
+</html>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>排序 on Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/tags/%E6%8E%92%E5%BA%8F/</link>
+    <description>Recent content in 排序 on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Sat, 07 Sep 2019 15:49:52 +0000</lastBuildDate>
+    
+	<atom:link href="https://jiekun.dev/tags/%E6%8E%92%E5%BA%8F/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>学个排序~</title>
+      <link>https://jiekun.dev/posts/2019-09-07-%E5%AD%A6%E4%B8%AA%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Sat, 07 Sep 2019 15:49:52 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-09-07-%E5%AD%A6%E4%B8%AA%E6%8E%92%E5%BA%8F/</guid>
+      <description>前言 该补充的算法基础还是要补TuT
+快排（Quick Sort） 思路总结:
+以某个位置为轴，大于轴的数都移动至右侧，小于轴的数都移动到左侧，轴左右侧的新列表递归选取轴和按大小排列
+复杂度：
+平均：O(nlogn)； 最差：O(n^2)
+代码：
+f quick_sort(A): quick_sort2(A, 0, len(A)-1) def quick_sort2(A, low, hi): # 递归方法 if hi &amp;gt; low: p = partition(A, low, hi) quick_sort2(A, low, p-1) quick_sort2(A, p+1, hi) def partition(A, low, hi): # 获取轴 # [轴, 小于轴, 小于轴, 小于轴, 大于轴, 大于轴, 大于轴, 大于轴] # [小于轴, 小于轴, 小于轴, 轴, 大于轴, 大于轴, 大于轴, 大于轴] # 返回轴 privot = get_privot(A, low, hi) privot_value = A[privot] A[low], A[privot] = privot_value, A[low] border = low for i in range(low+1, hi+1): if A[i] &amp;amp;lt; privot_value: border += 1 A[i], A[border] = A[border], A[i] A[low], A[border] = A[border], A[low] return border def get_privot(A, low, hi): # 选取一个位置为轴 # 若不选取中间值为轴 最差O(n^2) mid = (hi + low) // 2 s = sorted([A[hi], A[low], A[mid]]) if s[1] == A[hi]: return hi elif s[1] == A[low]: return low else: return mid&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 插入排序（Insertion Sort） 思路：</description>
+    </item>
+    
+  </channel>
+</rss>

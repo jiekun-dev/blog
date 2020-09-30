@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Redis on Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/tags/redis/</link>
+    <description>Recent content in Redis on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Sat, 14 Mar 2020 14:00:46 +0000</lastBuildDate>
+    
+	<atom:link href="https://jiekun.dev/tags/redis/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Redis 6.0 ACL基于Bitmap实现</title>
+      <link>https://jiekun.dev/posts/2020-03-14-redis-6-0-acl%E5%9F%BA%E4%BA%8Ebitmap%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Sat, 14 Mar 2020 14:00:46 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-03-14-redis-6-0-acl%E5%9F%BA%E4%BA%8Ebitmap%E5%AE%9E%E7%8E%B0/</guid>
+      <description>Redis 6.0在4月30日就要和大家正式见面了，现在redis.io上已经提供了RC版本。在之前的博客中，已经介绍过权限控制新功能的一些用法，主要来源于作者Antirez在Redis Day上的一些演示。Antirez在最后提到，ACL的主要实现是基于Bitmap，因此对性能影响是可以忽略不计的。当时大致猜想了一下实现的思路，那么现在离发布已经很近了，作者也对ACL Logging进行了一些补充，不妨一起来看一下。
+user结构 server.h中定义了对应的user结构保存用户的ACL信息，包括：
+ 用户名 flag，主要是一些特殊状态，例如用户的启用与禁用、整体控制（所有命令可用与否、所有键可访问与否）、免密码等 可用命令（allowed_commands），一个长整型数。每一位代表命令，如果用户允许使用这个命令则置位1 可用子命令（allowed_subcommands），一个指针数组，值也为指针，数组与可用命令一一对应，值为一个SDS数组，SDS数组中存放的是这个命令可用的子命令 用户密码 可用的key patterns。如果这个字段为NULL，用户将不能使用任何Key，除非flag中指明特殊状态如ALLKEYS  typedef struct user { sds name; uint64_t flags; uint64_t allowed_commands[USER_COMMAND_BITS_COUNT/64]; sds **allowed_subcommands; list *passwords; list *patterns; } user;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 补充一下一些新鲜的字段描述，allowed_commands实际上是一个（默认）长度为1024的位图，它的index对应各个命令的ID，在历史版本中命令结构redisCommand是通过名字（name）来查找的，id为这个版本中新增的属性，专门用于ACL功能。
+truct redisCommand { ... int id; };&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; user这个结构对应的是client结构的”user”字段，熟悉Redis的同学应该对client也有所了解，就不再赘述了。
+ACL操作选读 ACL的命令很多，总体而言都是围绕着user对象展开的，因此从中挑选了几个函数来看一下具体是如何操作user对象。
+一个需要铺垫的通用方法就是ACLGetUserCommandBit，ACL操作中都会涉及到获取用户的命令位图，ACLGetUserCommandBit()接收一个user结构和命令ID，根据ID定位出命令在allowed_commands中的位置，通过位运算返回用户是否有该命令权限。
+int ACLGetUserCommandBit(user *u, unsigned long id) { uint64_t word, bit; if (ACLGetCommandBitCoordinates(id,&amp;amp;word,&amp;amp;bit) == C_ERR) return 0; return (u-&amp;gt;allowed_commands[word] &amp;amp; bit) != 0; }&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 当用户进行Redis操作时，例如set操作，操作的命令会保存在client结构的*cmd字段中，*cmd字段就是一个redisCommand结构的指针，redisCommand结构包含了命令的id，因此在使用时通过ACLGetUserCommandBit(u, cmd-&amp;gt;id)传入。</description>
+    </item>
+    
+    <item>
+      <title>字节跳动一面复盘 &amp; Redis多线程IO模型源码学习</title>
+      <link>https://jiekun.dev/posts/2020-02-22-%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E4%B8%80%E9%9D%A2%E5%A4%8D%E7%9B%98-redis%E5%A4%9A%E7%BA%BF%E7%A8%8Bio%E6%A8%A1%E5%9E%8B%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/</link>
+      <pubDate>Sat, 22 Feb 2020 12:42:24 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-02-22-%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E4%B8%80%E9%9D%A2%E5%A4%8D%E7%9B%98-redis%E5%A4%9A%E7%BA%BF%E7%A8%8Bio%E6%A8%A1%E5%9E%8B%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/</guid>
+      <description>面试 上周参加了字节跳动的面试，也是18年毕业后的首次面试，整场下来一共70分钟，面试官非常Nice，无奈自己太过紧张，很多准备好的知识点都没有能够准确传达意思。
+面试中因为在简历上有提到Redis相关的内容，那么毫无疑问就会被问到了。先从经典的问题开始：Reids为什么这么快？那自然会回答诸如单线程、IO多路复用等固定套路，然后这里因为一直有关注Redis的相关新闻，知道Redis 6.0年末发布了RC1版本，其中新特性包括多线程IO，那么自然想在面试中提及一下。面试官应该对这点比较感兴趣，于是就继续探讨了这个多线程IO的模型。
+ Q：Redis 6多线程是指什么？ A：Redis这边将部分处理流程改为多线程，具体来说是.. Q：是指查询是多线程吗？ A：应该说是处理请求的最后部分改为了多线程，因为这些部分涉及到数据的IO，是整个（Redis）模型中最耗时的部分，所以改成了多线程；这部分之前的比如用户请求进来、将请求放入一个队列中，还是单线程的。（注意这部分回答是错误的，实际上Redis是将网络IO的部分做成了多线程，后文继续分析） Q：如果我有一个SET操作的话，是单线程还是多线程？ A：多线程。（回答也是错的） Q：那如果是，因为Redis都是内存操作，如果多线程操作一个数据结构的话会有问题吗？ A：Emm，目前我理解的模型上看确实会有问题，比如并发改同一个Key，那可能Redis有对应处理这些问题比如进行加锁处理。（确实不了解，回答也自然是错的） Q：好，下一个问题..  这里先总结一下：
+ 因为Antirez在Redis Day介绍过，所以就了解到了有这么个新Feature，但是具体的实现因为没有看过源码，所以实际上对这个多线程模型的理解是有偏差的。 如果对这些点没有十足的把握的话，面试中尝试自己思考和解决这样的问题实际上还是会比较扣分，首先如果猜错了的话肯定不行，其次即使是猜对了也很难有足够的知识储备去复述出完整的模型出来，也会让自己一边思考一边表达起来很费劲。  于是坑坑洼哇地坚持完了70分钟的面试，再总结一下做得不足的地方，因为是1.5Year经验，面试官主要考察：
+ 现有的业务的一些设计细节的问题：要提前准备好你想介绍给面试官的业务系统，个人认为应该从业务中选出一两个难度比较大的点会比较合适。这次面试没有能够拿出对应的业务来介绍，是准备不到位。 数据库的基础知识：这块觉得回答得还可以，不过有的时候因为准备的东西比较多，会经常想充分地展现和描述，有的时候可能会比较冗长，也是表达不够精确的问题。 计算机网络的基础知识：不是科班毕业，没有能够答完美，实际上问题并不难。 计算机系统的基础知识：同上。 一道算法题：字节跳动给的算法题还是偏简单和经典的，建议多刷题和看Discussion总结。  所以就这样结束了第一次的社招面试，整体来说几个方向的基础知识需要回去再多写多看就可以了，然后表达上尽量控制时间和范围，深入的内容如果面试官希望和你继续探讨，自然会发问，如果没问，可以提及但是不应该直接展开讲。
+Redis的Threaded IO 面试结束后马上知道这块的回答有问题，检查果然如此。所以也就借这个机会将Threaded IO对应的源码看了一遍，后续如果有机会的话，希望能跟下一位面试官再来探讨这个模型。
+综述 本次新增的代码位于networking.c中，很显然多线程生效的位置就能猜出来是在网络请求上。作者希望改进读写缓冲区的性能，而不是命令执行的性能主要原因是：
+ 读写缓冲区的在命令执行的生命周期中是占了比较大的比重 Redis更倾向于保持简单的设计，如果在命令执行部分改用多线程会不得不处理各种问题，例如并发写入、加锁等  那么将读写缓冲区改为多线程后整个模型大致如下：
+具体模型 线程初始化(initThreadedIO) 首先，如果用户没有开启多线程IO，也就是io_threads_num == 1时直接按照单线程模型处理；如果超过线程数IO_THREADS_MAX_NUM上限则异常退出。
+紧接着Redis使用listCreate()创建io_threads_num个线程，并且对主线程（id=0）以外的线程进行处理：
+ 初始化线程的等待任务数为0 获取锁，使得线程不能进行操作 将线程tid与Redis中的线程id（for循环生成）进行映射  /* Initialize the data structures needed for threaded I/O. */ void initThreadedIO(void) { io_threads_active = 0; /* We start with threads not active.</description>
+    </item>
+    
+    <item>
+      <title>Redis哨兵故障转移</title>
+      <link>https://jiekun.dev/posts/2020-01-31-redis%E5%93%A8%E5%85%B5%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB/</link>
+      <pubDate>Fri, 31 Jan 2020 13:26:45 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-01-31-redis%E5%93%A8%E5%85%B5%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB/</guid>
+      <description>下线标记 Sentinel定期向Master节点发送PING命令，若在限定时间内没有收到有效回复，则会将该节点状态中的flags字段设为SRI_S_DOWN，即标记为主观下线状态，同时尝试向其他Sentinel询问节点状态。
+Sentinel使用：
+SENTINEL is-master-down-by-addr &amp;amp;lt;ip&amp;gt; &amp;amp;lt;port&amp;gt; &amp;amp;lt;current_epoch&amp;gt; &amp;amp;lt;runid&amp;gt;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 来询问其他Sentinel是否同意主服务器已下线，其他Sentinel按照以下格式回复:
+1) &amp;amp;lt;down_state&amp;gt; 2) &amp;amp;lt;leader_runid&amp;gt; 3) &amp;amp;lt;leader_epoch&amp;gt;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 若down_state为1，则说明同意下线状态。
+当有足够的Sentinel同意下线数量，Sentinel会将该Master节点状态中的flags字段设为SRI_O_DOWN，表示进入客观下线状态。
+选举领头Sentinel 当有Master节点被标记为客观下线，监视这个下线Master节点的各个Sentienl会进行协商，选举领头Sentinel进行故障转移操作。
+所有的该Master节点的Sentinel都有被选为领头节点的资格。每次选举中不管是否成功，Sentinel配置中的纪元epoch都要加1。
+在每个epoch内，各个Sentinel都可能成为领头，局部领头一旦设置，在当前epoch内就不能改变。
+每个发现Master节点进入客观下线的Sentinel都会要求其他Sentinel将自己设置为局部领头Sentinel。当一个Sentinel向对方发送is-master-down-by-addr命令且ip参数为*时，即表示希望对方将自己设置为领头。设置规则为先到先得，后续的申请都会被拒绝。对方收到申请后会响应命令回复，回复中的leader_runid和leader_epoch分别记录了局部领头的运行id和配置纪元。源Sentinel会判断对方响应的runid和epoch是否与自己对应，如果对应则说明对方将自己设置为局部领头。当某个Sentinel被半数以上的Sentinel设置为局部领头，那么这个Sentinel成为领头Sentinel。
+如果在时限内没有Sentinel拿到半数以上投票，则开始一个新的纪元重新进行选举。
+故障转移 领头Sentinel确定后，领头Sentinel对下线的Master节点进行故障转移：
+ 从下线Master节点的从服务器中挑选一个转为主服务器 让已经下线的节点的从服务器改为复制新的主服务器 将已经下线的节点设置为新的Master的从服务器  选择新Master服务器按照如下规则逐步过滤：
+ 删除已经下线的从服务器 删除最近5秒内没有回复过领头Sentinel的INFO命令的从服务器 删除与已下线主服务器断开连接超过down-after-milliseconds * 10毫秒的从服务器，以保证从服务器没有过早与主服务器断开连接 根据从服务器的优先级进行排序，优先级相同则按照复制偏移量排序，最后按照runid进行排序  Sentinel向新选出的主服务器发送slaveof no one命令，并且持续发送INFO命令观察服务器的角色是否从role变为master。
+当新Master的角色改变后，Sentinel向其他从服务器发送slaveof命令使他们复制新的主服务器。
+当旧的Master上线后，Sentinel也会向它发送slaveof命令，让他成为从服务器。</description>
+    </item>
+    
+    <item>
+      <title>[听译]Redis 6.0新特性——ACLs</title>
+      <link>https://jiekun.dev/posts/2019-11-24-redis-6-0%E6%96%B0%E7%89%B9%E6%80%A7-acls/</link>
+      <pubDate>Sun, 24 Nov 2019 11:58:26 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-11-24-redis-6-0%E6%96%B0%E7%89%B9%E6%80%A7-acls/</guid>
+      <description>在2019年纽约的Redis Day上，Salvatore Sanfilippo（AKA Antirez）介绍了即将发布的Redis 6.0的新特性。
+ACLs简介 在过去的十年中，Redis都会有这样的问题：
+用户执行FLUSHALL，OK现在整个数据库就空了，或者执行DEBUG SEGFAULT，然后Redis的进程就crash退出了。
+在以前解决这个问题的办法可能是在Redis配置中将危险命令进行rename：
+name-command FLUSHALL &amp;quot;&amp;quot;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 这样将命令更名为随机字符串或者直接屏蔽掉，以满足需要。
+缺少危险命令管理就会导致很多问题，比如当你使用网络上的一些库的时候，你压根就不知道别人会不会在里面加些FLUSHALL这样的命令，或者你也可以每次用外部代码都进行一轮Code Review。
+当有了ACLs之后，你就可以控制比如：
+这个连接只允许使用RPOP，LPUSH这些命令，其他命令都无法调用。
+是不是很方便？来看看ACLs是怎么工作的。
+最佳实践 首先你要做的是定义用户。
+当登录的时候，旧版本中默认用户（defaule user）是可以做任何事的，在Redis 6.0中你可以定义默认用户：
+127.0.0.1:6379&amp;gt; ACL setuser antirez on &amp;gt;password1 &amp;gt;password2 &amp;gt;foobar +@all ~*&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; setuser…on表示启用此用户，off则是只定义一个不可用（unaccessable）的用户。
+&amp;gt;password1 &amp;gt;password2 &amp;gt;foobar表示设置了3个密码，可以用来做密码轮换策略。
++@all表示用户可以使用所有权限，+后面跟命令权限如+get，或者+@后面跟某一类权限。
+~*表示可用（accessable）的键名，这里是*也就是所有键都可被访问。
+127.0.0.1:6379&amp;gt; ACL WHOAMI &amp;quot;default&amp;quot;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 现在是处于默认用户下的，切换用户：
+127.0.0.1:6379&amp;gt; AUTH antirez foobar OK&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 在以前AUTH后面是直接跟密码的，现在是用户名和密码。
+127.0.0.1:6379&amp;gt; ACL WHOAMI &amp;quot;antirez&amp;quot;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 因为之前给这个用户设置的是所有命令可用+所有键可见，所以现在跟default用户没有什么区别：
+127.0.0.1:6379&amp;gt; GET foo (nil) 127.0.0.1:6379&amp;gt; SET foo bar OK&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 现在去掉一些权限：
+127.0.0.1:6379&amp;gt; ACL setuser antirez -SET&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 把这个用户的SET权限去掉后，就不能进行这个操作了：</description>
+    </item>
+    
+    <item>
+      <title>Redis HyperLogLog及应用尝试</title>
+      <link>https://jiekun.dev/posts/2019-10-16-redis-hyperloglog%E5%8F%8A%E5%BA%94%E7%94%A8%E5%B0%9D%E8%AF%95/</link>
+      <pubDate>Wed, 16 Oct 2019 05:02:48 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-10-16-redis-hyperloglog%E5%8F%8A%E5%BA%94%E7%94%A8%E5%B0%9D%E8%AF%95/</guid>
+      <description>WIP!</description>
+    </item>
+    
+    <item>
+      <title>Redis分布式锁的实现——RedLock</title>
+      <link>https://jiekun.dev/posts/2019-09-21-redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0-redlock/</link>
+      <pubDate>Sat, 21 Sep 2019 10:36:07 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-09-21-redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0-redlock/</guid>
+      <description>文章配图是RedLock Python实现的作者optimuspaul的头像。
+在分布式应用中经常会存在一些并发的问题，当多个请求想要处理同样的资源时，比如某个操作需要读取资源，根据读取结果进行修改，再写入，若这个步骤没有原子性，多个请求同时进行这样的操作，那就会变得非常混乱。通常来说可以依靠Redis来实现简单的分布式锁机制。
+Redis分布式锁SETNX 基于之前的描述，当多个请求需要处理同样的内容时，我们为了确保只有其中一个请求被执行，那么可以借助Redis生成一把锁。并发请求向Redis申请锁，申请成功的人占用本次操作的执行权。因为Redis单线程的特性，一次只处理一个请求，因此后续申请锁的操作都可以被排除。具体代码如下：
+t resource_name value ex 5 nx&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 意味着：
+ 插入一个名为resource_name的键，它的值为value TTL 5秒 只有这个键不存在的情况下才能插入成功  因为nx参数的存在，过期时间内执行相同的操作不会返回1，意味着插入不成功（没申请到锁）。
+简易实现的问题 现在来看一下上面的设计有什么问题。
+超时 假设现在clinet1拿到了锁，在执行一段时间后超过了设定的ttl，锁过期，client2向Redis执行语句申请锁，因为锁不存在所以client2成功申请到了锁。此时client1仍在继续执行未完成的操作，相当于存在client1和client2共同操作资源的行为。
+对于这种问题，当前的锁机制是无法解决的，需要：
+ 避免在分布式中处理超长的任务 适当延长TTL并在执行完后及时对锁DEL 业务上进行处理 取消TTL，改为由client控制锁的DEL  对于最后一种方案，因为client控制锁的归还（del），如果在执行del命令时发生异常，redis服务器没有接收到，或者client出错，没有执行del，将会造成死锁，因为锁会持续存在，其他client不能够正常获取到锁。
+锁被其他线程释放 对于上面的设计，不安全的地方在于，若其他线程执行del resource_name操作，那么看起来可以立刻获取一把新锁，从而达到无视锁机制的效果。
+为此，在锁的设计上，value需要设计成一个unique值，在del操作前，业务上需要确认del的键的值是否匹配，若不匹配，应该取消del操作。
+因此，简单的分布式锁的使用应该修改为：
+t resource_name unique_value px 5000 nx&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; Redis集群分布式锁RedLock 现在继续来考虑一些简易锁的异常问题：
+ client1申请到了锁，Redis记录了这把锁 Redis服务发生异常退出 Redis服务恢复，但是丢失数据（假设锁没有及时持久化） client2尝试申请锁，因为Redis没有锁存在，因此申请成功 client1、client2一起操作资源  由于服务的不可靠，简易锁的实现在特殊情况下会失效。为此，Redis作者提供了一种基于Redis集群的分布式锁——RedLock：</description>
+    </item>
+    
+    <item>
+      <title>基于Redis的缓存装饰器及缓存预热设计</title>
+      <link>https://jiekun.dev/posts/2019-09-08-%E5%9F%BA%E4%BA%8Eredis%E7%9A%84python%E7%BC%93%E5%AD%98%E8%A3%85%E9%A5%B0%E5%99%A8%E5%8F%8A%E7%BC%93%E5%AD%98%E9%A2%84%E7%83%AD%E8%AE%BE%E8%AE%A1/</link>
+      <pubDate>Sun, 08 Sep 2019 05:27:22 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-09-08-%E5%9F%BA%E4%BA%8Eredis%E7%9A%84python%E7%BC%93%E5%AD%98%E8%A3%85%E9%A5%B0%E5%99%A8%E5%8F%8A%E7%BC%93%E5%AD%98%E9%A2%84%E7%83%AD%E8%AE%BE%E8%AE%A1/</guid>
+      <description>业务背景 业务上使用的是类似MVC的架构，具体而言通过view层控制接口，logic层控制业务逻辑，models模型映射数据库。在logic层，使用了Redis缓存装饰器对满足参数要求的方法执行结果进行缓存，降低复杂逻辑页面、数据量大页面的请求执行耗时。
+对于这种使用场景，当缓存失效时，因为缓存使用的位置都是复杂逻辑，再次生成缓存需要数据库层面执行，如果这一步是由用户触发（也就是cache失效后第一位用户请求的时候生成缓存），那对这位用户来说请求时间就会很长甚至504超时。因此，有必要设计缓存的自动预热以及手动预热，前者是为了避免由用户触发生成缓存的长时间等待，后者是为了特殊时候（如数据更新后，缓存还没到期）手动更新缓存。
+原有的缓存装饰器 f redis_cache(ttl=None, cache_name=None, **kwargs): &amp;quot;&amp;quot;&amp;quot; Redis缓存装饰器 用于Logics层函数执行结果缓存 全局配置: config/localsettings.py REDIS_ON = True 使用示例和说明： @redis_cache(ttl=3600, cache_name=&amp;quot;&amp;quot;, arg1=1, arg2=20) def sample_method(arg1, arg2, arg3, arg4, arg5) ttl: 缓存失效3600秒 cache_name: 函数功能名 kwargs：参数中对应满足kwargs时进行缓存，示例中当函数参数包含args=1，args2=20时缓存 缓存规则：logic_cache:function_name:参数作为键名进行缓存，示例： logic_cache:sample_method:arg1:1:arg2:20:arg3:rank:arg4:people:arg5:food :param ttl: 过期时间 :param cache_name: 函数功能名 用于清理缓存时显示 方便非技术同时使用 :param kwargs: 命中何种参数时进行缓存 示例 **{&#39;arg1&#39;: 1, &#39;arg2&#39;: 20} :return: 返回函数执行结果 / 缓存结果 &amp;quot;&amp;quot;&amp;quot; def decorator(func): cache_serv = cache @wraps(func) def returned_wrapper(*args, **innerkwargs): try: func_name = func.func_name default_kwargs = kwargs is_cache_target = cache_target_judger(default_kwargs, innerkwargs) # Cache Target if REDIS_ON and is_cache_target: colon = &#39;:&#39; redis_key_prefix_list = [&#39;logic_cache&#39;, func_name] for each in innerkwargs: redis_key_prefix_list.</description>
+    </item>
+    
+    <item>
+      <title>Redis有序集合的实现&amp;跳跃表源码学习</title>
+      <link>https://jiekun.dev/posts/2019-08-31-redis%E4%B8%ADzset%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8F%8A%E7%BB%93%E5%90%88%E6%BA%90%E7%A0%81%E7%9A%84%E8%B7%B3%E8%B7%83%E8%A1%A8%E7%BB%93%E6%9E%84%E5%AD%A6%E4%B9%A0/</link>
+      <pubDate>Sat, 31 Aug 2019 04:49:01 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-08-31-redis%E4%B8%ADzset%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8F%8A%E7%BB%93%E5%90%88%E6%BA%90%E7%A0%81%E7%9A%84%E8%B7%B3%E8%B7%83%E8%A1%A8%E7%BB%93%E6%9E%84%E5%AD%A6%E4%B9%A0/</guid>
+      <description>O(1)的skiplist成员查找？ 众所周知Redis中每种基本类型都有2种或以上的底层实现，一般谈到ZSET，我们会说它的实现是基于ziplist和skiplist的，这没有问题：
+ 当ZSET长度小于设定值（zset-max-ziplist-entries）或成员的长度小于设定值（zset-max-ziplist-value）时会使用ziplist的实现，否则使用skiplist实现  但是当ZSET在使用skiplist实现的时候，它对成员的查找也是O(1)复杂度。根据skiplist的结构，要查找某一个成员必须对各个SkiplistNode进行遍历，因此复杂度为O(n)。所以在ZSET-skiplist的实现中查找成员并不是根据skiplist进行的，而是使用字典（dict）。
+先来看一下ZSET的结构源码，Redis5.0.5版本中数据结构的定义在redis/src/server.h中：
+typedef struct zset { dict *dict; zskiplist *zsl; } zset;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 可以看到一个ZSET结构使用了一个dict和一个zskiplist（特殊版本的skiplist），具体代码在SkipList小节中再叙述。ZSET的结构可以由下图来标识：
+通过这样的结构，当ZSET需要进行成员查询的时候，可以根据dict查询，时间复杂度为O(1)；当ZSET需要进行范围查找的时候，根据skiplist结构可以实现平均O(logn)复杂度的查找。
+这两种结构单独使用来实现ZSET是可行的，但是dict在范围型操作的时候需要对字典保存的所有元素进行排序因此需要至少O(nlogn)的时间复杂度和额外O(n)的空间复杂度；在单独使用skiplist根据成员查找分值的时候就由O(1)时间复杂度上升到了O(logn)复杂度。因此Redis中选择同时使用dict和skiplist来实现ZSET类型。
+SkipList的实现 下面来具体聊一下SkipList数据结构。
+在Redis源码中找到跳跃表的相关定义，就在zset的上面几行，补充一些注释：
+/* ZSETs use a specialized version of Skiplists */ # 跳跃表节点（ZSET版） typedef struct zskiplistNode { # 使用sds来存储成员名字 sds ele; # 浮点型分数 double score; # 每个zskiplist节点都带有向前的指针 struct zskiplistNode *backward; # zskiplist分层，每层中包含指向其他zskiplist节点的指针 struct zskiplistLevel { # zskiplist节点指针 struct zskiplistNode *forward; # 本层指向的下个节点离本节点的跨度 unsigned long span; } level[]; } zskiplistNode; # 跳跃表 typedef struct zskiplist { # 分别指向头尾的指针 struct zskiplistNode *header, *tail; # 长度 即跳跃表中包含的节点数目（头节点不算） unsigned long length; # 层数 即跳跃表中各节点层数的最大值（头节点不算） int level; } zskiplist;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; t的结构可以由下图来表示：</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>恢复 on Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/tags/%E6%81%A2%E5%A4%8D/</link>
+    <description>Recent content in 恢复 on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Sat, 14 Mar 2020 07:58:10 +0000</lastBuildDate>
+    
+	<atom:link href="https://jiekun.dev/tags/%E6%81%A2%E5%A4%8D/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Elasticsearch节点选举、分片及Recovery</title>
+      <link>https://jiekun.dev/posts/2020-03-14-elasticsearch%E8%8A%82%E7%82%B9%E9%80%89%E4%B8%BE%E5%88%86%E7%89%87%E5%8F%8Arecovery/</link>
+      <pubDate>Sat, 14 Mar 2020 07:58:10 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-03-14-elasticsearch%E8%8A%82%E7%82%B9%E9%80%89%E4%B8%BE%E5%88%86%E7%89%87%E5%8F%8Arecovery/</guid>
+      <description>隔了挺长一段时间没有更新，主要是因为近段时间忙于业务和刷题，想来刷题除了Po题解和Explanation也是没有什么特别之处，除非钻研得特别深入，所以（@#$%^&amp;amp;找理由）。
+关于Elasticsearch Elasticsearch其实官网的文档特别齐全，所以关于用法没有什么特别好写的，看博客不如RTFM。但是文档特别全的情况下，很多时候又缺少对一些具体细节的描述，一句话说就是不知其所以然。所以今天写的博客内容理应是无关使用的，不涉及命令与操作，大概会更有意义一些吧。
+概述 以Elasticsearch（下称ES）集群启动过程作为索引来展开，ES想要从Red转为Green，需要经历以下过程：
+ 主节点选举。集群启动需要从已知的活跃机器中选取主节点，因为这是PacificA算法的思想——主从模式，使用Master节点管理元信息，数据则去中心化。这块使用类似Bully的算法。 元信息选举。主节点确认后，需要从各节点的元信息中获取最新版本的元信息。由Gateway模块负责。 主副分片选举。由Allocation模块负责，各分片的多个副本中选出主分片和副分片，记录他们所属的节点，重构内容路由表。 恢复分片数据。因为启动可能包含之前没有来得及刷盘的数据，副分片也可能落后于新选出的主分片。  Bully算法与主节点选举 Bully算法 特地查了一下Bully的意思——“仗势欺人者，横行霸道者”，所以这个霸道选举算法如其名，简单暴力地通过选出ID最大的候选者来完成。在Bully算法中有几点假设：
+ 系统是处于同步状态的 进程任何时间都可能失效，包括在算法执行过程中 进程失败则停止，并通过重新启动来恢复 有能够进行失败检测的机制 进程间的消息传递是可靠的 每个进程知道自己的ID和地址，以及其他所有的进程ID和地址  它的选举通过以下几类消息：
+ 选举消息：用来声明一次选举 响应消息：响应选举消息 协调消息：胜利者向参与者发送胜利声明  设想以下场景，集群中存在ID为1、2、3的节点，通过Bully算法选举出了3为主节点，此时之前因为网络分区无法联系上的4节点加入，通过Bully算法成了新的主节点，后续失联的5节点加入，同样成为新主节点。这种不稳定的状态在ES中通过优化选举发起的条件来解决，当主节点确定后，在失效前不进行新一轮的选举。另外其他分布式应用一样，ES通过Quorum来解决脑裂的问题。
+Elasticsearch主节点选举 ES的选举与Bully算法有所出入，它选举的是ID最小的节点，当然这并没有太大影响。另外目前版本中ES的排序影响因素还有集群状态，对应一个状态版本号，排序中会优先将版本号高的节点放在最前。
+在选举过程中有几个概念：
+ 临时Master节点：某个节点认可的Master节点 activeMasters列表：不同节点了解到的其他节点范围可能不一样，因此他们可能各自认可不同的Master节点，这些临时Master节点的集合称为activeMasters列表 masterCanditates列表：所有满足Master资格（一般不满足例原因如配置了某些节点不能作为主节点）的节点列表 正式Master节点：票数足够时临时Master节点确立为真正Master节点  某个节点ping所有节点，获取一份节点列表，并将自己加入其中。通过这份列表查看当前活跃的Master列表，也就是每个节点认为当前的Master节点，加入activeMasters列表中。同样，通过过滤原始列表中不符合Master资格的节点，形成masterCandidates列表。
+如果activeMasters列表不为空，按照ES的（近似）Bully算法选举自己认为的Master节点；如果activeMasters列表空，从masterCandidates列表中选举，但是此时需要判断当前候选人数是否达到Quorum。ES使用具体的比较Master的逻辑如下：
+/** * compares two candidates to indicate which the a better master. * A higher cluster state version is better * 比较两个候选节点以得出更适合作为Master的节点。 * 优先以集群状态版本作为排序 * * @return -1 if c1 is a batter candidate, 1 if c2.</description>
+    </item>
+    
+  </channel>
+</rss>

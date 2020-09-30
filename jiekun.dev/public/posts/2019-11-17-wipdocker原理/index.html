@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta name="theme-color" content="#494f5c">
+	<meta name="msapplication-TileColor" content="#494f5c">
+<meta itemprop="name" content="(WIP)Docker原理">
+<meta itemprop="description" content="Docker原理 主题一：Docker容器的资源隔离和限制管理 概述 Docker是基于Go实现的，它使用了namespaces来为不同容器提供独立环境。简单来说，当创建一个容器时，Docker创建了容器的一系列namespaces，不同容器只能在它所在的namespaces内操作相关资源，而察觉不到其他namespaces内存在的资源。
+同时，Docker还使用了control groups(cgroups)来实现对资源使用的限制。
+namespaces 从内核版本4.10开始，Linux有7种namespace:
+ Mount Process ID Network Interprocess Communication UTS User ID Control group  在/proc/$PID/ns下可以看到对应的namespaces链接:
+# root@duck-MS-7A34:/proc/1172/ns# ll total 0 dr-x--x--x 2 root root 0 11月 13 17:42 ./ dr-xr-xr-x 9 gdm gdm 0 11月 13 17:41 ../ lrwxrwxrwx 1 root root 0 11月 13 17:42 cgroup -&gt; &#39;cgroup:[4026531835]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 ipc -&gt; &#39;ipc:[4026531839]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 mnt -&gt; &#39;mnt:[4026531840]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 net -&gt; &#39;net:[4026531992]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 pid -&gt; &#39;pid:[4026531836]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 pid_for_children -&gt; &#39;pid:[4026531836]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 user -&gt; &#39;user:[4026531837]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 uts -&gt; &#39;uts:[4026531838]&#39;&lt;/code&gt;&lt;/pre&gt; 如果两个进程指向的namespace编号相同，就说明它们在同一个namespace下。查看宿主机的其他进程的ns发现是指向同样编号的ns。">
+<meta itemprop="datePublished" content="2019-11-17T04:57:23&#43;00:00" />
+<meta itemprop="dateModified" content="2019-11-17T04:57:23&#43;00:00" />
+<meta itemprop="wordCount" content="283">
+
+
+
+<meta itemprop="keywords" content="Docker,原理," /><meta property="og:title" content="(WIP)Docker原理" />
+<meta property="og:description" content="Docker原理 主题一：Docker容器的资源隔离和限制管理 概述 Docker是基于Go实现的，它使用了namespaces来为不同容器提供独立环境。简单来说，当创建一个容器时，Docker创建了容器的一系列namespaces，不同容器只能在它所在的namespaces内操作相关资源，而察觉不到其他namespaces内存在的资源。
+同时，Docker还使用了control groups(cgroups)来实现对资源使用的限制。
+namespaces 从内核版本4.10开始，Linux有7种namespace:
+ Mount Process ID Network Interprocess Communication UTS User ID Control group  在/proc/$PID/ns下可以看到对应的namespaces链接:
+# root@duck-MS-7A34:/proc/1172/ns# ll total 0 dr-x--x--x 2 root root 0 11月 13 17:42 ./ dr-xr-xr-x 9 gdm gdm 0 11月 13 17:41 ../ lrwxrwxrwx 1 root root 0 11月 13 17:42 cgroup -&gt; &#39;cgroup:[4026531835]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 ipc -&gt; &#39;ipc:[4026531839]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 mnt -&gt; &#39;mnt:[4026531840]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 net -&gt; &#39;net:[4026531992]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 pid -&gt; &#39;pid:[4026531836]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 pid_for_children -&gt; &#39;pid:[4026531836]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 user -&gt; &#39;user:[4026531837]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 uts -&gt; &#39;uts:[4026531838]&#39;&lt;/code&gt;&lt;/pre&gt; 如果两个进程指向的namespace编号相同，就说明它们在同一个namespace下。查看宿主机的其他进程的ns发现是指向同样编号的ns。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2019-11-17-wipdocker%E5%8E%9F%E7%90%86/" />
+<meta property="article:published_time" content="2019-11-17T04:57:23+00:00" />
+<meta property="article:modified_time" content="2019-11-17T04:57:23+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="(WIP)Docker原理"/>
+<meta name="twitter:description" content="Docker原理 主题一：Docker容器的资源隔离和限制管理 概述 Docker是基于Go实现的，它使用了namespaces来为不同容器提供独立环境。简单来说，当创建一个容器时，Docker创建了容器的一系列namespaces，不同容器只能在它所在的namespaces内操作相关资源，而察觉不到其他namespaces内存在的资源。
+同时，Docker还使用了control groups(cgroups)来实现对资源使用的限制。
+namespaces 从内核版本4.10开始，Linux有7种namespace:
+ Mount Process ID Network Interprocess Communication UTS User ID Control group  在/proc/$PID/ns下可以看到对应的namespaces链接:
+# root@duck-MS-7A34:/proc/1172/ns# ll total 0 dr-x--x--x 2 root root 0 11月 13 17:42 ./ dr-xr-xr-x 9 gdm gdm 0 11月 13 17:41 ../ lrwxrwxrwx 1 root root 0 11月 13 17:42 cgroup -&gt; &#39;cgroup:[4026531835]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 ipc -&gt; &#39;ipc:[4026531839]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 mnt -&gt; &#39;mnt:[4026531840]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 net -&gt; &#39;net:[4026531992]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 pid -&gt; &#39;pid:[4026531836]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 pid_for_children -&gt; &#39;pid:[4026531836]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 user -&gt; &#39;user:[4026531837]&#39; lrwxrwxrwx 1 root root 0 11月 13 17:42 uts -&gt; &#39;uts:[4026531838]&#39;&lt;/code&gt;&lt;/pre&gt; 如果两个进程指向的namespace编号相同，就说明它们在同一个namespace下。查看宿主机的其他进程的ns发现是指向同样编号的ns。"/>
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+	<link rel="shortcut icon" href="/favicon.ico">
+
+	<title>(WIP)Docker原理</title>
+	<link rel="stylesheet" href="https://jiekun.dev/css/style.min.eac77496566fd7d5768fd650ddb0b2b181ca6a2d7c5fdd6fe6b8ba4bf47e566f.css" integrity="sha256-6sd0llZv19V2j9ZQ3bCysYHKai18X91v5ri6S/R+Vm8=" crossorigin="anonymous">
+	
+</head>
+
+<body id="page">
+	
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile">
+					
+				<a href="https://jiekun.dev/posts/">Posts</a>
+				<a href="https://jiekun.dev/about-me/">About</a>
+
+				</nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/2014bduck" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:2014bduck" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a></span><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner thin animated fadeIn faster">
+		<h1>(WIP)Docker原理</h1>
+		<div class="content">
+			<h2 id="docker原理">Docker原理<a href="#docker原理" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h3 id="主题一docker容器的资源隔离和限制管理">主题一：Docker容器的资源隔离和限制管理<a href="#主题一docker容器的资源隔离和限制管理" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<h4 id="概述">概述<a href="#概述" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>Docker是基于Go实现的，它使用了<code>namespaces</code>来为不同容器提供独立环境。简单来说，当创建一个容器时，Docker创建了容器的一系列<code>namespaces</code>，不同容器只能在它所在的<code>namespaces</code>内操作相关资源，而察觉不到其他<code>namespaces</code>内存在的资源。<br>
+同时，Docker还使用了<code>control groups</code>(<code>cgroups</code>)来实现对资源使用的限制。</p>
+<h4 id="namespaces">namespaces<a href="#namespaces" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>从内核版本4.10开始，Linux有7种<code>namespace</code>:</p>
+<ul>
+<li>Mount</li>
+<li>Process ID</li>
+<li>Network</li>
+<li>Interprocess Communication</li>
+<li>UTS</li>
+<li>User ID</li>
+<li>Control group</li>
+</ul>
+<p>在<code>/proc/$PID/ns</code>下可以看到对应的<code>namespaces</code>链接:</p>
+<pre><code># root@duck-MS-7A34:/proc/1172/ns# ll
+total 0
+dr-x--x--x 2 root root 0 11月 13 17:42 ./
+dr-xr-xr-x 9 gdm  gdm  0 11月 13 17:41 ../
+lrwxrwxrwx 1 root root 0 11月 13 17:42 cgroup -&gt; 'cgroup:[4026531835]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 ipc -&gt; 'ipc:[4026531839]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 mnt -&gt; 'mnt:[4026531840]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 net -&gt; 'net:[4026531992]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 pid -&gt; 'pid:[4026531836]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 pid_for_children -&gt; 'pid:[4026531836]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 user -&gt; 'user:[4026531837]'
+lrwxrwxrwx 1 root root 0 11月 13 17:42 uts -&gt; 'uts:[4026531838]'&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>如果两个进程指向的<code>namespace</code>编号相同，就说明它们在同一个<code>namespace</code>下。查看宿主机的其他进程的ns发现是指向同样编号的ns。</p>
+<p>在容器内查看：</p>
+<pre><code># root@duck-MS-7A34:/proc/1172# docker run -it ubuntu /bin/bash
+# root@a21f7e39c31c:/proc/1/ns# ls -l
+total 0
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 cgroup -&gt; 'cgroup:[4026531835]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 ipc -&gt; 'ipc:[4026532665]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 mnt -&gt; 'mnt:[4026532663]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 net -&gt; 'net:[4026532669]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 pid -&gt; 'pid:[4026532667]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 pid_for_children -&gt; 'pid:[4026532667]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 user -&gt; 'user:[4026531837]'
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 uts -&gt; 'uts:[4026532664]'&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>可见容器内的进程是指向不同的namespaces的，他们之间的资源互不可见。</p>
+<h4 id="cgroups">cgroups<a href="#cgroups" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>cgroups是设计来为不同用户层面的资源管理提供一个统一化的接口，主要功能有：</p>
+<ul>
+<li>资源限制</li>
+<li>优先级分配</li>
+<li>资源统计</li>
+<li>任务控制</li>
+</ul>
+<p>cgroups的实现本质就是给任务挂上钩子，当任务运行的过程中涉及某种资源时，会触发钩子上所附带的子系统进行检测。</p>
+<p>以Memory相关控制为例，cgroup有对应的配置文件：</p>
+<pre><code># root@duck-MS-7A34:/sys/fs/cgroup/memory# ls
+cgroup.clone_children  init.scope                  memory.kmem.max_usage_in_bytes      memory.kmem.tcp.usage_in_bytes   memory.numa_stat            memory.swappiness      system.slice
+cgroup.event_control   memory.failcnt              memory.kmem.slabinfo                memory.kmem.usage_in_bytes       memory.oom_control          memory.usage_in_bytes  tasks
+cgroup.procs           memory.force_empty          memory.kmem.tcp.failcnt             memory.limit_in_bytes            memory.pressure_level       memory.use_hierarchy   user.slice
+cgroup.sane_behavior   memory.kmem.failcnt         memory.kmem.tcp.limit_in_bytes      memory.max_usage_in_bytes        memory.soft_limit_in_bytes  notify_on_release
+ker                 memory.kmem.limit_in_bytes  memory.kmem.tcp.max_usage_in_bytes  memory.move_charge_at_immigrate  memory.stat                 release_agent&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>这些以资源开头（比如memory.limit_in_bytes）的文件就是相关的配置文件。</p>
+<p>当进程需要申请更多内存时，就会触发cgroup的用量检测，超过cgroup规定的限额就会拒绝用户的内存申请。如果进程需要的内存超过了它所属cgroup最大限额后，如果设置了OOM Control，那么进程就会收到OOM信号并结束，否则会被挂起，直到cgroup中其他进程释放了足够多的内存资源为止。</p>
+<p>再如memory.limit_in_bytes和memory.soft_limit_in_bytes控制，当进程超过了软限制之后，如果有其他进程需要申请资源，系统会优先回收超额的进程占用的内存资源。</p>
+
+		</div>
+	</main>
+
+	<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+		<p>&copy; 2020 <a href="https://jiekun.dev">杰坤</a> &#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+		<p>
+			Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> &#183; Theme <a href="https://github.com/Track3/hermit" target="_blank" rel="noopener">Hermit</a> &#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		</p>
+	</footer>
+
+
+
+	<script src="https://jiekun.dev/js/bundle.min.4a9a0ac3d2217822c7865b4161e6c2a71de1d70492264337755427898dd718f6.js" integrity="sha256-SpoKw9IheCLHhltBYebCpx3h1wSSJkM3dVQniY3XGPY=" crossorigin="anonymous"></script>
+	
+
+</body>
+
+</html>

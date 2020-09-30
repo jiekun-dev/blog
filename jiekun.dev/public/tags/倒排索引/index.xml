@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>倒排索引 on Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/tags/%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95/</link>
+    <description>Recent content in 倒排索引 on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Tue, 30 Jul 2019 09:20:18 +0000</lastBuildDate>
+    
+	<atom:link href="https://jiekun.dev/tags/%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Elasticsearch倒排索引原理 数据写入与查询过程</title>
+      <link>https://jiekun.dev/posts/2019-07-30-elasticsearch%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86-%E6%95%B0%E6%8D%AE%E5%86%99%E5%85%A5%E4%B8%8E%E6%9F%A5%E8%AF%A2%E8%BF%87%E7%A8%8B/</link>
+      <pubDate>Tue, 30 Jul 2019 09:20:18 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-07-30-elasticsearch%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86-%E6%95%B0%E6%8D%AE%E5%86%99%E5%85%A5%E4%B8%8E%E6%9F%A5%E8%AF%A2%E8%BF%87%E7%A8%8B/</guid>
+      <description>Elasticsearch在生产中充当的角色 业务上，最早启用Elasticsearch（下称ES）是为了解决模糊查询的问题。具体业务场景为大量抓取回来的短视频内容、热门微博、公众号文章、小红书笔记、信息流新闻文章等，需要支持用户模糊查找，而随着每日新增的内容越来越多，这些信息已经积累到单个媒体数千万近亿的数量，因此依靠MySQL的模糊查询是无法满足性能上的要求，考虑引入对应的搜索引擎来解决，于是就将数据的特定字段迁移至ES以支持快速高效的模糊查询，并将查询得到的ID取回MySQL匹配再将详细内容返回。
+Elasticsearch为什么能够支持高效的模糊查询 倒排索引原理 为了支持模糊查询，用户输入关键词之后，需要快速定位到这些词对应的词条，思路与MySQL的LIKE一样，但是MySQL没有实现对应的方案以支持快速定位。ES在这块上略有不同，利用倒排索引（Inverted Index）可以直接获取到文档的ID。下面来简单介绍一下倒排索引的结构。
+为了便于理解，介绍的实现与具体实现会有不一致。
+现在有以下的数据行：
+&amp;lt;th&amp;gt; 书名 &amp;lt;/th&amp;gt; &amp;lt;th&amp;gt; 出版社 &amp;lt;/th&amp;gt;  &amp;lt;td&amp;gt; 高性能MySQL &amp;lt;/td&amp;gt; &amp;lt;td&amp;gt; 电子工业出版社 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; Elasticsearch服务器开发 &amp;lt;/td&amp;gt; &amp;lt;td&amp;gt; 人民邮电出版社 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 深入理解Elasticsearch &amp;lt;/td&amp;gt; &amp;lt;td&amp;gt; 机械工业出版社 &amp;lt;/td&amp;gt;  在写入数据，也就是索引（动词）的过程中：
+（1）ES首先会将数据进行分析，如”高性能MySQL”拆分成“高性能”和“MySQL”等词条（tokens），同理，“电子工业出版社”可以被拆分成“电子”、“工业”、“出版社”；
+（2) 拆分完毕后添加至对应的倒排索引中：
+&amp;lt;th&amp;gt; 对应id &amp;lt;/th&amp;gt;  &amp;lt;td&amp;gt; 1 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 1 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 1 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 1 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 1 &amp;lt;/td&amp;gt;  （3）这样当Client查询“工业”一词的时候，就可以快速定位到id为1的数据行；
+（4）同理对id为2和3的数据分析和索引之后，倒排索引变成：
+&amp;lt;th&amp;gt; 对应id &amp;lt;/th&amp;gt;  &amp;lt;td&amp;gt; 1 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 1 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 1 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 1, 3 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 1, 2, 3 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 2, 3 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 2 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 2 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 2 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 2 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 3 &amp;lt;/td&amp;gt;  &amp;lt;td&amp;gt; 3 &amp;lt;/td&amp;gt;  (5)举例搜索“工业”一词的时候，就应该定位到id为1和2的行</description>
+    </item>
+    
+  </channel>
+</rss>

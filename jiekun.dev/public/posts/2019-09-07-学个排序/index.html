@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta name="theme-color" content="#494f5c">
+	<meta name="msapplication-TileColor" content="#494f5c">
+<meta itemprop="name" content="学个排序~">
+<meta itemprop="description" content="前言 该补充的算法基础还是要补TuT
+快排（Quick Sort） 思路总结:
+以某个位置为轴，大于轴的数都移动至右侧，小于轴的数都移动到左侧，轴左右侧的新列表递归选取轴和按大小排列
+复杂度：
+平均：O(nlogn)； 最差：O(n^2)
+代码：
+f quick_sort(A): quick_sort2(A, 0, len(A)-1) def quick_sort2(A, low, hi): # 递归方法 if hi &gt; low: p = partition(A, low, hi) quick_sort2(A, low, p-1) quick_sort2(A, p&#43;1, hi) def partition(A, low, hi): # 获取轴 # [轴, 小于轴, 小于轴, 小于轴, 大于轴, 大于轴, 大于轴, 大于轴] # [小于轴, 小于轴, 小于轴, 轴, 大于轴, 大于轴, 大于轴, 大于轴] # 返回轴 privot = get_privot(A, low, hi) privot_value = A[privot] A[low], A[privot] = privot_value, A[low] border = low for i in range(low&#43;1, hi&#43;1): if A[i] &amp;lt; privot_value: border &#43;= 1 A[i], A[border] = A[border], A[i] A[low], A[border] = A[border], A[low] return border def get_privot(A, low, hi): # 选取一个位置为轴 # 若不选取中间值为轴 最差O(n^2) mid = (hi &#43; low) // 2 s = sorted([A[hi], A[low], A[mid]]) if s[1] == A[hi]: return hi elif s[1] == A[low]: return low else: return mid&lt;/code&gt;&lt;/pre&gt; 插入排序（Insertion Sort） 思路：">
+<meta itemprop="datePublished" content="2019-09-07T15:49:52&#43;00:00" />
+<meta itemprop="dateModified" content="2019-09-07T15:49:52&#43;00:00" />
+<meta itemprop="wordCount" content="345">
+
+
+
+<meta itemprop="keywords" content="复杂度,排序," /><meta property="og:title" content="学个排序~" />
+<meta property="og:description" content="前言 该补充的算法基础还是要补TuT
+快排（Quick Sort） 思路总结:
+以某个位置为轴，大于轴的数都移动至右侧，小于轴的数都移动到左侧，轴左右侧的新列表递归选取轴和按大小排列
+复杂度：
+平均：O(nlogn)； 最差：O(n^2)
+代码：
+f quick_sort(A): quick_sort2(A, 0, len(A)-1) def quick_sort2(A, low, hi): # 递归方法 if hi &gt; low: p = partition(A, low, hi) quick_sort2(A, low, p-1) quick_sort2(A, p&#43;1, hi) def partition(A, low, hi): # 获取轴 # [轴, 小于轴, 小于轴, 小于轴, 大于轴, 大于轴, 大于轴, 大于轴] # [小于轴, 小于轴, 小于轴, 轴, 大于轴, 大于轴, 大于轴, 大于轴] # 返回轴 privot = get_privot(A, low, hi) privot_value = A[privot] A[low], A[privot] = privot_value, A[low] border = low for i in range(low&#43;1, hi&#43;1): if A[i] &amp;lt; privot_value: border &#43;= 1 A[i], A[border] = A[border], A[i] A[low], A[border] = A[border], A[low] return border def get_privot(A, low, hi): # 选取一个位置为轴 # 若不选取中间值为轴 最差O(n^2) mid = (hi &#43; low) // 2 s = sorted([A[hi], A[low], A[mid]]) if s[1] == A[hi]: return hi elif s[1] == A[low]: return low else: return mid&lt;/code&gt;&lt;/pre&gt; 插入排序（Insertion Sort） 思路：" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2019-09-07-%E5%AD%A6%E4%B8%AA%E6%8E%92%E5%BA%8F/" />
+<meta property="article:published_time" content="2019-09-07T15:49:52+00:00" />
+<meta property="article:modified_time" content="2019-09-07T15:49:52+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="学个排序~"/>
+<meta name="twitter:description" content="前言 该补充的算法基础还是要补TuT
+快排（Quick Sort） 思路总结:
+以某个位置为轴，大于轴的数都移动至右侧，小于轴的数都移动到左侧，轴左右侧的新列表递归选取轴和按大小排列
+复杂度：
+平均：O(nlogn)； 最差：O(n^2)
+代码：
+f quick_sort(A): quick_sort2(A, 0, len(A)-1) def quick_sort2(A, low, hi): # 递归方法 if hi &gt; low: p = partition(A, low, hi) quick_sort2(A, low, p-1) quick_sort2(A, p&#43;1, hi) def partition(A, low, hi): # 获取轴 # [轴, 小于轴, 小于轴, 小于轴, 大于轴, 大于轴, 大于轴, 大于轴] # [小于轴, 小于轴, 小于轴, 轴, 大于轴, 大于轴, 大于轴, 大于轴] # 返回轴 privot = get_privot(A, low, hi) privot_value = A[privot] A[low], A[privot] = privot_value, A[low] border = low for i in range(low&#43;1, hi&#43;1): if A[i] &amp;lt; privot_value: border &#43;= 1 A[i], A[border] = A[border], A[i] A[low], A[border] = A[border], A[low] return border def get_privot(A, low, hi): # 选取一个位置为轴 # 若不选取中间值为轴 最差O(n^2) mid = (hi &#43; low) // 2 s = sorted([A[hi], A[low], A[mid]]) if s[1] == A[hi]: return hi elif s[1] == A[low]: return low else: return mid&lt;/code&gt;&lt;/pre&gt; 插入排序（Insertion Sort） 思路："/>
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+	<link rel="shortcut icon" href="/favicon.ico">
+
+	<title>学个排序~</title>
+	<link rel="stylesheet" href="https://jiekun.dev/css/style.min.eac77496566fd7d5768fd650ddb0b2b181ca6a2d7c5fdd6fe6b8ba4bf47e566f.css" integrity="sha256-6sd0llZv19V2j9ZQ3bCysYHKai18X91v5ri6S/R+Vm8=" crossorigin="anonymous">
+	
+</head>
+
+<body id="page">
+	
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile">
+					
+				<a href="https://jiekun.dev/posts/">Posts</a>
+				<a href="https://jiekun.dev/about-me/">About</a>
+
+				</nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/2014bduck" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:2014bduck" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a></span><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner thin animated fadeIn faster">
+		<h1>学个排序~</h1>
+		<div class="content">
+			<h2 id="前言">前言<a href="#前言" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>该补充的算法基础还是要补TuT</p>
+<h2 id="快排quick-sort">快排（Quick Sort）<a href="#快排quick-sort" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>思路总结:</p>
+<p>以某个位置为轴，大于轴的数都移动至右侧，小于轴的数都移动到左侧，轴左右侧的新列表递归选取轴和按大小排列</p>
+<p><img src="../2019/09/Sorting_quicksort_anim.gif" alt="">
+复杂度：</p>
+<p>平均：O(nlogn)； 最差：O(n^2)</p>
+<p>代码：</p>
+<pre><code>f quick_sort(A):
+    quick_sort2(A, 0, len(A)-1)
+
+def quick_sort2(A, low, hi):
+    # 递归方法
+    if hi &gt; low:
+        p = partition(A, low, hi)
+        quick_sort2(A, low, p-1)
+        quick_sort2(A, p+1, hi)
+
+def partition(A, low, hi):
+    # 获取轴
+    # [轴, 小于轴, 小于轴, 小于轴, 大于轴, 大于轴, 大于轴, 大于轴]
+    # [小于轴, 小于轴, 小于轴, 轴, 大于轴, 大于轴, 大于轴, 大于轴]
+    # 返回轴
+    privot = get_privot(A, low, hi)
+    privot_value = A[privot]
+    A[low], A[privot] = privot_value, A[low]
+    border = low
+    for i in range(low+1, hi+1):
+        if A[i] &amp;lt; privot_value:
+            border += 1
+            A[i], A[border] = A[border], A[i]
+
+    A[low], A[border] = A[border], A[low]
+    return border
+
+def get_privot(A, low, hi):
+    # 选取一个位置为轴
+    # 若不选取中间值为轴 最差O(n^2)
+    mid = (hi + low) // 2
+    s = sorted([A[hi], A[low], A[mid]])
+    if s[1] == A[hi]:
+        return hi
+    elif s[1] == A[low]:
+        return low
+    else:
+        return mid&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><h2 id="插入排序insertion-sort">插入排序（Insertion Sort）<a href="#插入排序insertion-sort" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>思路：</p>
+<p>从左往右，拿起一个数，向左侧找它应该插入的位置</p>
+<p><img src="../2019/09/Insertion-sort-example-300px.gif" alt="">
+复杂度：</p>
+<p>O(n^2)</p>
+<p>代码：</p>
+<pre><code>f insert_sort(A):
+    n = len(A)
+    for i in range(1, n):
+        # 拿起一个元素
+        cur_val = A[i]
+        k = 0
+        # 比它大的都往右挪一格
+        for j in range(i-1, -2, -1):
+            k = j
+            if cur_val &amp;lt; A[j]:
+                A[j+1] = A[j]
+            else:
+                break
+        # 挪出来空的一格把该元素放入
+        A[k+1] = cur_val&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><h2 id="选择排序selection-sort">选择排序（Selection Sort）<a href="#选择排序selection-sort" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>思路：</p>
+<p>从左往右，找最小值放到最左边</p>
+<p><img src="../2019/09/Selection-Sort-Animation.gif" alt="">
+复杂度：</p>
+<p>O(n^2)</p>
+<p>代码：</p>
+<pre><code>f select_sort(A):
+    n = len(A)
+    for i in range(0, n):
+        # 找出A[i:end]中的最小值
+        min_idx = i
+        for j in range(i+1, n):
+            if A[j] &amp;lt; A[min_idx]:
+                min_idx = j
+        # 将这个最小值交换值A[i]的位置
+        if min_idx != i:
+            A[min_idx], A[i] = A[i], A[min_idx]&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><h2 id="冒泡排序bubble-sort">冒泡排序（Bubble Sort）<a href="#冒泡排序bubble-sort" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>思路：</p>
+<p>从左往右，左侧比右侧大，则交换；一直交换至最右侧，依次排出：第n位为0至n的最大值，第n-1位为0至n-1的最大值</p>
+<p><img src="../2019/09/Bubble-sort-example-300px.gif" alt="">
+复杂度：</p>
+<p>O(n^2)</p>
+<p>代码：</p>
+<pre><code>f bubble_sort(A):
+    n = len(A)
+    for i in range(n):
+        for j in range(0, n-i-1):
+            if A[j] &gt; A[j+1]:
+                A[j], A[j+1] = A[j+1], A[j]&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><h2 id="归并排序merge-sort">归并排序（Merge Sort）<a href="#归并排序merge-sort" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>思路：</p>
+<p>将列表分为两份，分别对左侧和右侧进行归并排序，排序完之后比较左侧和右侧第一个的大小，小的先放进结果中，再取下一个较小的放入结果，直至取完所有结果</p>
+<p><img src="../2019/09/220px-Merge-sort-example-300px.gif" alt="">
+复杂度：</p>
+<p>O(nlogn)</p>
+<p>代码：</p>
+<pre><code>f merge_sort(A):
+    merge_sort2(A, 0, len(A)-1)
+
+def merge_sort2(A, first, last):
+    if last &gt; first:
+        # 拆分为左右两组 分别归并排序
+        mid = (first+last) // 2
+        merge_sort2(A, first, mid)
+        merge_sort2(A, mid+1, last)
+        # 合并左右结果
+        merge(A, first, mid, last)
+
+
+def merge(A, first, mid, last):
+    left = A[first:mid+1]
+    right = A[mid+1:last+1]
+    left.append(9999999999)
+    right.append(9999999999)
+    i = j = 0
+    # 依次取左右较小的作为第A[k]值，直至拼接成完整的A[first:last+1]
+    for k in range(first, last+1):
+        if left[i] &amp;lt;= right[j]:
+            A[k] = left[i]
+            i += 1
+        else:
+            A[k] = right[j]
+            j += 1&lt;/code&gt;&lt;/pre&gt;
+</code></pre>
+		</div>
+	</main>
+
+	<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+		<p>&copy; 2020 <a href="https://jiekun.dev">杰坤</a> &#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+		<p>
+			Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> &#183; Theme <a href="https://github.com/Track3/hermit" target="_blank" rel="noopener">Hermit</a> &#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		</p>
+	</footer>
+
+
+
+	<script src="https://jiekun.dev/js/bundle.min.4a9a0ac3d2217822c7865b4161e6c2a71de1d70492264337755427898dd718f6.js" integrity="sha256-SpoKw9IheCLHhltBYebCpx3h1wSSJkM3dVQniY3XGPY=" crossorigin="anonymous"></script>
+	
+
+</body>
+
+</html>

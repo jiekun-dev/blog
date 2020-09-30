@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Hash on Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/tags/hash/</link>
+    <description>Recent content in Hash on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Mon, 23 Dec 2019 12:18:11 +0000</lastBuildDate>
+    
+	<atom:link href="https://jiekun.dev/tags/hash/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>[翻译] 理解MySQL 8中的HASH JOIN</title>
+      <link>https://jiekun.dev/posts/2019-12-23-%E7%BF%BB%E8%AF%91-%E7%90%86%E8%A7%A3mysql-8%E4%B8%AD%E7%9A%84hash-join/</link>
+      <pubDate>Mon, 23 Dec 2019 12:18:11 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-12-23-%E7%BF%BB%E8%AF%91-%E7%90%86%E8%A7%A3mysql-8%E4%B8%AD%E7%9A%84hash-join/</guid>
+      <description>在MySQL 8.0.18中有个新功能叫Hash Joins。我打算研究一下它是如何运作的和在什么场景下它能够帮到我们。你可以在这里了解它的底层原理。
+更上层的解释：如果使用join查询，它会基于其中一个表在内存构建一个哈希表，然后一行一行读另一个表，计算其哈希值到内存哈希表中进行查找。
+很好，但性能上带给我们什么好处呢？ 首先，它只会在没有索引的字段上生效，所以它是个实时的表扫描。通常我们不推荐在没有索引的列上join查询，因为这很慢。这种情况下Hash Joins就有它的优势，因为它用的是内存哈希表而不是嵌套循环（Nested Loop）。
+让我们来做些测试。首先创建如下表：
+CREATE TABLE `t1` ( `id` int(11) NOT NULL AUTO_INCREMENT , `c1` int(11) NOT NULL DEFAULT &#39;0&#39;, `c2` int(11) NOT NULL DEFAULT &#39;0&#39;, PRIMARY KEY (`id`), KEY `idx_c1` (`c1`) ) ENGINE=InnoDB; CREATE TABLE `t2` ( `id` int(11) NOT NULL AUTO_INCREMENT , `c1` int(11) NOT NULL DEFAULT &#39;0&#39;, `c2` int(11) NOT NULL DEFAULT &#39;0&#39;, PRIMARY KEY (`id`), KEY `idx_c1` (`c1`) ) ENGINE=InnoDB;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 我向两个表都插入了131072行随机数据。</description>
+    </item>
+    
+  </channel>
+</rss>

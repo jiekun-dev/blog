@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>InnoDB on Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/tags/innodb/</link>
+    <description>Recent content in InnoDB on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Wed, 05 Aug 2020 12:58:10 +0000</lastBuildDate>
+    
+	<atom:link href="https://jiekun.dev/tags/innodb/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>InnoDB中的B树与分裂</title>
+      <link>https://jiekun.dev/posts/2020-08-05-innodb%E4%B8%AD%E7%9A%84b%E6%A0%91%E4%B8%8E%E5%88%86%E8%A3%82/</link>
+      <pubDate>Wed, 05 Aug 2020 12:58:10 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-08-05-innodb%E4%B8%AD%E7%9A%84b%E6%A0%91%E4%B8%8E%E5%88%86%E8%A3%82/</guid>
+      <description>Tree Binary Search Tree 在二叉查找树中，左子树的键值总是小于根的键值，右子树的键值总是大于根的键值。
+6 / \ 3 7 / \ \ 2 5 8&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 利用这棵二叉树对各个节点进行查找，平均查找次数为(1+2+3+3+2+3) / 6 = 2.3次，比起[2，3，5，6，7，8]顺序查找次数(1+2+3+4+5+6) / 6 = 3.3次要少。
+二叉查找树还可以这样构建：
+2 \ 3 \ 5 \ 6 \ 7 \ 8&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 这时查找的平均次数退化为顺序查找次数。
+因此如果想高性能地构造一棵二叉查找树，需要这棵二叉查找树是平衡的。
+Balance Tree 平衡二叉树符合二叉查找树的定义，并且满足任何节点的两个子树高度最大差为1。
+6 6 / \ / \ 3 7 3 8 / \ \ / \ / \ 2 5 8 2 5 7 9 \ 9&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 在插入新节点后，平衡二叉树节点7的左右子树高度差为2，需要通过一次左旋操作来让树重新保持平衡。
+但是有的情况可能需要旋转多次才能达到平衡。</description>
+    </item>
+    
+    <item>
+      <title>[翻译] UUID方案很受欢迎，但是于性能不利</title>
+      <link>https://jiekun.dev/posts/2019-12-28-%E7%BF%BB%E8%AF%91-uuid%E6%96%B9%E6%A1%88%E5%BE%88%E5%8F%97%E6%AC%A2%E8%BF%8E%E4%BD%86%E6%98%AF%E4%BA%8E%E6%80%A7%E8%83%BD%E4%B8%8D%E5%88%A9/</link>
+      <pubDate>Sat, 28 Dec 2019 10:23:47 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-12-28-%E7%BF%BB%E8%AF%91-uuid%E6%96%B9%E6%A1%88%E5%BE%88%E5%8F%97%E6%AC%A2%E8%BF%8E%E4%BD%86%E6%98%AF%E4%BA%8E%E6%80%A7%E8%83%BD%E4%B8%8D%E5%88%A9/</guid>
+      <description>在网上搜索UUID方案和MySQL，你能查到一大堆结果，比如：
+ 存储UUID和Generated Columns 在MySQL中存储UUID值 InnoDB中的主键模型及它们对磁盘使用的影响 MySQL UUID Smackdown: UUID与整型的主键对比 GUID/UUID性能突破 用还是不用UUID？  所以对于资料如此完善的话题还需要更多讨论吗？很明显是要的。尽管很多文章都是提醒人们少用UUID方案，但它们还是很受欢迎。受欢迎的原因是UUID值可以很方便地由远程设备生成，并且冲突概率非常低。这篇文章里我的目标是总结其他人写的内容，并且尽可能提出一些新的观点。
+什么是UUID方案？ UUID即全局唯一标识符（Universally Unique IDentifier），在RFC 4122定义。它的格式是128位，16进制，由“-”分割成5部分。典型的UUID值如下：
+yves@laptop:~$ uuidgen 83fda883-86d9-4913-9729-91f20973fa52&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 官方来说，一共有5类UUID值，版本1-5,但最常见的是：基于时间的版本（版本1或版本2）和纯随机的版本（版本3）。基于时间的UUID方案将1970年1月1日以来的10ns数量编码成7.5字节（60位），分割为“time-low”-“time-mid”-“time-hi”的样式。空缺的4位是用在time-hi段作为prefix。这样前三段的64位就定下来了。后两段是时间序列即一个随时间改动而增加的值，和宿主唯一标识符（host unique identifier）。大多数时候，当前宿主网络的MAC地址都会被用来当作唯一标识符。
+在使用基于时间的UUID时，有几个重要的点需要考虑：
+ 在前三段的值生成后，就可以用来确认大致的时间 在连续的UUID值中会有大量重复的段 第一段“time-low”每过429秒就会耗尽重置 MySQL UUID函数产生的是版本1的值  以下是使用“uuidgen”Unix工具产生的基于时间的UUID值：
+yves@laptop:~$ for i in $(seq 1 500); do echo &amp;quot;$(date +%s): $(uuidgen -t)&amp;quot;; sleep 1; done 1573656803: 572e4122-0625-11ea-9f44-8c16456798f1 1573656804: 57c8019a-0625-11ea-9f44-8c16456798f1 1573656805: 586202b8-0625-11ea-9f44-8c16456798f1 ... 1573657085: ff86e090-0625-11ea-9f44-8c16456798f1 1573657086: 0020a216-0626-11ea-9f44-8c16456798f1 ... 1573657232: 56b943b2-0626-11ea-9f44-8c16456798f1 1573657233: 57534782-0626-11ea-9f44-8c16456798f1 1573657234: 57ed593a-0626-11ea-9f44-8c16456798f1 ...&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 第一段的值（在t=1573657086）重置，第二段值会增加。每过大约429秒就会在第一段看到类似的值。第三段值每年变1次。最后一段值在同一台的宿主机上是固定的，就是我的笔记本上的MAC地址：</description>
+    </item>
+    
+    <item>
+      <title>[翻译] InnoDB中的页合并与分裂</title>
+      <link>https://jiekun.dev/posts/2019-12-22-%E7%BF%BB%E8%AF%91-innodb%E4%B8%AD%E7%9A%84%E9%A1%B5%E5%90%88%E5%B9%B6%E4%B8%8E%E5%88%86%E8%A3%82/</link>
+      <pubDate>Sun, 22 Dec 2019 14:53:53 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-12-22-%E7%BF%BB%E8%AF%91-innodb%E4%B8%AD%E7%9A%84%E9%A1%B5%E5%90%88%E5%B9%B6%E4%B8%8E%E5%88%86%E8%A3%82/</guid>
+      <description>如果你找过任何一位MySQL顾问，问他对你的语句和/或数据库设计的建议，我保证他会跟你讲主键设计的重要性。特别是在使用InnoDB引擎的情景，他们肯定会给你解释索引合并和页分裂这些。这两个方面与性能息息相关，你应该在任何设计索引（不止是主键索引）的时候都将他们考虑在内。
+你可能觉得这些听起来挺莫名其妙，没准你也没错。这不是容易的事，特别是讲到关于内部实现的时候。通常你都不会需要处理这些事情，并且你也不想去着手他们。
+但是有时候这些问题又是必须搞清楚的。如果有这种情况，那这篇文章正适合你。
+我尝试用这篇文章将一些最不清晰、InnoDB内部的操作解释清楚：索引页的创建、页合并和页分裂。
+在InnoDB中，数据即索引（译注：索引组织数据）。你可能听过这种说法，但它具体是什么样的？
+文件表（File-Table）结构 假设你已经装好了MySQL最新的5.7版本（译注：文章发布于17年4月），并且你创建了一个windmills库（schema）和wmills表。在文件目录（通常是/var/lib/mysql/）你会看到以下内容：
+ta/ windmills/ wmills.ibd wmills.frm&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 这是因为从MySQL 5.6版本开始innodb_file_per_table参数默认设置为1。该配置下你的每一个表都会单独作为一个文件存储（如果有分区也可能有多个文件）。
+目录下要注意的是这个叫wmills.ibd的文件。这个文件由多个段（segments）组成，每个段和一个索引相关。
+文件的结构是不会随着数据行的删除而变化的，但段则会跟着构成它的更小一级单位——区的变化而变化。区仅存在于段内，并且每个区都是固定的1MB大小（页体积默认的情况下）。页则是区的下一级构成单位，默认体积为16KB。
+按这样算，一个区可以容纳最多64个页，一个页可以容纳2-N个行。行的数量取决于它的大小，由你的表结构定义。InnoDB要求页至少要有两个行，因此可以算出行的大小最多为8000 bytes。
+听起来就像俄罗斯娃娃（Matryoshka dolls）一样是么，没错！下面这张图能帮助你理解：
+根，分支与叶子 每个页（逻辑上讲即叶子节点）是包含了2-N行数据，根据主键排列。树有着特殊的页区管理不同的分支，即内部节点（INodes）。
+上图仅为示例，后文才是真实的结构描述。
+具体来看一下：
+ROOT NODE #3: 4 records, 68 bytes NODE POINTER RECORD ≥ (id=2) → #197 INTERNAL NODE #197: 464 records, 7888 bytes NODE POINTER RECORD ≥ (id=2) → #5 LEAF NODE #5: 57 records, 7524 bytes RECORD: (id=2) → (uuid=&amp;quot;884e471c-0e82-11e7-8bf6-08002734ed50&amp;quot;, millid=139, kwatts_s=1956, date=&amp;quot;2017-05-01&amp;quot;, location=&amp;quot;For beauty&#39;s pattern to succeeding men.</description>
+    </item>
+    
+    <item>
+      <title>InnoDB——锁、事务和复制</title>
+      <link>https://jiekun.dev/posts/2019-12-16-innodb-%E9%94%81%E4%BA%8B%E5%8A%A1%E5%92%8C%E5%A4%8D%E5%88%B6/</link>
+      <pubDate>Mon, 16 Dec 2019 13:17:56 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-12-16-innodb-%E9%94%81%E4%BA%8B%E5%8A%A1%E5%92%8C%E5%A4%8D%E5%88%B6/</guid>
+      <description>锁 数据库系统使用锁是为了支持对共享资源进行并发访问，提供数据的完整性和一致性。
+InnoDB存储引擎中的锁  共享锁（S Lock），允许事务读一行数据 排他锁（X Lock），允许事务删除或更新一行数据  兼容性：
+ S与S可以兼容 X不与任何锁兼容  InnoDB支持多粒度锁定，也就是允许行级和表级的锁同时存在。实现方式为通过意向锁（Intention Lock）：如果需要对最细粒度进行加锁，需要在上层粒度加意向锁。
+具体举例，如果需要对行加X锁，需要对表、页依次加IX锁。当意向锁遇到等待时，必须等待结束后才能继续对下级加锁。如准备加对一行有S锁的行加S锁，行记录因为原来就有S锁，所以表和页都已经存在了IS锁，首先新的IS锁加在表上，因为IS、IS锁兼容，可以加上；然后再看页锁，同样IS、IS兼容，可以加上；最后看行锁IS与S兼容，那么行记录可以加上S锁。对同样这行有S锁的行加X锁，先加表IX锁，IX与IS兼容，可以加上，页同样，最后IX锁与行记录上的S锁不兼容，因此要等待S锁释放后才能加上X锁。
+一致性非锁定读 一致性非锁定读（consistent nonlocking read）是指InnoDB存储引擎通过行多版本控制（multi version）的方式来读取当前执行时间数据库中行的数据。在行记录正在执行DELETE或UPDATE时执行读操作，不会等待锁释放，而是会去读undo段中的行的快照数据。
+在不同的事务隔离级别下，读取方式不同，不是每个事务隔离级别都采用非锁定的一致性读，即使使用CNR，对快照数据的定义也不一样。快照数据就是undo段中的历史版本，一行记录可能有多个版本，一般称为行多版本技术，由此带来的并发控制，称之为多版本并发控制（Multi Version Concurrency Control，MVCC）。
+在事务隔离级别READ COMMITTED下，非一致性读总是读取被锁定行的最新一份快照数据，而在REPEATABLE READ事务隔离级别下，对于快照数据，非一致性读总是读取事务开始时的行数据版本。
+表中所示的事务执行过程，在READ COMMITED中会话A可以SELECT到0个id=1的结果，因为已经被会话B所更新；而在REPEATABLE READ中因为读取的是事务开始前的快照，因此结果不会发生变化（可重复读）。
+一致性锁定读 REPEATABLE READ隔离级别下，InnoDB的SELECT操作使用一致性非锁定读，但支持两种一致性锁定读操作：
+ SELECT…FOR UPDATE (X Lock) SELECT…LOCK IN SHARE MODE (S Lock)  锁的算法 InnoDB存储引擎有3种行锁的算法：
+ Record Lock：单个行记录上的锁 Gap Lock：间隙锁，锁定一个范围，但不包括记录本身 Next-Key Lock：Gap Lock+Record Lock，锁定一个范围和记录本身  InnoDB对于行的查询都是采用Next-Key Lock，例如索引有10，11，13，和20，那么可锁定的区间有：
+ (-∞, 10] (10, 11] (11, 13] (13, 20] (20, +∞)  Next-Key Lock的设计是为了解决Phantom Problem。除了Next-Key Lock还有Previous-Key Lock，区别在于区间的开闭。</description>
+    </item>
+    
+    <item>
+      <title>InnoDB——架构、日志、表和索引</title>
+      <link>https://jiekun.dev/posts/2019-12-15-innodb-%E6%9E%B6%E6%9E%84%E6%97%A5%E5%BF%97%E8%A1%A8%E5%92%8C%E7%B4%A2%E5%BC%95/</link>
+      <pubDate>Sun, 15 Dec 2019 13:40:15 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-12-15-innodb-%E6%9E%B6%E6%9E%84%E6%97%A5%E5%BF%97%E8%A1%A8%E5%92%8C%E7%B4%A2%E5%BC%95/</guid>
+      <description>前言 写这篇博文是为了将自己学习完InnoDB的内容梳理一遍。InnoDB是个很复杂很庞大的存储引擎，其中的细节显然是不可能通过一篇文章或者笔记完整地描述出来的，所以这里主要目的是“补漏”，也就是将以前学习MySQL没有了解到的InnoDB“专属”的内容进行梳理和记录。
+学习的主要来源是姜承尧老师的《MySQL技术内幕——InnoDB存储引擎》一书，国内除了这本书以外，也鲜有对InnoDB进行详细介绍的书籍。应用固然重要，但是正确理解技术本身才能够从根本上解决问题。最近这段时间看的技术向的书不少，其中不乏一些夸夸其谈，滥竽充数的书，尤其在架构设计书中最为明显，部分作者直接使用官方文档的图文翻译来填充内容，如果没有个人观点和核心的代码剖析，这些书就是IT书架上的混子。当然，从姜老师这本书可以读得出来，代码、配图和很多细节的描述都是出自一个有多年技术积累的专家之手，在现在大量浑水摸鱼的IT图书市场上就显得特别的宝贵。
+有几句话姜老师在前言中提及到，我认为特别重要：
+ 不要相信任何的“神话”，学会自己思考 不要墨守成规，大部分人都知道的事情可能是错误的 不要相信网上的传言，去测试，根据自己的实践做出决定 花时间充分地思考，敢于提出质疑  这些都是作为开发者特别需要做到的，所以花时间充分地思考，是我在这篇博客最想做到的事情，希望能够通过思考真正掌握书中的内容。
+InnoDB架构模型 内存池：
+ 维护所有进程/线程需要访问的多个内部数据结构 缓存磁盘上的数据，方便快速读取，同时在对磁盘文件的数据修改之前在这里缓存 redo log缓冲  后台线程：
+ 负责刷新内存池中的数据，保证缓冲池中的内存缓存是最近的数据 将修改的数据文件刷到磁盘文件 保证发生异常的情况下InnoDB能够恢复到正常运行状态  内存 缓冲池 设置原因：CPU与磁盘速度之间的鸿沟。
+在数据库中读取页的操作，先从磁盘读取到缓冲池中，读取相同页的时候判断是否在缓冲池中直接命中。
+缓冲池中缓存的数据页类型有：
+ 索引页 数据页 undo页 insert buffer 自适应哈希索引 引擎的锁信息 数据字典信息  缓冲池允许有多个，通过参数配置，默认为1。
+LRU List、Free List、Flush List 最频繁使用的页在LRU列表的前端，而最少使用的页在LRU列表的尾端。
+InnoDB中设置了midpoint位置，读取到新的页，虽然是“Recently Used”，但是先插入到midpoint位置而不是前端，默认配置下处于LRU列表长度的5/8处，midpoint前的列表称为new列表，midpoint后的列表称为old列表。使用midpoint优化的原因是在读取页的时候，因为会导致尾端的页被刷出LRU列表，如果直接在前端插入大量的页（一般为索引或扫描操作）会将LRU列表大量页刷出，而这部分插入的操作可能仅是一次性的，因此需要先将这些页放在midpoint位置，然后后续如果确实频繁使用再加入LRU列表的热端。
+Free列表表示可用的页，如果Free列表有可用的空闲页，就会将页从Free列表中删除、加入LRU列表中；如果没有，则要从LRU列表尾端淘汰，将内存分配给新的页。可以理解成LRU长度增加，Free长度就减少，Free没有的时候还需要插页面就需要从LRU淘汰。
+在LRU列表中的页被修改后，称为dirty page，缓冲区与磁盘中的数据不一致，这时候通过CHECKPOINT机制刷回磁盘，Flush列表中的页即为脏页列表，脏页既存在于LRU列表中也存在与Flush列表中，前者保证页的可用性，后者管理页刷回磁盘。
+Checkpoint Checkpoint是为了解决：
+ 缩短数据库的恢复时间，宕机后不需要重做所有日志，而是从Checkpoint开始 缓冲池不够用时，溢出尾端页，若为脏页，将脏页刷新回磁盘 redo log不需要时，会被覆盖重用；需要使用就会强制产生Checkpoint，将缓冲池中的页至少刷新到当前重做日志的位置  InnoDB使用LSN（Log Sequence Number）来标记版本，Checkpoint也有LSN。
+Checkpint有两种：
+ Sharp Checkpoint，发生在数据库关闭时将所有脏页数据刷新回磁盘 Fuzzy Checkpoint，刷新部分脏页回磁盘  Fuzzy Checkpoint发生在：</description>
+    </item>
+    
+  </channel>
+</rss>

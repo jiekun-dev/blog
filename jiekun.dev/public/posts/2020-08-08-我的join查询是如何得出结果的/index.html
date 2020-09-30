@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta name="theme-color" content="#494f5c">
+	<meta name="msapplication-TileColor" content="#494f5c">
+<meta itemprop="name" content="我的Join查询是如何得出结果的？">
+<meta itemprop="description" content="Join Algorithms 在需要连接多表数据时，我们通常会使用到JOIN操作。
+Nested Loop Join Basic Nested Loop Join 假设现在有两个关系对集合，R和S，我们需要将它连接起来，连接通过一定的条件来指定，这个条件我们称为Join Predicate，即连接谓词:
+JP(r, s) := r.x == s.x&lt;/code&gt;&lt;/pre&gt; 这个连接谓词表明R与S依靠字段x相等作为条件进行连接，当满足条件时，JP(r, s)返回为True，否则为False。
+下面用伪代码表述Nested Loop Join的处理过程：
+# R # S # JP(r, s) := r.x == s.x def nested_loop_join(R, S, JP(r, s)): for r in R: for s in S: if JP(r, s): outupt((r, s))&lt;/code&gt;&lt;/pre&gt; 可以看出Nested Loop Join的处理过程即是两个关系对集合R与S的求Cross Product过程，因此若R中有n个关系对，S中有m个关系对，他们的处理复杂度即为O(m * n)。
+Nested Loop Join的优势在于它不仅可以在等值连接（EquiJoin）中使用，还可以处理其他非等值连接：
+ 在NLJ中无需关注判定式JP(r, s)的实现 对于非等值连接，只判定式内部实现对应Join Predicate即可，外层循环无感知。如：JP(r, s) := r.x &lt;= s.">
+<meta itemprop="datePublished" content="2020-08-08T08:54:53&#43;00:00" />
+<meta itemprop="dateModified" content="2020-08-08T08:54:53&#43;00:00" />
+<meta itemprop="wordCount" content="552">
+
+
+
+<meta itemprop="keywords" content="" /><meta property="og:title" content="我的Join查询是如何得出结果的？" />
+<meta property="og:description" content="Join Algorithms 在需要连接多表数据时，我们通常会使用到JOIN操作。
+Nested Loop Join Basic Nested Loop Join 假设现在有两个关系对集合，R和S，我们需要将它连接起来，连接通过一定的条件来指定，这个条件我们称为Join Predicate，即连接谓词:
+JP(r, s) := r.x == s.x&lt;/code&gt;&lt;/pre&gt; 这个连接谓词表明R与S依靠字段x相等作为条件进行连接，当满足条件时，JP(r, s)返回为True，否则为False。
+下面用伪代码表述Nested Loop Join的处理过程：
+# R # S # JP(r, s) := r.x == s.x def nested_loop_join(R, S, JP(r, s)): for r in R: for s in S: if JP(r, s): outupt((r, s))&lt;/code&gt;&lt;/pre&gt; 可以看出Nested Loop Join的处理过程即是两个关系对集合R与S的求Cross Product过程，因此若R中有n个关系对，S中有m个关系对，他们的处理复杂度即为O(m * n)。
+Nested Loop Join的优势在于它不仅可以在等值连接（EquiJoin）中使用，还可以处理其他非等值连接：
+ 在NLJ中无需关注判定式JP(r, s)的实现 对于非等值连接，只判定式内部实现对应Join Predicate即可，外层循环无感知。如：JP(r, s) := r.x &lt;= s." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2020-08-08-%E6%88%91%E7%9A%84join%E6%9F%A5%E8%AF%A2%E6%98%AF%E5%A6%82%E4%BD%95%E5%BE%97%E5%87%BA%E7%BB%93%E6%9E%9C%E7%9A%84/" />
+<meta property="article:published_time" content="2020-08-08T08:54:53+00:00" />
+<meta property="article:modified_time" content="2020-08-08T08:54:53+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="我的Join查询是如何得出结果的？"/>
+<meta name="twitter:description" content="Join Algorithms 在需要连接多表数据时，我们通常会使用到JOIN操作。
+Nested Loop Join Basic Nested Loop Join 假设现在有两个关系对集合，R和S，我们需要将它连接起来，连接通过一定的条件来指定，这个条件我们称为Join Predicate，即连接谓词:
+JP(r, s) := r.x == s.x&lt;/code&gt;&lt;/pre&gt; 这个连接谓词表明R与S依靠字段x相等作为条件进行连接，当满足条件时，JP(r, s)返回为True，否则为False。
+下面用伪代码表述Nested Loop Join的处理过程：
+# R # S # JP(r, s) := r.x == s.x def nested_loop_join(R, S, JP(r, s)): for r in R: for s in S: if JP(r, s): outupt((r, s))&lt;/code&gt;&lt;/pre&gt; 可以看出Nested Loop Join的处理过程即是两个关系对集合R与S的求Cross Product过程，因此若R中有n个关系对，S中有m个关系对，他们的处理复杂度即为O(m * n)。
+Nested Loop Join的优势在于它不仅可以在等值连接（EquiJoin）中使用，还可以处理其他非等值连接：
+ 在NLJ中无需关注判定式JP(r, s)的实现 对于非等值连接，只判定式内部实现对应Join Predicate即可，外层循环无感知。如：JP(r, s) := r.x &lt;= s."/>
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+	<link rel="shortcut icon" href="/favicon.ico">
+
+	<title>我的Join查询是如何得出结果的？</title>
+	<link rel="stylesheet" href="https://jiekun.dev/css/style.min.eac77496566fd7d5768fd650ddb0b2b181ca6a2d7c5fdd6fe6b8ba4bf47e566f.css" integrity="sha256-6sd0llZv19V2j9ZQ3bCysYHKai18X91v5ri6S/R+Vm8=" crossorigin="anonymous">
+	
+</head>
+
+<body id="page">
+	
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile">
+					
+				<a href="https://jiekun.dev/posts/">Posts</a>
+				<a href="https://jiekun.dev/about-me/">About</a>
+
+				</nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/2014bduck" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:2014bduck" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a></span><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner thin animated fadeIn faster">
+		<h1>我的Join查询是如何得出结果的？</h1>
+		<div class="content">
+			<h1 id="join-algorithms">Join Algorithms<a href="#join-algorithms" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>在需要连接多表数据时，我们通常会使用到<code>JOIN</code>操作。</p>
+<h1 id="nested-loop-join">Nested Loop Join<a href="#nested-loop-join" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<h2 id="basic-nested-loop-join">Basic Nested Loop Join<a href="#basic-nested-loop-join" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>假设现在有两个关系对集合，<code>R</code>和<code>S</code>，我们需要将它连接起来，连接通过一定的条件来指定，这个条件我们称为<strong>Join Predicate</strong>，即连接谓词:</p>
+<pre><code>JP(r, s) := r.x == s.x&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>这个连接谓词表明<code>R</code>与<code>S</code>依靠字段<code>x</code>相等作为条件进行连接，当满足条件时，<code>JP(r, s)</code>返回为<code>True</code>，否则为<code>False</code>。</p>
+<p>下面用伪代码表述<strong>Nested Loop Join</strong>的处理过程：</p>
+<pre><code># R
+# S
+# JP(r, s) := r.x == s.x
+
+def nested_loop_join(R, S, JP(r, s)):
+    for r in R:
+        for s in S:
+            if JP(r, s):
+                outupt((r, s))&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>可以看出Nested Loop Join的处理过程即是两个关系对集合<code>R</code>与<code>S</code>的求<strong>Cross Product</strong>过程，因此若<code>R</code>中有n个关系对，<code>S</code>中有m个关系对，他们的处理复杂度即为<code>O(m * n)</code>。</p>
+<p><strong>Nested Loop Join</strong>的优势在于它不仅可以在等值连接（EquiJoin）中使用，还可以处理其他非等值连接：</p>
+<ul>
+<li>在NLJ中无需关注判定式<code>JP(r, s)</code>的实现</li>
+<li>对于非等值连接，只判定式内部实现对应<strong>Join Predicate</strong>即可，外层循环无感知。如：<code>JP(r, s) := r.x &lt;= s.x</code></li>
+</ul>
+<h2 id="indexed-nested-loop-join">Indexed Nested Loop Join<a href="#indexed-nested-loop-join" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>现在输入的情况稍作改变，我们不仅有<code>R</code>、<code>S</code>和连接谓词<code>JP(r, s)</code>，还知道在其中一个关系集合，无论是<code>R</code>还是<code>S</code>，的连接谓词的列<code>x</code>上有对应的索引：</p>
+<pre><code>IndexOnRX := catelog.get(indexes, R.x)&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p><code>IndexOnRX</code>现在可以视为一个<code>R</code>上<code>x</code>列的索引查询方法，它可以接收查询值，并且返回一个集合，代表集合中的元素存在于<code>R</code>中。</p>
+<p>下面用伪代码表述<strong>Indexed Nested Loop Join</strong>的处理过程：</p>
+<pre><code># S
+# JP(r, s)
+# IndexOnRX
+
+def indexed_nested_loop_join(IndexOnRX, S, JP(r, s)):
+    for s in S:
+        query_result_set = IndexOnRX(s.x)
+        if query_result_set != None:
+            output({s} * query_result_set)&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>与NLJ不同，INLJ通过遍历其中1个关系对集合S，使用对应的索引查询得到另一个查询集合<strong>R的子集</strong>，如果有符合的case，将<code>{s} * query_result_set</code>结果追加到最后输出的集合中。因此在INLJ中，因为只遍历了其中一个关系对集合，查询复杂度可以视为<code>O(n)</code>。</p>
+<h1 id="hash-join">Hash Join<a href="#hash-join" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>现在我们同样有两个关系对集合<code>R</code>和<code>S</code>，一个连接谓词<code>JP(r, s) := r.x == s.x</code>。<br>
+下面用伪代码来表述<strong>Simple Hash Join</strong>的处理过程：</p>
+<pre><code># R
+# S
+# JP(r, s) := r.x == s.x
+
+def simple_hash_join(R, S, JP(r, s)):
+    indexOnRX := build_ht(R.x)
+    for s in S:
+        query_result_set = IndexOnRS(s.x)
+        if query_result_set != None:
+            output({s} * query_result_set)&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>可以看出在循环和判定上，SHJ和INLJ非常相似，最大的区别在于SHJ使用了一个临时生成的Hash内存表作为<code>IndexOnRS</code>依据。由于使用Hash Table，因此SHJ相比之前的NLJ而言缺少了非等值查询的支持。同时在查询复杂度上，SHJ先遍历其中一个关系对集合生成HT，再遍历另一个关系对进行判定，因此为<code>O(m + n)</code></p>
+<h1 id="sort-merge-join">Sort-Merge Join<a href="#sort-merge-join" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>现在我们有两张表<code>Customer</code>和<code>City</code>，我们需要通过<code>Join</code>操作获取每个customer所在的city。</p>
+<!-- raw HTML omitted -->
+<pre><code>&lt;th&gt;
+  street
+&lt;/th&gt;
+
+&lt;th&gt;
+  cityID
+&lt;/th&gt;
+
+&lt;th&gt;
+&lt;/th&gt;
+
+&lt;th&gt;
+&lt;/th&gt;
+
+&lt;th&gt;
+&lt;/th&gt;
+
+&lt;th&gt;
+  cityID
+&lt;/th&gt;
+
+&lt;th&gt;
+  city
+&lt;/th&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s1
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+  A
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s2
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+  1
+&lt;/td&gt;
+
+&lt;td&gt;
+  B
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s3
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+  3
+&lt;/td&gt;
+
+&lt;td&gt;
+  C
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s4
+&lt;/td&gt;
+
+&lt;td&gt;
+  1
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+  5
+&lt;/td&gt;
+
+&lt;td&gt;
+  D
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s5
+&lt;/td&gt;
+
+&lt;td&gt;
+  1
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+  7
+&lt;/td&gt;
+
+&lt;td&gt;
+  E
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s6
+&lt;/td&gt;
+
+&lt;td&gt;
+  5
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+  9
+&lt;/td&gt;
+
+&lt;td&gt;
+  F
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s7
+&lt;/td&gt;
+
+&lt;td&gt;
+  5
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s8
+&lt;/td&gt;
+
+&lt;td&gt;
+  7
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s9
+&lt;/td&gt;
+
+&lt;td&gt;
+  9
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s10
+&lt;/td&gt;
+
+&lt;td&gt;
+  9
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s11
+&lt;/td&gt;
+
+&lt;td&gt;
+  9
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<p>我们按照以下原则进行<strong>Merge Join</strong>：</p>
+<ul>
+<li>使用两个指针，分别指向两表的<code>cityID</code>字段</li>
+<li>当指针对应的值相等时，output一行结果</li>
+<li>指针需要移动至下一行时，优先移动当前指向值较小的指针，若值相等时优先移动指向<code>Customer</code>表的指针</li>
+</ul>
+<p>输出结果为：</p>
+<!-- raw HTML omitted -->
+<pre><code>&lt;th&gt;
+  street
+&lt;/th&gt;
+
+&lt;th&gt;
+  cityID
+&lt;/th&gt;
+
+&lt;th&gt;
+  city
+&lt;/th&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s1
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+  A
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s2
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+  A
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s3
+&lt;/td&gt;
+
+&lt;td&gt;
+&lt;/td&gt;
+
+&lt;td&gt;
+  A
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s4
+&lt;/td&gt;
+
+&lt;td&gt;
+  1
+&lt;/td&gt;
+
+&lt;td&gt;
+  B
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s5
+&lt;/td&gt;
+
+&lt;td&gt;
+  1
+&lt;/td&gt;
+
+&lt;td&gt;
+  B
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s6
+&lt;/td&gt;
+
+&lt;td&gt;
+  5
+&lt;/td&gt;
+
+&lt;td&gt;
+  D
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s7
+&lt;/td&gt;
+
+&lt;td&gt;
+  5
+&lt;/td&gt;
+
+&lt;td&gt;
+  D
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s8
+&lt;/td&gt;
+
+&lt;td&gt;
+  7
+&lt;/td&gt;
+
+&lt;td&gt;
+  E
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s9
+&lt;/td&gt;
+
+&lt;td&gt;
+  9
+&lt;/td&gt;
+
+&lt;td&gt;
+  F
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s10
+&lt;/td&gt;
+
+&lt;td&gt;
+  9
+&lt;/td&gt;
+
+&lt;td&gt;
+  F
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<pre><code>&lt;td&gt;
+  s11
+&lt;/td&gt;
+
+&lt;td&gt;
+  9
+&lt;/td&gt;
+
+&lt;td&gt;
+  F
+&lt;/td&gt;
+</code></pre>
+<!-- raw HTML omitted -->
+<p>注意到这种Merge操作的前提是两表的连接谓词所在字段必须是排序的，因此这种连接算法称为<strong>Sort-Merge Join</strong>。</p>
+<p>根据以上条件写出伪代码：</p>
+<pre><code># R
+# S
+# JP(r, s)
+
+def sort_merge_join(R, S, JP(r, s)):
+    sort(R on R.x)
+    sort(S on S.x)
+    pointer_r = R[0]
+    pointer_s = S[0]
+
+    while pointer_r != R.end and pointer_s != S.end:
+        if pointer_r.x == pointer_s.x:
+            output((pointer_r, pointer_s))
+
+        if pointer_r.x &amp;lt;= pointer_s.x:
+            pointer_r++
+        else:
+            pointer_s++
+
+    # handle rest row here&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>要注意如果将<code>Customer</code>表与<code>City</code>表位置互换，并且保持优先移动左表(<code>City</code>)表指针，我们输出的结果将会是不正确的。</p>
+<p>另外，如果两表的排序字段都不是主键或唯一，输出的结果也会有遗漏的case。</p>
+<p>因此，<strong>Sort-Merge Join</strong>算法有必须满足的前提条件：</p>
+<ul>
+<li>Join字段在其中一个表中必须唯一</li>
+<li>保持优先移动ref表（即Join字段非唯一的表）</li>
+</ul>
+<p>最后估算查询复杂度，需要先进行排序，为<code>O(nlogn)</code>的复杂度，然后双指针遍历两表为<code>O(m+n)</code>的复杂度。</p>
+<h1 id="conclusion">Conclusion<a href="#conclusion" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>Join操作使用的基础算法：</p>
+<ul>
+<li>Nested Loop Join，可以视为两表相乘，嵌套循环逐行检查是否满足Join条件</li>
+<li>Indexed Nested Loop Join，遍历部分表，并用遍历结果作为索引查询条件，借助索引查询</li>
+<li>Hash Join，可以视为INLJ的特殊情况，区别在于Hash Join使用现有或临时生成的Hash值作为索引，此时不支持非等值连接</li>
+<li>Sort-Merge Join，限定条件比较多，先根据Join字段排序，再合并两表，同样不支持非等值连接，否则会退化为NLJ</li>
+</ul>
+
+		</div>
+	</main>
+
+	<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+		<p>&copy; 2020 <a href="https://jiekun.dev">杰坤</a> &#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+		<p>
+			Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> &#183; Theme <a href="https://github.com/Track3/hermit" target="_blank" rel="noopener">Hermit</a> &#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		</p>
+	</footer>
+
+
+
+	<script src="https://jiekun.dev/js/bundle.min.4a9a0ac3d2217822c7865b4161e6c2a71de1d70492264337755427898dd718f6.js" integrity="sha256-SpoKw9IheCLHhltBYebCpx3h1wSSJkM3dVQniY3XGPY=" crossorigin="anonymous"></script>
+	
+
+</body>
+
+</html>

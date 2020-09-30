@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/</link>
+    <description>Recent content on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Wed, 30 Sep 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://jiekun.dev/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>About Me</title>
+      <link>https://jiekun.dev/about-me/</link>
+      <pubDate>Wed, 30 Sep 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/about-me/</guid>
+      <description>Hello.
+我叫杰坤，因为持有一只小黄鸭的缘故，大家也喊我小黄鸭。平时最喜欢做的事情是看书、写作和弹钢琴。
+阅读是一个可以终身受益的习惯，所以我会经常安利身边的人一起学习；写作则是尝试把自己吸收的知识分享出去。我觉得作为开发者，没有办法依靠单一、老旧的知识储备长久产出，所以业余时间里面会尝试继续关注技术相关内容，更新自己原有的认知和点亮新技能。如果点亮成功，我也会试着把它讲解给其他人听，因为分享者始终是收获最大的，如果能得到一些认可，那当然体验会更好。
+目前我在Shopee工作，是一名后端工程师，关注的方向是数据库相关中间件以及Golang，另外对Redis也有少许的了解。如果你有兴趣一起来探讨技术上的问题，可以通过页面下方的邮箱联系到我。</description>
+    </item>
+    
+    <item>
+      <title>Redis 6.0新Feature实现原理——Threaded I/O</title>
+      <link>https://jiekun.dev/posts/2020-09-20-redis-6-0%E6%96%B0feature%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-threaded-i-o/</link>
+      <pubDate>Sun, 20 Sep 2020 05:16:52 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-09-20-redis-6-0%E6%96%B0feature%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-threaded-i-o/</guid>
+      <description>Introduction Redis从6.0版本开始引入了Threaded I/O，目的是为了提升执行命令前后的网络I/O性能。本文会先从Redis的主流程开始分析，讲解网络I/O发生在哪里，以及现有的网络I/O模型，然后介绍Threaded I/O的新模型、实现以及生效场景，最后会进行场景测试，对比Threaded I/O关闭与开启，以及启用Threaded I/O与在单实例上搭建集群的性能差异。如果你已经了解过Redis的循环流程，可以直接跳至Threaded I/O相关的部分；如果你只关心新功能的实际提升，可以跳至性能测试部分查看。
+Redis是如何运行的 事件循环 main Redis的入口位于server.c下，main()方法流程如图所示。
+在main()方法中Redis首先需要做的是初始化各种库以及服务配置。具体举例：
+ crc64_init()会初始化一个crc校验用的Lookup Table getRandomBytes()为hashseed填充随机元素作为初始化值，用作哈希表的seed … initServerConfig()中执行了大量对server对象属性的初始化操作：  初始化server.runid，如16e05f486b8d41e79593a35c8b96edaff101c194 获取当前的时区信息，存放至server.timezone中 初始化server.next_client_id值，使得连接进来的客户端id从1开始自增 …   ACLInit()是对Redis 6.0新增的ACL系统的初始化操作，包括初始化用户列表、ACL日志、默认用户等信息 通过moduleInitModulesSystem()和tlsInit()初始化模块系统和SSL等 …  初始化结束后，开始读取用户的启动参数，和大多数配置加载过程类似，Redis也通过字符串匹配等分析用户输入的argc和argv[]，这个过程中可能会发生：
+ 获取到配置文件路径，修改server.configfile的值，后续用于加载配置文件 获取到启动选项参数，如loadmodule和对应的Module文件路径，保存至options变量中  解析完参数之后，执行loadServerConfig()，读取配置文件并与命令行参数options的内容进行合并，组成一个config变量，并且逐个将name和value设置进configs列表中。对于每个config，有对应的switch-case的代码，例如对于loadmodule，会执行queueLoadModule()方法，以完成真正的配置加载：
+... } else if (!strcasecmp(argv[0],&amp;quot;logfile&amp;quot;) &amp;amp;&amp;amp; argc == 2) { ... } else if (!strcasecmp(argv[0],&amp;quot;loadmodule&amp;quot;) &amp;amp;&amp;amp; argc &amp;gt;= 2) { queueLoadModule(argv[1],&amp;amp;argv[2],argc-2); } else if (!strcasecmp(argv[0],&amp;quot;sentinel&amp;quot;)) { ...&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 回到main方法的流程，Redis会开始打印启动的日志，执行initServer()方法，服务根据配置项，继续为server对象初始化内容，例如：
+ 创建事件循环结构体aeEventLoop（定义在ae.h），赋值给server.el 根据配置的db数目，分配大小为sizeof(redisDb) * dbnum的内存空间，server.db保存这块空间的地址指针 每个db都是一个redisDb结构，将这个结构中的保存key、保存过期时间等的字典初始化为空dict …  此后就是一些根据不同运行模式的初始化，例如常规模式运行时会记录常规日志、加载磁盘持久化的数据；而在sentinel模式运行时记录哨兵日志，不加载数据等。</description>
+    </item>
+    
+    <item>
+      <title>我的Join查询是如何得出结果的？</title>
+      <link>https://jiekun.dev/posts/2020-08-08-%E6%88%91%E7%9A%84join%E6%9F%A5%E8%AF%A2%E6%98%AF%E5%A6%82%E4%BD%95%E5%BE%97%E5%87%BA%E7%BB%93%E6%9E%9C%E7%9A%84/</link>
+      <pubDate>Sat, 08 Aug 2020 08:54:53 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-08-08-%E6%88%91%E7%9A%84join%E6%9F%A5%E8%AF%A2%E6%98%AF%E5%A6%82%E4%BD%95%E5%BE%97%E5%87%BA%E7%BB%93%E6%9E%9C%E7%9A%84/</guid>
+      <description>Join Algorithms 在需要连接多表数据时，我们通常会使用到JOIN操作。
+Nested Loop Join Basic Nested Loop Join 假设现在有两个关系对集合，R和S，我们需要将它连接起来，连接通过一定的条件来指定，这个条件我们称为Join Predicate，即连接谓词:
+JP(r, s) := r.x == s.x&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 这个连接谓词表明R与S依靠字段x相等作为条件进行连接，当满足条件时，JP(r, s)返回为True，否则为False。
+下面用伪代码表述Nested Loop Join的处理过程：
+# R # S # JP(r, s) := r.x == s.x def nested_loop_join(R, S, JP(r, s)): for r in R: for s in S: if JP(r, s): outupt((r, s))&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 可以看出Nested Loop Join的处理过程即是两个关系对集合R与S的求Cross Product过程，因此若R中有n个关系对，S中有m个关系对，他们的处理复杂度即为O(m * n)。
+Nested Loop Join的优势在于它不仅可以在等值连接（EquiJoin）中使用，还可以处理其他非等值连接：
+ 在NLJ中无需关注判定式JP(r, s)的实现 对于非等值连接，只判定式内部实现对应Join Predicate即可，外层循环无感知。如：JP(r, s) := r.x &amp;lt;= s.</description>
+    </item>
+    
+    <item>
+      <title>InnoDB中的B树与分裂</title>
+      <link>https://jiekun.dev/posts/2020-08-05-innodb%E4%B8%AD%E7%9A%84b%E6%A0%91%E4%B8%8E%E5%88%86%E8%A3%82/</link>
+      <pubDate>Wed, 05 Aug 2020 12:58:10 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-08-05-innodb%E4%B8%AD%E7%9A%84b%E6%A0%91%E4%B8%8E%E5%88%86%E8%A3%82/</guid>
+      <description>Tree Binary Search Tree 在二叉查找树中，左子树的键值总是小于根的键值，右子树的键值总是大于根的键值。
+6 / \ 3 7 / \ \ 2 5 8&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 利用这棵二叉树对各个节点进行查找，平均查找次数为(1+2+3+3+2+3) / 6 = 2.3次，比起[2，3，5，6，7，8]顺序查找次数(1+2+3+4+5+6) / 6 = 3.3次要少。
+二叉查找树还可以这样构建：
+2 \ 3 \ 5 \ 6 \ 7 \ 8&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 这时查找的平均次数退化为顺序查找次数。
+因此如果想高性能地构造一棵二叉查找树，需要这棵二叉查找树是平衡的。
+Balance Tree 平衡二叉树符合二叉查找树的定义，并且满足任何节点的两个子树高度最大差为1。
+6 6 / \ / \ 3 7 3 8 / \ \ / \ / \ 2 5 8 2 5 7 9 \ 9&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 在插入新节点后，平衡二叉树节点7的左右子树高度差为2，需要通过一次左旋操作来让树重新保持平衡。
+但是有的情况可能需要旋转多次才能达到平衡。</description>
+    </item>
+    
+    <item>
+      <title>2019再见，Hello 2020</title>
+      <link>https://jiekun.dev/posts/2020-04-12-2019%E5%86%8D%E8%A7%81hello-2020/</link>
+      <pubDate>Sat, 11 Apr 2020 16:23:14 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-04-12-2019%E5%86%8D%E8%A7%81hello-2020/</guid>
+      <description>“2019” 时间过得飞快，还有几个月就毕业满两年了，毫无疑问经历了非常充实的一段时间，现在回过头来看甚至觉得这段经历不属于自己。
+时间回到2019年中，不知道处于什么原因，突然觉得要将落下的知识补一补，毕竟受限于学历和专业，不被看好是再正常不过的了。
+虽然不确定未来会怎么样，但是还是尝试了一下，至少也要缩小一点差距。于是大概也是那时开始，周末坚持早起和中考高考考研的同学一起呆在图书馆，坚持借书买书看书。我本来以为自己很快就会偷懒，不过幸运的是所学所接触的内容似乎并没有让自己感到疲倦。一年时间很快就过了，现在我的书架长这个样子：
+虽然有没有完整看完的书，不过也有经典的著作读了好几遍还意犹未尽，每次都有新的收获。将自己包的报纸书皮一个一个拆开有点舍不得，但是看到书还保护得这么新还是很开心的。
+奇怪的书 所谓“奇怪”大概就是，为什么用不上的东西我一定要去看，当然这是以前的想法，现在我知道这些东西是真的非常宝贵。
+脑筋急转弯 好吧其实这个东西比前面“奇怪的书”更加不明白什么时候才能用得上，但是搞起来之后反倒觉得非常、非常有意思。《算法导论》还在快递手里，只能下次再合影咯。
+“2020” 再过半个月，就要离开广州，到深圳开始新的一段adventure了。在老东家加上实习足足有两年时间，收获特别多，一时间也不知道怎么描述。不过聊到技术以外的经历，印象特别深刻的大概是去年年末跟同事赌了1000块钱减重10斤，同事后来说转手就拿去花了，没想到还真的要还回来。
+总之还是特别感谢老东家的支持和帮助，从来没有在这么好的团队呆过（好吧其实我也没有在别的团队呆过这么长的时间）。到4月末，我的2019年才算结束了，准备好迎接自己的2020，一定要继续加油。</description>
+    </item>
+    
+    <item>
+      <title>Shopee面试复盘</title>
+      <link>https://jiekun.dev/posts/2020-03-28-shopee%E9%9D%A2%E8%AF%95%E5%A4%8D%E7%9B%98/</link>
+      <pubDate>Sat, 28 Mar 2020 09:14:35 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-03-28-shopee%E9%9D%A2%E8%AF%95%E5%A4%8D%E7%9B%98/</guid>
+      <description>背景 了解到Shopee最初是在其他dalao的面经、V2EX上。因为2月份字节跳动的面试失利，而且结合2020年年初整体环境的情况，所以打算做个100 Day Countdown复习再尝试的，不过综合考虑觉得金三银四的机会错过可能就没有了，最后在三月初的时候找dalao内推了Shopee的岗位。同期在考虑的还有网易和360的一些岗位，网易在广州的主要是游戏岗，技术栈上Match的程度会相对低一些，而且了解到部分目标岗位入职之后貌似是以Python为主，而我目前做的也是Python开发，但是更倾向于接触Go和Go的生态（云原生），这个也是优先考虑Shopee机会的原因之一。
+面试 因为赶上春招，所以大概面试官们都比较忙，投递之后大约过了2周HR电话联系，约了一面时间。
+一面（1小时17分钟） 一面我要求在了一个比较晚的时间，因为Shopee晚上是不面试的，所以定在了下午大概下班前一点的时候，然而没有想到一聊就聊了接近80分钟，结束的时候已经接近7点了。
+ 自我介绍 介绍基本的项目架构，问了Elasticsearch在项目中的用途 每日新增数据量*00w，不算少了，用MySQL怎么样做的？  看具体业务，例如新增这块是某些业务数据的快照，用作趋势图 新增数据多，分策略处理，按业务分区，定时归档到oss   除去归档之后数据还有多大？以什么样的方式检索？  除去归档之后的量级在千万级 虽然有千万，但是根据业务查询做Partition，每个tablespace不大，使用xx作为主键，查询也按照主键，速度可以接受   对Percona和它MySQL的分支了解多少？它改表的工具有看过吗？原理能说一下吗，改表过程中一致性如何保证？  Percona的工具一般都是运维在用，自己RSS了他们的博客，阅读和翻译感兴趣的文章 pt-osc，改表通过创建新表，复制旧表数据最后原子操作RENAME替换完成。（答得不在点子上，最重要的通过Trigger保障过程中的一致性没有提出来）   有做过分享过BloomFilter，分享的原理还是应用？  Both 概率型过滤器，业务上用做去重判定，有在团队里面推广，目前在新业务上准备尝试 Redis中使用Bitmap实现，对判断内容Hash置位，如果对应位置都已经置位过说明元素可能存在，反之必然不存在   用过Redis的哪些数据结构？redis-cell是什么？  除了基础的5种结构以外，还尝试过HyperLogLog，布隆过滤器，redis-cell，stream redis-cell是一个外挂模块，漏斗模型限流   有用过Redis的Cluster吗？了解原理吗？如果有节点挂了会怎么样？  业务使用Redis的部分数据量比较少所以用不上，自己有尝试过 基于槽分配，将集群划分成16384个槽，分配给不同节点，当所有槽分配完毕的时候集群上线 如果用官方工具创建类似典型的三主三从集群，主节点挂掉之后会自动有从节点顶上   用Redis不同的数据结构都实现过什么业务？  HyperLogLog，和BloomFilter相似，场景为概率型的计数，例如超大量的每日访问IP数（PV），代替set类型 ZSET，做过排行榜 String，做日常缓存   了解Redis HASH结构的实现吗？怎么保证查找的复杂度是O(1)？  底层是一个字典 Emmm…（场面一度尴尬，觉得很基础又一时说不上来，最后猜测是Hash之后通过内存地址查找所以是O(1)）不太了解    然后聊到这里附近的时候远程聊天网络原因断开了一下orz，多给了一点点思考的时间，虽然重连之后还是答得不太满意。
+ 有用过短域名服务吗，能说一下吗？  （简历上写了一个TinyURL系统架构设计的博客，不知道面试官是看到了所以对这方面感兴趣，还是这么凑巧他想问一个我设计过的架构） 方案：自增ID + Base62 细节：自增ID肯定是唯一的，问题在于如何保证在分布式系统中不同节点的自增ID没有重复，使用ZooKeeper提前对号段进行划分，应用节点自行获取和内部维护 比较：MD5、UUID、自增Base62，各有优势，使用HASH的方案需要考虑冲突问题，UUID太长   大访问量的情况下这个业务怎么设计？  短链有失效时间吗？（一天内访问非常频繁，后面急剧下降） 那将生成的数据放到Cache中设置1天TTL，Cache不存在回MySQL查（这里有遗漏的点没有答好，场景下会产生大量的短链长链对应关系，数据量级也需要考虑和处理，不可能无限增长下去，面试官提问的时候有强调到，但是回答之后貌似刚好也和我一样漏掉了XD）   如果要求长域名一样的时候对应短域名也一样怎么设计？  每次回表查关系，但是这样不理想 思路是判定的时候需要查询，那么就想办法降低查询次数，没出现过的URL肯定会对应新短链，那么结合BloomFilter判定是否曾经出现过，如果出现过再回表确认真的出现还是BloomFilter的误判   有试过BloomFilter数据量比较大的时候占用Redis空间有多少吗？  很低，但是不知道具体数字（这里是个超级大坑，一面没有深究，二面的时候被追问细节，然而当初是想一二面一起复盘所以orz）   业务已经很久，数据量大，需要做分表或者归档，会怎么做？  归档貌似不行，旧数据还是要可用 分表按照业务场景，查询是围绕短链ID，根据短链ID做hash分表而不是自增ID，这里视情况可能需要设计上用短链ID作为主键   用Python里面的数据结构实现一个有序集合，思路  （答得不是很好，问到了讲的几个思路的复杂度的计算，自己打个50分不及格） List + Dict（期望小于O(n)可以吗？） …（求求自己回去多看看数据结构） SkipList（真的不会，于是开始胡扯…）   写SQL：找出A表存在，B表不存在的id  写了一个NOT IN，强调性能不佳 补充一个LEFT JOIN WHERE IS NULL的方案 小表驱动大表   MySQL事务隔离级别？你们用的级别？可重复读是什么意思？  4个 可重复读 解释了一下Read Commited里面不可重复读的场景，可重复读解决了这种问题，但是会存在幻读问题;强调InnoDB中使用Next-Key Locking，在Repeatable Read中就已经解决了幻读问题，解释了一下Gap Lock和Record Lock   了解乐观锁与悲观锁吗？  描述了一下以及讲一下怎么使用乐观锁   了解InnoDB的索引实现？B+树和B树有什么区别？  B+树 高扇出性，层数少、叶子节点带指针、B+树数据全部在叶子节点，B树索引节点也存数据   SQL题：哪个SQL能用上全部索引 都是在用Python是吗？还会其他语言吗？  读书的时候写PHP，现在在学Go   对Python装饰器的理解？  （写了3行代码表达装饰器是对方法进行前置处理和后处理的夹心饼结构） -（更好的表达应该是强调将被装饰对象作为参数传递，因为它是First Class Object，同时执行前后进行额外的逻辑，最后返回）   写了一小段代码，问如何调用装饰器内部的定义的方法 写了一小段闭包的代码，问执行结果  答了一个错误的执行结果和正确的闭包概念 （我确认我是清晰理解了闭包的概念，但是思考的时候多操了一份心，又考虑了一些mutable object和immutable object的事情，结果就答错了结果，气坏了）   Python的functools和itertools有用过什么吗？Collections用到什么？  有用过，但是一时想不起来里面的方法/对象了，经常用Collections 用到defaultdict、OrderedDict、Counter等等   进程与线程 Python的多线程可以用到多核，一般多线程用来做什么，多线程多进程用的什么库？ 了解HTTPS加密过程吗？讲一下握手的过程 浏览器的缓存了解多少？自己建站静态文件会加缓存吗？ 编程题：Word Break和翻转二叉树 有什么问题想问吗？  对我的建议 技术分享 开源文化    一面结束之后过了几天接到HR电话，约了第二面的时间。</description>
+    </item>
+    
+    <item>
+      <title>Redis 6.0 ACL基于Bitmap实现</title>
+      <link>https://jiekun.dev/posts/2020-03-14-redis-6-0-acl%E5%9F%BA%E4%BA%8Ebitmap%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Sat, 14 Mar 2020 14:00:46 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-03-14-redis-6-0-acl%E5%9F%BA%E4%BA%8Ebitmap%E5%AE%9E%E7%8E%B0/</guid>
+      <description>Redis 6.0在4月30日就要和大家正式见面了，现在redis.io上已经提供了RC版本。在之前的博客中，已经介绍过权限控制新功能的一些用法，主要来源于作者Antirez在Redis Day上的一些演示。Antirez在最后提到，ACL的主要实现是基于Bitmap，因此对性能影响是可以忽略不计的。当时大致猜想了一下实现的思路，那么现在离发布已经很近了，作者也对ACL Logging进行了一些补充，不妨一起来看一下。
+user结构 server.h中定义了对应的user结构保存用户的ACL信息，包括：
+ 用户名 flag，主要是一些特殊状态，例如用户的启用与禁用、整体控制（所有命令可用与否、所有键可访问与否）、免密码等 可用命令（allowed_commands），一个长整型数。每一位代表命令，如果用户允许使用这个命令则置位1 可用子命令（allowed_subcommands），一个指针数组，值也为指针，数组与可用命令一一对应，值为一个SDS数组，SDS数组中存放的是这个命令可用的子命令 用户密码 可用的key patterns。如果这个字段为NULL，用户将不能使用任何Key，除非flag中指明特殊状态如ALLKEYS  typedef struct user { sds name; uint64_t flags; uint64_t allowed_commands[USER_COMMAND_BITS_COUNT/64]; sds **allowed_subcommands; list *passwords; list *patterns; } user;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 补充一下一些新鲜的字段描述，allowed_commands实际上是一个（默认）长度为1024的位图，它的index对应各个命令的ID，在历史版本中命令结构redisCommand是通过名字（name）来查找的，id为这个版本中新增的属性，专门用于ACL功能。
+truct redisCommand { ... int id; };&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; user这个结构对应的是client结构的”user”字段，熟悉Redis的同学应该对client也有所了解，就不再赘述了。
+ACL操作选读 ACL的命令很多，总体而言都是围绕着user对象展开的，因此从中挑选了几个函数来看一下具体是如何操作user对象。
+一个需要铺垫的通用方法就是ACLGetUserCommandBit，ACL操作中都会涉及到获取用户的命令位图，ACLGetUserCommandBit()接收一个user结构和命令ID，根据ID定位出命令在allowed_commands中的位置，通过位运算返回用户是否有该命令权限。
+int ACLGetUserCommandBit(user *u, unsigned long id) { uint64_t word, bit; if (ACLGetCommandBitCoordinates(id,&amp;amp;word,&amp;amp;bit) == C_ERR) return 0; return (u-&amp;gt;allowed_commands[word] &amp;amp; bit) != 0; }&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 当用户进行Redis操作时，例如set操作，操作的命令会保存在client结构的*cmd字段中，*cmd字段就是一个redisCommand结构的指针，redisCommand结构包含了命令的id，因此在使用时通过ACLGetUserCommandBit(u, cmd-&amp;gt;id)传入。</description>
+    </item>
+    
+    <item>
+      <title>Elasticsearch节点选举、分片及Recovery</title>
+      <link>https://jiekun.dev/posts/2020-03-14-elasticsearch%E8%8A%82%E7%82%B9%E9%80%89%E4%B8%BE%E5%88%86%E7%89%87%E5%8F%8Arecovery/</link>
+      <pubDate>Sat, 14 Mar 2020 07:58:10 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-03-14-elasticsearch%E8%8A%82%E7%82%B9%E9%80%89%E4%B8%BE%E5%88%86%E7%89%87%E5%8F%8Arecovery/</guid>
+      <description>隔了挺长一段时间没有更新，主要是因为近段时间忙于业务和刷题，想来刷题除了Po题解和Explanation也是没有什么特别之处，除非钻研得特别深入，所以（@#$%^&amp;amp;找理由）。
+关于Elasticsearch Elasticsearch其实官网的文档特别齐全，所以关于用法没有什么特别好写的，看博客不如RTFM。但是文档特别全的情况下，很多时候又缺少对一些具体细节的描述，一句话说就是不知其所以然。所以今天写的博客内容理应是无关使用的，不涉及命令与操作，大概会更有意义一些吧。
+概述 以Elasticsearch（下称ES）集群启动过程作为索引来展开，ES想要从Red转为Green，需要经历以下过程：
+ 主节点选举。集群启动需要从已知的活跃机器中选取主节点，因为这是PacificA算法的思想——主从模式，使用Master节点管理元信息，数据则去中心化。这块使用类似Bully的算法。 元信息选举。主节点确认后，需要从各节点的元信息中获取最新版本的元信息。由Gateway模块负责。 主副分片选举。由Allocation模块负责，各分片的多个副本中选出主分片和副分片，记录他们所属的节点，重构内容路由表。 恢复分片数据。因为启动可能包含之前没有来得及刷盘的数据，副分片也可能落后于新选出的主分片。  Bully算法与主节点选举 Bully算法 特地查了一下Bully的意思——“仗势欺人者，横行霸道者”，所以这个霸道选举算法如其名，简单暴力地通过选出ID最大的候选者来完成。在Bully算法中有几点假设：
+ 系统是处于同步状态的 进程任何时间都可能失效，包括在算法执行过程中 进程失败则停止，并通过重新启动来恢复 有能够进行失败检测的机制 进程间的消息传递是可靠的 每个进程知道自己的ID和地址，以及其他所有的进程ID和地址  它的选举通过以下几类消息：
+ 选举消息：用来声明一次选举 响应消息：响应选举消息 协调消息：胜利者向参与者发送胜利声明  设想以下场景，集群中存在ID为1、2、3的节点，通过Bully算法选举出了3为主节点，此时之前因为网络分区无法联系上的4节点加入，通过Bully算法成了新的主节点，后续失联的5节点加入，同样成为新主节点。这种不稳定的状态在ES中通过优化选举发起的条件来解决，当主节点确定后，在失效前不进行新一轮的选举。另外其他分布式应用一样，ES通过Quorum来解决脑裂的问题。
+Elasticsearch主节点选举 ES的选举与Bully算法有所出入，它选举的是ID最小的节点，当然这并没有太大影响。另外目前版本中ES的排序影响因素还有集群状态，对应一个状态版本号，排序中会优先将版本号高的节点放在最前。
+在选举过程中有几个概念：
+ 临时Master节点：某个节点认可的Master节点 activeMasters列表：不同节点了解到的其他节点范围可能不一样，因此他们可能各自认可不同的Master节点，这些临时Master节点的集合称为activeMasters列表 masterCanditates列表：所有满足Master资格（一般不满足例原因如配置了某些节点不能作为主节点）的节点列表 正式Master节点：票数足够时临时Master节点确立为真正Master节点  某个节点ping所有节点，获取一份节点列表，并将自己加入其中。通过这份列表查看当前活跃的Master列表，也就是每个节点认为当前的Master节点，加入activeMasters列表中。同样，通过过滤原始列表中不符合Master资格的节点，形成masterCandidates列表。
+如果activeMasters列表不为空，按照ES的（近似）Bully算法选举自己认为的Master节点；如果activeMasters列表空，从masterCandidates列表中选举，但是此时需要判断当前候选人数是否达到Quorum。ES使用具体的比较Master的逻辑如下：
+/** * compares two candidates to indicate which the a better master. * A higher cluster state version is better * 比较两个候选节点以得出更适合作为Master的节点。 * 优先以集群状态版本作为排序 * * @return -1 if c1 is a batter candidate, 1 if c2.</description>
+    </item>
+    
+    <item>
+      <title>字节跳动一面复盘 &amp; Redis多线程IO模型源码学习</title>
+      <link>https://jiekun.dev/posts/2020-02-22-%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E4%B8%80%E9%9D%A2%E5%A4%8D%E7%9B%98-redis%E5%A4%9A%E7%BA%BF%E7%A8%8Bio%E6%A8%A1%E5%9E%8B%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/</link>
+      <pubDate>Sat, 22 Feb 2020 12:42:24 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-02-22-%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E4%B8%80%E9%9D%A2%E5%A4%8D%E7%9B%98-redis%E5%A4%9A%E7%BA%BF%E7%A8%8Bio%E6%A8%A1%E5%9E%8B%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/</guid>
+      <description>面试 上周参加了字节跳动的面试，也是18年毕业后的首次面试，整场下来一共70分钟，面试官非常Nice，无奈自己太过紧张，很多准备好的知识点都没有能够准确传达意思。
+面试中因为在简历上有提到Redis相关的内容，那么毫无疑问就会被问到了。先从经典的问题开始：Reids为什么这么快？那自然会回答诸如单线程、IO多路复用等固定套路，然后这里因为一直有关注Redis的相关新闻，知道Redis 6.0年末发布了RC1版本，其中新特性包括多线程IO，那么自然想在面试中提及一下。面试官应该对这点比较感兴趣，于是就继续探讨了这个多线程IO的模型。
+ Q：Redis 6多线程是指什么？ A：Redis这边将部分处理流程改为多线程，具体来说是.. Q：是指查询是多线程吗？ A：应该说是处理请求的最后部分改为了多线程，因为这些部分涉及到数据的IO，是整个（Redis）模型中最耗时的部分，所以改成了多线程；这部分之前的比如用户请求进来、将请求放入一个队列中，还是单线程的。（注意这部分回答是错误的，实际上Redis是将网络IO的部分做成了多线程，后文继续分析） Q：如果我有一个SET操作的话，是单线程还是多线程？ A：多线程。（回答也是错的） Q：那如果是，因为Redis都是内存操作，如果多线程操作一个数据结构的话会有问题吗？ A：Emm，目前我理解的模型上看确实会有问题，比如并发改同一个Key，那可能Redis有对应处理这些问题比如进行加锁处理。（确实不了解，回答也自然是错的） Q：好，下一个问题..  这里先总结一下：
+ 因为Antirez在Redis Day介绍过，所以就了解到了有这么个新Feature，但是具体的实现因为没有看过源码，所以实际上对这个多线程模型的理解是有偏差的。 如果对这些点没有十足的把握的话，面试中尝试自己思考和解决这样的问题实际上还是会比较扣分，首先如果猜错了的话肯定不行，其次即使是猜对了也很难有足够的知识储备去复述出完整的模型出来，也会让自己一边思考一边表达起来很费劲。  于是坑坑洼哇地坚持完了70分钟的面试，再总结一下做得不足的地方，因为是1.5Year经验，面试官主要考察：
+ 现有的业务的一些设计细节的问题：要提前准备好你想介绍给面试官的业务系统，个人认为应该从业务中选出一两个难度比较大的点会比较合适。这次面试没有能够拿出对应的业务来介绍，是准备不到位。 数据库的基础知识：这块觉得回答得还可以，不过有的时候因为准备的东西比较多，会经常想充分地展现和描述，有的时候可能会比较冗长，也是表达不够精确的问题。 计算机网络的基础知识：不是科班毕业，没有能够答完美，实际上问题并不难。 计算机系统的基础知识：同上。 一道算法题：字节跳动给的算法题还是偏简单和经典的，建议多刷题和看Discussion总结。  所以就这样结束了第一次的社招面试，整体来说几个方向的基础知识需要回去再多写多看就可以了，然后表达上尽量控制时间和范围，深入的内容如果面试官希望和你继续探讨，自然会发问，如果没问，可以提及但是不应该直接展开讲。
+Redis的Threaded IO 面试结束后马上知道这块的回答有问题，检查果然如此。所以也就借这个机会将Threaded IO对应的源码看了一遍，后续如果有机会的话，希望能跟下一位面试官再来探讨这个模型。
+综述 本次新增的代码位于networking.c中，很显然多线程生效的位置就能猜出来是在网络请求上。作者希望改进读写缓冲区的性能，而不是命令执行的性能主要原因是：
+ 读写缓冲区的在命令执行的生命周期中是占了比较大的比重 Redis更倾向于保持简单的设计，如果在命令执行部分改用多线程会不得不处理各种问题，例如并发写入、加锁等  那么将读写缓冲区改为多线程后整个模型大致如下：
+具体模型 线程初始化(initThreadedIO) 首先，如果用户没有开启多线程IO，也就是io_threads_num == 1时直接按照单线程模型处理；如果超过线程数IO_THREADS_MAX_NUM上限则异常退出。
+紧接着Redis使用listCreate()创建io_threads_num个线程，并且对主线程（id=0）以外的线程进行处理：
+ 初始化线程的等待任务数为0 获取锁，使得线程不能进行操作 将线程tid与Redis中的线程id（for循环生成）进行映射  /* Initialize the data structures needed for threaded I/O. */ void initThreadedIO(void) { io_threads_active = 0; /* We start with threads not active.</description>
+    </item>
+    
+    <item>
+      <title>短链生成系统设计——Counter&#43;ZooKeeper&#43;Base62</title>
+      <link>https://jiekun.dev/posts/2020-02-15-%E7%9F%AD%E9%93%BE%E7%94%9F%E6%88%90%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1-counterzookeeperbase62/</link>
+      <pubDate>Sat, 15 Feb 2020 05:02:40 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-02-15-%E7%9F%AD%E9%93%BE%E7%94%9F%E6%88%90%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1-counterzookeeperbase62/</guid>
+      <description>我们最后设计出的系统架构如图所示，如果想了解最后的结论可以跳到最后一小节。这个系统理论上可以支持大流量的生成请求，分布式部署便于扩展。当然在使用的存储方案性能上没有过多的讨论，因为这次的重点是解决“唯一”、“分布式”的ID问题。
+准备设计 设计一个系统之前，我们应该对系统的需求有所了解。对于短链系统，首先应该有以下思考：
+ 我们需要什么样的短链接，具体是多短？ 短链系统的请求量有多大？ 这是个单实例还是分布式系统？  首先我们可以做一些假设，例如参考Twitter有3亿访问/月，我们假设有它的10%，也就是3千万/月，平均每日100万。
+然后再来假设生成的短链，一般格式为domain/unique_id，例如s-url.com/D28CZ63，我们假设Unique ID的长度最多为7位。
+下面我们根据这些假设条件来完成这个系统的设计。
+数据量计算 根据上面的假设，首先每个原始URL可以按照2KB估算（2048字符），而短URL可以按照17Byte估算；我们可能还需要记录创建时间和过期时间，分别是7Byte。因此可以大致估算每行记录的大小应该为2.031KB。
+我们一共有30M月访问，30M * 2.031KB = 60.7GB，每月约60GB数据，因此一年内估算为0.7TB，5年3.6TB数据量。
+唯一ID算法 我们需要的是一个短的（7位）唯一ID生成方案。考虑Base62和MD5，Base62即使用0-9A-Za-z一共62个字符，MD5使用0-9a-z，一般输出长度为32的字符串。
+使用MD5的话，因为输出长度固定，我们可能需要截取其前7位来作为唯一ID，这种情况下，首先不同的输入可能会输出相同的MD5，其次，不同的MD5的前7位也可能是相同的。这样的话会产生不少的Collision，需要业务上进行保障。而使用MD5的好处，也恰恰是如果不同用户提交相同输入，那么可以得到相同的ID而不需要重复生成新的短链ID，但是同样需要业务进行处理和保证。
+对于Base62，每一位有62个可能字符串，7位则是62^7=3521614606208种组合，每秒产生1000个ID的话也足够使用110年。同时在短URL的要求上，Base62接受输入，产生的输出长度会根据输入变化，因此不需要进行截取，而只需要想办法将7位ID的所有情况消耗完毕就可以满足大部分场景的要求。Base62伪代码如下：
+f base62_encode(deci): s = &#39;0-9A-Za-z&#39; hash_str = &#39;&#39; while deci &amp;gt; 0: hash_str = s[deci % 62] + hash_str deci /= 62 return hash_str&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 存储选择 一般我们会考虑使用RDBMS比如MySQl，或者NoSQL比如Redis。在关系型数据库中，横向扩展会比较麻烦，例如MySQL进行分表和分库，我们可能需要多个实例，而扩展需要一开始就设想好，但是这一点在NoSQL中会相对比较容易，例如使用一个Redis的Cluster，或许向里面添加节点会相对容易一点。而使用NoSQL我们可能需要考虑数据的最终一致性，还有数据的持久化等问题。
+同时根据业务场景，从性能上考虑如果在高峰期有大量短链生成请求需要写入到MySQL或许表现会比Redis差一些。
+对于将“长URL-短URL”的映射关系写入数据库的步骤，重点是确保这个短URL没有被其他长URL使用过。如果使用过，那么你需要想办法使用新的字符串生成这个短URL。
+先来想一下，这是一个两步操作，首先查询是否存在，然后写入。如果这是个串行，那么是可行的。如果这是一个并行操作，很显然，你可能查询的时候发现没有存在这个短URL，而其他Session也查到了同样的结果，最后大家都认为可以写入，然后写入过程中晚写的一方就会出问题。
+在RDBMS中我们可能可以通过一些提供的方法来解决这个问题，例如INSERT_IF_NOT_EXISTS，但是在NoSQL中是没有这些方法的，因为它的设计是要实现最终一致性，所以不会提供这种支持。
+基于以上分析和假设的方案 我们需要确定的内容主要是：
+ 生成算法 存储选择  目前罗列出来的方案主要包括：MD5，Base62，以及MySQL和Redis。
+如果使用MD5的话，需要使用能够解决哈希冲突的RDBMS，因为这个步骤在NoSQL上处理比较麻烦，所以会有MD5+MySQL的组合。这套组合实际上性能并不太满足需求，并且在扩展上会相对另外一组组合难度大些。
+那么另外一种就是我们打算使用的方案：Base62+Redis。如何将7位Base62的所有情况都用尽，我们可以采用一个计数器，从0-62^7的数字转为Base62，作为短链ID使用。这个方案在单实例上是很容易的，并且可以保证冲突问题。那么如何实现它的可扩展性呢？
+在接入大流量的情况下，我们必然需要部署多点的ID生成服务，那么根据思路，我们需要对应的计数来转换成Base62的唯一ID，如果不同的服务拿到了同样的计数，那么就会生成相同的ID，造成冲突，且因为分布式的部署，仍然能够正常写入。
+因此现在问题转化为如何让不同的服务拿到正确的计数。因为总的数字段是已知的（0-62^7），一个很简单的方法就是我们提前将这些数字进行分段，每个ID生成服务都拿到不同段的数字本地使用。例如：
+0-100000 100001-200000 200001-300000 300001-400000 400001-500000 500001-600000 .</description>
+    </item>
+    
+  </channel>
+</rss>

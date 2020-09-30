@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta name="theme-color" content="#494f5c">
+	<meta name="msapplication-TileColor" content="#494f5c">
+<meta itemprop="name" content="[听译]Redis 6.0新特性——ACLs">
+<meta itemprop="description" content="在2019年纽约的Redis Day上，Salvatore Sanfilippo（AKA Antirez）介绍了即将发布的Redis 6.0的新特性。
+ACLs简介 在过去的十年中，Redis都会有这样的问题：
+用户执行FLUSHALL，OK现在整个数据库就空了，或者执行DEBUG SEGFAULT，然后Redis的进程就crash退出了。
+在以前解决这个问题的办法可能是在Redis配置中将危险命令进行rename：
+name-command FLUSHALL &quot;&quot;&lt;/code&gt;&lt;/pre&gt; 这样将命令更名为随机字符串或者直接屏蔽掉，以满足需要。
+缺少危险命令管理就会导致很多问题，比如当你使用网络上的一些库的时候，你压根就不知道别人会不会在里面加些FLUSHALL这样的命令，或者你也可以每次用外部代码都进行一轮Code Review。
+当有了ACLs之后，你就可以控制比如：
+这个连接只允许使用RPOP，LPUSH这些命令，其他命令都无法调用。
+是不是很方便？来看看ACLs是怎么工作的。
+最佳实践 首先你要做的是定义用户。
+当登录的时候，旧版本中默认用户（defaule user）是可以做任何事的，在Redis 6.0中你可以定义默认用户：
+127.0.0.1:6379&gt; ACL setuser antirez on &gt;password1 &gt;password2 &gt;foobar &#43;@all ~*&lt;/code&gt;&lt;/pre&gt; setuser…on表示启用此用户，off则是只定义一个不可用（unaccessable）的用户。
+&gt;password1 &gt;password2 &gt;foobar表示设置了3个密码，可以用来做密码轮换策略。
+&#43;@all表示用户可以使用所有权限，&#43;后面跟命令权限如&#43;get，或者&#43;@后面跟某一类权限。
+~*表示可用（accessable）的键名，这里是*也就是所有键都可被访问。
+127.0.0.1:6379&gt; ACL WHOAMI &quot;default&quot;&lt;/code&gt;&lt;/pre&gt; 现在是处于默认用户下的，切换用户：
+127.0.0.1:6379&gt; AUTH antirez foobar OK&lt;/code&gt;&lt;/pre&gt; 在以前AUTH后面是直接跟密码的，现在是用户名和密码。
+127.0.0.1:6379&gt; ACL WHOAMI &quot;antirez&quot;&lt;/code&gt;&lt;/pre&gt; 因为之前给这个用户设置的是所有命令可用&#43;所有键可见，所以现在跟default用户没有什么区别：
+127.0.0.1:6379&gt; GET foo (nil) 127.0.0.1:6379&gt; SET foo bar OK&lt;/code&gt;&lt;/pre&gt; 现在去掉一些权限：
+127.0.0.1:6379&gt; ACL setuser antirez -SET&lt;/code&gt;&lt;/pre&gt; 把这个用户的SET权限去掉后，就不能进行这个操作了：">
+<meta itemprop="datePublished" content="2019-11-24T11:58:26&#43;00:00" />
+<meta itemprop="dateModified" content="2019-11-24T11:58:26&#43;00:00" />
+<meta itemprop="wordCount" content="123">
+
+
+
+<meta itemprop="keywords" content="6,ACLs,Redis,权限控制," /><meta property="og:title" content="[听译]Redis 6.0新特性——ACLs" />
+<meta property="og:description" content="在2019年纽约的Redis Day上，Salvatore Sanfilippo（AKA Antirez）介绍了即将发布的Redis 6.0的新特性。
+ACLs简介 在过去的十年中，Redis都会有这样的问题：
+用户执行FLUSHALL，OK现在整个数据库就空了，或者执行DEBUG SEGFAULT，然后Redis的进程就crash退出了。
+在以前解决这个问题的办法可能是在Redis配置中将危险命令进行rename：
+name-command FLUSHALL &quot;&quot;&lt;/code&gt;&lt;/pre&gt; 这样将命令更名为随机字符串或者直接屏蔽掉，以满足需要。
+缺少危险命令管理就会导致很多问题，比如当你使用网络上的一些库的时候，你压根就不知道别人会不会在里面加些FLUSHALL这样的命令，或者你也可以每次用外部代码都进行一轮Code Review。
+当有了ACLs之后，你就可以控制比如：
+这个连接只允许使用RPOP，LPUSH这些命令，其他命令都无法调用。
+是不是很方便？来看看ACLs是怎么工作的。
+最佳实践 首先你要做的是定义用户。
+当登录的时候，旧版本中默认用户（defaule user）是可以做任何事的，在Redis 6.0中你可以定义默认用户：
+127.0.0.1:6379&gt; ACL setuser antirez on &gt;password1 &gt;password2 &gt;foobar &#43;@all ~*&lt;/code&gt;&lt;/pre&gt; setuser…on表示启用此用户，off则是只定义一个不可用（unaccessable）的用户。
+&gt;password1 &gt;password2 &gt;foobar表示设置了3个密码，可以用来做密码轮换策略。
+&#43;@all表示用户可以使用所有权限，&#43;后面跟命令权限如&#43;get，或者&#43;@后面跟某一类权限。
+~*表示可用（accessable）的键名，这里是*也就是所有键都可被访问。
+127.0.0.1:6379&gt; ACL WHOAMI &quot;default&quot;&lt;/code&gt;&lt;/pre&gt; 现在是处于默认用户下的，切换用户：
+127.0.0.1:6379&gt; AUTH antirez foobar OK&lt;/code&gt;&lt;/pre&gt; 在以前AUTH后面是直接跟密码的，现在是用户名和密码。
+127.0.0.1:6379&gt; ACL WHOAMI &quot;antirez&quot;&lt;/code&gt;&lt;/pre&gt; 因为之前给这个用户设置的是所有命令可用&#43;所有键可见，所以现在跟default用户没有什么区别：
+127.0.0.1:6379&gt; GET foo (nil) 127.0.0.1:6379&gt; SET foo bar OK&lt;/code&gt;&lt;/pre&gt; 现在去掉一些权限：
+127.0.0.1:6379&gt; ACL setuser antirez -SET&lt;/code&gt;&lt;/pre&gt; 把这个用户的SET权限去掉后，就不能进行这个操作了：" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2019-11-24-redis-6-0%E6%96%B0%E7%89%B9%E6%80%A7-acls/" />
+<meta property="article:published_time" content="2019-11-24T11:58:26+00:00" />
+<meta property="article:modified_time" content="2019-11-24T11:58:26+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="[听译]Redis 6.0新特性——ACLs"/>
+<meta name="twitter:description" content="在2019年纽约的Redis Day上，Salvatore Sanfilippo（AKA Antirez）介绍了即将发布的Redis 6.0的新特性。
+ACLs简介 在过去的十年中，Redis都会有这样的问题：
+用户执行FLUSHALL，OK现在整个数据库就空了，或者执行DEBUG SEGFAULT，然后Redis的进程就crash退出了。
+在以前解决这个问题的办法可能是在Redis配置中将危险命令进行rename：
+name-command FLUSHALL &quot;&quot;&lt;/code&gt;&lt;/pre&gt; 这样将命令更名为随机字符串或者直接屏蔽掉，以满足需要。
+缺少危险命令管理就会导致很多问题，比如当你使用网络上的一些库的时候，你压根就不知道别人会不会在里面加些FLUSHALL这样的命令，或者你也可以每次用外部代码都进行一轮Code Review。
+当有了ACLs之后，你就可以控制比如：
+这个连接只允许使用RPOP，LPUSH这些命令，其他命令都无法调用。
+是不是很方便？来看看ACLs是怎么工作的。
+最佳实践 首先你要做的是定义用户。
+当登录的时候，旧版本中默认用户（defaule user）是可以做任何事的，在Redis 6.0中你可以定义默认用户：
+127.0.0.1:6379&gt; ACL setuser antirez on &gt;password1 &gt;password2 &gt;foobar &#43;@all ~*&lt;/code&gt;&lt;/pre&gt; setuser…on表示启用此用户，off则是只定义一个不可用（unaccessable）的用户。
+&gt;password1 &gt;password2 &gt;foobar表示设置了3个密码，可以用来做密码轮换策略。
+&#43;@all表示用户可以使用所有权限，&#43;后面跟命令权限如&#43;get，或者&#43;@后面跟某一类权限。
+~*表示可用（accessable）的键名，这里是*也就是所有键都可被访问。
+127.0.0.1:6379&gt; ACL WHOAMI &quot;default&quot;&lt;/code&gt;&lt;/pre&gt; 现在是处于默认用户下的，切换用户：
+127.0.0.1:6379&gt; AUTH antirez foobar OK&lt;/code&gt;&lt;/pre&gt; 在以前AUTH后面是直接跟密码的，现在是用户名和密码。
+127.0.0.1:6379&gt; ACL WHOAMI &quot;antirez&quot;&lt;/code&gt;&lt;/pre&gt; 因为之前给这个用户设置的是所有命令可用&#43;所有键可见，所以现在跟default用户没有什么区别：
+127.0.0.1:6379&gt; GET foo (nil) 127.0.0.1:6379&gt; SET foo bar OK&lt;/code&gt;&lt;/pre&gt; 现在去掉一些权限：
+127.0.0.1:6379&gt; ACL setuser antirez -SET&lt;/code&gt;&lt;/pre&gt; 把这个用户的SET权限去掉后，就不能进行这个操作了："/>
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+	<link rel="shortcut icon" href="/favicon.ico">
+
+	<title>[听译]Redis 6.0新特性——ACLs</title>
+	<link rel="stylesheet" href="https://jiekun.dev/css/style.min.eac77496566fd7d5768fd650ddb0b2b181ca6a2d7c5fdd6fe6b8ba4bf47e566f.css" integrity="sha256-6sd0llZv19V2j9ZQ3bCysYHKai18X91v5ri6S/R+Vm8=" crossorigin="anonymous">
+	
+</head>
+
+<body id="page">
+	
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile">
+					
+				<a href="https://jiekun.dev/posts/">Posts</a>
+				<a href="https://jiekun.dev/about-me/">About</a>
+
+				</nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/2014bduck" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:2014bduck" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a></span><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner thin animated fadeIn faster">
+		<h1>[听译]Redis 6.0新特性——ACLs</h1>
+		<div class="content">
+			<p>在2019年纽约的Redis Day上，Salvatore Sanfilippo（AKA Antirez）介绍了即将发布的Redis 6.0的新特性。</p>
+<h2 id="acls简介">ACLs简介<a href="#acls简介" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>在过去的十年中，Redis都会有这样的问题：</p>
+<p>用户执行<code>FLUSHALL</code>，OK现在整个数据库就空了，或者执行<code>DEBUG SEGFAULT</code>，然后Redis的进程就crash退出了。</p>
+<p>在以前解决这个问题的办法可能是在Redis配置中将危险命令进行rename：</p>
+<pre><code>name-command FLUSHALL &quot;&quot;&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>这样将命令更名为随机字符串或者直接屏蔽掉，以满足需要。</p>
+<p>缺少危险命令管理就会导致很多问题，比如当你使用网络上的一些库的时候，你压根就不知道别人会不会在里面加些<code>FLUSHALL</code>这样的命令，或者你也可以每次用外部代码都进行一轮Code Review。</p>
+<p>当有了ACLs之后，你就可以控制比如：</p>
+<p>这个连接只允许使用<code>RPOP</code>，<code>LPUSH</code>这些命令，其他命令都无法调用。</p>
+<p>是不是很方便？来看看ACLs是怎么工作的。</p>
+<h2 id="最佳实践">最佳实践<a href="#最佳实践" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>首先你要做的是定义用户。</p>
+<p>当登录的时候，旧版本中默认用户（defaule user）是可以做任何事的，在Redis 6.0中你可以定义默认用户：</p>
+<pre><code>127.0.0.1:6379&gt; ACL setuser antirez on &gt;password1 &gt;password2 &gt;foobar +@all ~*&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p><code>setuser</code>…<code>on</code>表示启用此用户，off则是只定义一个不可用（unaccessable）的用户。</p>
+<p><code>&gt;password1 &gt;password2 &gt;foobar</code>表示设置了3个密码，可以用来做密码轮换策略。</p>
+<p><code>+@all</code>表示用户可以使用所有权限，<code>+</code>后面跟命令权限如<code>+get</code>，或者<code>+@</code>后面跟某一类权限。</p>
+<p><code>~*</code>表示可用（accessable）的键名，这里是<code>*</code>也就是所有键都可被访问。</p>
+<pre><code>127.0.0.1:6379&gt; ACL WHOAMI
+&quot;default&quot;&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>现在是处于默认用户下的，切换用户：</p>
+<pre><code>127.0.0.1:6379&gt; AUTH antirez foobar
+OK&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>在以前AUTH后面是直接跟密码的，现在是用户名和密码。</p>
+<pre><code>127.0.0.1:6379&gt; ACL WHOAMI
+&quot;antirez&quot;&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>因为之前给这个用户设置的是所有命令可用+所有键可见，所以现在跟default用户没有什么区别：</p>
+<pre><code>127.0.0.1:6379&gt; GET foo
+(nil)
+127.0.0.1:6379&gt; SET foo bar
+OK&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>现在去掉一些权限：</p>
+<pre><code>127.0.0.1:6379&gt; ACL setuser antirez -SET&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>把这个用户的<code>SET</code>权限去掉后，就不能进行这个操作了：</p>
+<pre><code>127.0.0.1:6379&gt; GET foo
+&quot;bar&quot;
+127.0.0.1:6379&gt; SET foo 123
+(error) NOPERM this user has no permissions to run the 'set' command or its subcommand&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>再来查看一下现在的ACL list：</p>
+<pre><code>127.0.0.1:6379&gt; ACL list
+1) &quot;user antirez on &gt;password1 &gt;password2 &gt;foobar ~* +@all -set&quot;
+2) &quot;user default on nopass ~* +@all&quot;&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>类似的，你也可以限制用户可以用任何命令但是却只能看部分键，如<code>object*</code>。</p>
+<h2 id="备注">备注<a href="#备注" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>ACLs的实现使用了一些小技巧，像用上了命令的位图（commands’ bitmaps），以便让它不会在速度上有所下降。<br>
+不使用ACLs的话就和原来的Redis 5一样，使用ACLs当然会有一些额外的开销，但是它们非常小，你在benchmarks中不会察觉到新旧版本的区别。</p>
+
+		</div>
+	</main>
+
+	<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+		<p>&copy; 2020 <a href="https://jiekun.dev">杰坤</a> &#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+		<p>
+			Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> &#183; Theme <a href="https://github.com/Track3/hermit" target="_blank" rel="noopener">Hermit</a> &#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		</p>
+	</footer>
+
+
+
+	<script src="https://jiekun.dev/js/bundle.min.4a9a0ac3d2217822c7865b4161e6c2a71de1d70492264337755427898dd718f6.js" integrity="sha256-SpoKw9IheCLHhltBYebCpx3h1wSSJkM3dVQniY3XGPY=" crossorigin="anonymous"></script>
+	
+
+</body>
+
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta name="theme-color" content="#494f5c">
+	<meta name="msapplication-TileColor" content="#494f5c">
+<meta itemprop="name" content="实现Django Models的数据mock">
+<meta itemprop="description" content="问题 在开发过程中，整个数据流向为：
+爬虫抓取数据-&gt;数据中端进行数据清洗-&gt;入库Web端定义的业务表&lt;/code&gt;&lt;/pre&gt; 由于整个流程比较长，而且由于爬虫开发的不稳定性以及数据统计的复杂度，完整的开发往往不能完全异步进行，因为最后面向业务的Web端需要等待清洗入库的数据进行测试。
+一般来说，如果Web端需要的业务数据比较简单，开发自测的时候都可以手动生成INSERT等SQL模拟假数据，但是如果业务复杂的时候，往往需要十余个Table联动的数据，手动INSERT比较麻烦，开发效率低。
+思考 模拟数据的难处主要有：
+ 涉及地方多，如10多个表逐一写入对应数据 表与表之间的对应关系，如测试的时候需要从表1取10条数据，从表2取这10条数据对应的一周内各日的数据一共10 * 7条 编写测试SQL费事效率低，缺少开箱即用的数据生成器  为此需要有一款工具：
+ 根据Django的models字段随机生成数据 支持指定数据内容，如指定数据的id，方便联表查询的时候能够正确JOIN出结果 支持filter、get等常用方法，支持聚合查询 无需写入数据库，返回QuerySet 方便开关，Mock与测试真正数据之间任意切换  实现 将以上问题逐一分析：
+随机生成对应类型数据 Django的Models常用的数据类型有：
+CharField、IntegerField、DateTimeField、TextField、DecimalField、DateField
+其余类型在开发中不常用，因此先实现这几种类型的随机生成器
+CharField CharField对应Varchar和Char类型，目标是在有提供选项的时候随机返回选项中的内容，没提供选项的时候随机出0-max_length范围内的字符串，因此采用英文字母进行随机即可。
+import string from random import choice, randint def charfield_generator(min_length=0, max_length=20, choices=[]): if not choices: return &#39;&#39;.join(choice(string.ascii_letters) for i in range(randint(min_length, max_length))) else: return choice(choices)&lt;/code&gt;&lt;/pre&gt; IntegerField IntegerField可以对应各类整数类型，包括SmallInt、TinyInt等均可共用同一个生成器通过限制长度来控制返回值。
+f integerfield_generator(min_value, max_value, choices=[]): if not choices: return randint(min_value, max_value) else: return choice(choices)&lt;/code&gt;&lt;/pre&gt; TextField TextField在要求不严格的情况下也可以和CharField共用生成器。业务上一般超长的内容会使用TextField，如文章正文。">
+<meta itemprop="datePublished" content="2019-08-03T02:46:19&#43;00:00" />
+<meta itemprop="dateModified" content="2019-08-03T02:46:19&#43;00:00" />
+<meta itemprop="wordCount" content="288">
+
+
+
+<meta itemprop="keywords" content="Django,Mock,Python,QuerySet," /><meta property="og:title" content="实现Django Models的数据mock" />
+<meta property="og:description" content="问题 在开发过程中，整个数据流向为：
+爬虫抓取数据-&gt;数据中端进行数据清洗-&gt;入库Web端定义的业务表&lt;/code&gt;&lt;/pre&gt; 由于整个流程比较长，而且由于爬虫开发的不稳定性以及数据统计的复杂度，完整的开发往往不能完全异步进行，因为最后面向业务的Web端需要等待清洗入库的数据进行测试。
+一般来说，如果Web端需要的业务数据比较简单，开发自测的时候都可以手动生成INSERT等SQL模拟假数据，但是如果业务复杂的时候，往往需要十余个Table联动的数据，手动INSERT比较麻烦，开发效率低。
+思考 模拟数据的难处主要有：
+ 涉及地方多，如10多个表逐一写入对应数据 表与表之间的对应关系，如测试的时候需要从表1取10条数据，从表2取这10条数据对应的一周内各日的数据一共10 * 7条 编写测试SQL费事效率低，缺少开箱即用的数据生成器  为此需要有一款工具：
+ 根据Django的models字段随机生成数据 支持指定数据内容，如指定数据的id，方便联表查询的时候能够正确JOIN出结果 支持filter、get等常用方法，支持聚合查询 无需写入数据库，返回QuerySet 方便开关，Mock与测试真正数据之间任意切换  实现 将以上问题逐一分析：
+随机生成对应类型数据 Django的Models常用的数据类型有：
+CharField、IntegerField、DateTimeField、TextField、DecimalField、DateField
+其余类型在开发中不常用，因此先实现这几种类型的随机生成器
+CharField CharField对应Varchar和Char类型，目标是在有提供选项的时候随机返回选项中的内容，没提供选项的时候随机出0-max_length范围内的字符串，因此采用英文字母进行随机即可。
+import string from random import choice, randint def charfield_generator(min_length=0, max_length=20, choices=[]): if not choices: return &#39;&#39;.join(choice(string.ascii_letters) for i in range(randint(min_length, max_length))) else: return choice(choices)&lt;/code&gt;&lt;/pre&gt; IntegerField IntegerField可以对应各类整数类型，包括SmallInt、TinyInt等均可共用同一个生成器通过限制长度来控制返回值。
+f integerfield_generator(min_value, max_value, choices=[]): if not choices: return randint(min_value, max_value) else: return choice(choices)&lt;/code&gt;&lt;/pre&gt; TextField TextField在要求不严格的情况下也可以和CharField共用生成器。业务上一般超长的内容会使用TextField，如文章正文。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2019-08-03-%E5%AE%9E%E7%8E%B0%E4%B8%80%E5%A5%97%E5%AF%B9django-models%E6%95%B0%E6%8D%AEqueryset%E8%BF%9B%E8%A1%8C%E6%A8%A1%E6%8B%9F%E7%9A%84mock%E6%96%B9%E6%A1%88/" />
+<meta property="article:published_time" content="2019-08-03T02:46:19+00:00" />
+<meta property="article:modified_time" content="2019-08-03T02:46:19+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="实现Django Models的数据mock"/>
+<meta name="twitter:description" content="问题 在开发过程中，整个数据流向为：
+爬虫抓取数据-&gt;数据中端进行数据清洗-&gt;入库Web端定义的业务表&lt;/code&gt;&lt;/pre&gt; 由于整个流程比较长，而且由于爬虫开发的不稳定性以及数据统计的复杂度，完整的开发往往不能完全异步进行，因为最后面向业务的Web端需要等待清洗入库的数据进行测试。
+一般来说，如果Web端需要的业务数据比较简单，开发自测的时候都可以手动生成INSERT等SQL模拟假数据，但是如果业务复杂的时候，往往需要十余个Table联动的数据，手动INSERT比较麻烦，开发效率低。
+思考 模拟数据的难处主要有：
+ 涉及地方多，如10多个表逐一写入对应数据 表与表之间的对应关系，如测试的时候需要从表1取10条数据，从表2取这10条数据对应的一周内各日的数据一共10 * 7条 编写测试SQL费事效率低，缺少开箱即用的数据生成器  为此需要有一款工具：
+ 根据Django的models字段随机生成数据 支持指定数据内容，如指定数据的id，方便联表查询的时候能够正确JOIN出结果 支持filter、get等常用方法，支持聚合查询 无需写入数据库，返回QuerySet 方便开关，Mock与测试真正数据之间任意切换  实现 将以上问题逐一分析：
+随机生成对应类型数据 Django的Models常用的数据类型有：
+CharField、IntegerField、DateTimeField、TextField、DecimalField、DateField
+其余类型在开发中不常用，因此先实现这几种类型的随机生成器
+CharField CharField对应Varchar和Char类型，目标是在有提供选项的时候随机返回选项中的内容，没提供选项的时候随机出0-max_length范围内的字符串，因此采用英文字母进行随机即可。
+import string from random import choice, randint def charfield_generator(min_length=0, max_length=20, choices=[]): if not choices: return &#39;&#39;.join(choice(string.ascii_letters) for i in range(randint(min_length, max_length))) else: return choice(choices)&lt;/code&gt;&lt;/pre&gt; IntegerField IntegerField可以对应各类整数类型，包括SmallInt、TinyInt等均可共用同一个生成器通过限制长度来控制返回值。
+f integerfield_generator(min_value, max_value, choices=[]): if not choices: return randint(min_value, max_value) else: return choice(choices)&lt;/code&gt;&lt;/pre&gt; TextField TextField在要求不严格的情况下也可以和CharField共用生成器。业务上一般超长的内容会使用TextField，如文章正文。"/>
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+	<link rel="shortcut icon" href="/favicon.ico">
+
+	<title>实现Django Models的数据mock</title>
+	<link rel="stylesheet" href="https://jiekun.dev/css/style.min.eac77496566fd7d5768fd650ddb0b2b181ca6a2d7c5fdd6fe6b8ba4bf47e566f.css" integrity="sha256-6sd0llZv19V2j9ZQ3bCysYHKai18X91v5ri6S/R+Vm8=" crossorigin="anonymous">
+	
+</head>
+
+<body id="page">
+	
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile">
+					
+				<a href="https://jiekun.dev/posts/">Posts</a>
+				<a href="https://jiekun.dev/about-me/">About</a>
+
+				</nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/2014bduck" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:2014bduck" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a></span><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner thin animated fadeIn faster">
+		<h1>实现Django Models的数据mock</h1>
+		<div class="content">
+			<h1 id="问题">问题<a href="#问题" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>在开发过程中，整个数据流向为：</p>
+<pre><code>爬虫抓取数据-&gt;数据中端进行数据清洗-&gt;入库Web端定义的业务表&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>由于整个流程比较长，而且由于爬虫开发的不稳定性以及数据统计的复杂度，完整的开发往往不能完全异步进行，因为最后面向业务的Web端需要等待清洗入库的数据进行测试。</p>
+<p>一般来说，如果Web端需要的业务数据比较简单，开发自测的时候都可以手动生成INSERT等SQL模拟假数据，但是如果业务复杂的时候，往往需要十余个Table联动的数据，手动INSERT比较麻烦，开发效率低。</p>
+<h1 id="思考">思考<a href="#思考" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>模拟数据的难处主要有：</p>
+<ul>
+<li>涉及地方多，如10多个表逐一写入对应数据</li>
+<li>表与表之间的对应关系，如测试的时候需要从表1取10条数据，从表2取这10条数据对应的一周内各日的数据一共10 * 7条</li>
+<li>编写测试SQL费事效率低，缺少开箱即用的数据生成器</li>
+</ul>
+<p>为此需要有一款工具：</p>
+<ul>
+<li>根据Django的models字段随机生成数据</li>
+<li>支持指定数据内容，如指定数据的id，方便联表查询的时候能够正确JOIN出结果</li>
+<li>支持filter、get等常用方法，支持聚合查询</li>
+<li>无需写入数据库，返回QuerySet</li>
+<li>方便开关，Mock与测试真正数据之间任意切换</li>
+</ul>
+<h1 id="实现">实现<a href="#实现" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>将以上问题逐一分析：</p>
+<h2 id="随机生成对应类型数据">随机生成对应类型数据<a href="#随机生成对应类型数据" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>Django的Models常用的数据类型有：<br>
+<code>CharField</code>、<code>IntegerField</code>、<code>DateTimeField</code>、<code>TextField</code>、<code>DecimalField</code>、<code>DateField</code><br>
+其余类型在开发中不常用，因此先实现这几种类型的随机生成器</p>
+<h4 id="charfield">CharField<a href="#charfield" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>CharField对应Varchar和Char类型，目标是在有提供选项的时候随机返回选项中的内容，没提供选项的时候随机出0-max_length范围内的字符串，因此采用英文字母进行随机即可。</p>
+<pre><code>import string
+from random import choice, randint
+
+def charfield_generator(min_length=0, max_length=20, choices=[]):
+    if not choices:
+        return ''.join(choice(string.ascii_letters) for i in range(randint(min_length, max_length)))
+    else:
+        return choice(choices)&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><h4 id="integerfield">IntegerField<a href="#integerfield" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>IntegerField可以对应各类整数类型，包括SmallInt、TinyInt等均可共用同一个生成器通过限制长度来控制返回值。</p>
+<pre><code>f integerfield_generator(min_value, max_value, choices=[]):
+    if not choices:
+        return randint(min_value, max_value)
+    else:
+        return choice(choices)&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><h4 id="textfield">TextField<a href="#textfield" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>TextField在要求不严格的情况下也可以和CharField共用生成器。业务上一般超长的内容会使用TextField，如文章正文。</p>
+<h4 id="datetimefield">DatetimeField<a href="#datetimefield" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>DatetimeField生成对应的时间对象，考虑生成一个大于起始时间(start_dt)小于结束时间(end_dt)的datetime对象。</p>
+<pre><code>f datetime_generator(start_dt=datetime.now(), end_dt=datetime.now()):
+    dt_delta = end_dt - start_dt
+    return start_dt + timedelta(seconds=randint(0, 24 * 3600 * dt_delta.days + dt_delta.seconds))&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>简单执行一下看看第一版效果：</p>
+<pre><code>for i in range(10):
+    print('-------------- GENERATING SET %s -------------- ' % i)
+    print(charfield_generator())
+    print(integerfield_generator(0, 1000))
+    print(datetime_generator(datetime.strptime('2018-09-01 00:00:00', '%Y-%m-%d %H:%M:%S')))
+    print('-------------- GENERATED SET %s -------------- ' % i, '\n')&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><pre><code>GENERATING SET 0 -------------- 
+I
+196
+2018-09-30 13:22:31
+-------------- GENERATED SET 0 --------------  
+
+-------------- GENERATING SET 1 -------------- 
+XBFGGdpVwmlMMbCT
+168
+2018-11-16 09:02:16
+-------------- GENERATED SET 1 --------------  
+
+-------------- GENERATING SET 2 -------------- 
+ZgU
+293
+2018-12-04 08:44:08
+-------------- GENERATED SET 2 --------------  
+
+-------------- GENERATING SET 3 -------------- 
+TsUkylUiC
+791
+2018-10-01 03:48:16
+-------------- GENERATED SET 3 --------------  
+
+-------------- GENERATING SET 4 -------------- 
+IusHQZsKYFtKi
+909
+2019-04-22 02:02:27
+-------------- GENERATED SET 4 --------------  
+
+-------------- GENERATING SET 5 -------------- 
+ScRcj
+505
+2019-02-21 16:16:51
+-------------- GENERATED SET 5 --------------  
+
+-------------- GENERATING SET 6 -------------- 
+OLmbMrZImnvaF
+500
+2018-12-24 22:20:47
+-------------- GENERATED SET 6 --------------  
+
+-------------- GENERATING SET 7 -------------- 
+rNaRvAYSgxVzwLAe
+664
+2019-08-01 12:43:00
+-------------- GENERATED SET 7 --------------  
+
+-------------- GENERATING SET 8 -------------- 
+rtLks
+532
+2019-03-14 07:38:53
+-------------- GENERATED SET 8 --------------  
+
+-------------- GENERATING SET 9 -------------- 
+oIDFdOUKs
+700
+2018-09-21 19:59:06
+-------------- GENERATED SET 9 --------------  
+
+[Finished in 0.2s]&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>有了模拟数据之后，需要做几件事：</p>
+<ul>
+<li>将假数据映射到对应的Models上，实例化成QuerySet，由多个QuerySet组成iterative的QuerySet List</li>
+<li>需要支持指定QuerySet List长度，因此可以实现计算页数、分页等操作</li>
+</ul>
+<pre><code>f model_generator(models, length):
+    &quot;&quot;&quot;
+    : models Models.model :
+    : length int :
+    : rtype QuerySet List :
+    &quot;&quot;&quot;
+    return []&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><h1 id="最佳实践">最佳实践<a href="#最佳实践" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>Work in progress!</p>
+
+		</div>
+	</main>
+
+	<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+		<p>&copy; 2020 <a href="https://jiekun.dev">杰坤</a> &#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+		<p>
+			Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> &#183; Theme <a href="https://github.com/Track3/hermit" target="_blank" rel="noopener">Hermit</a> &#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		</p>
+	</footer>
+
+
+
+	<script src="https://jiekun.dev/js/bundle.min.4a9a0ac3d2217822c7865b4161e6c2a71de1d70492264337755427898dd718f6.js" integrity="sha256-SpoKw9IheCLHhltBYebCpx3h1wSSJkM3dVQniY3XGPY=" crossorigin="anonymous"></script>
+	
+
+</body>
+
+</html>

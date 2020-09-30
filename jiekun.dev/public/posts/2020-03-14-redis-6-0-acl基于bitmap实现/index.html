@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta name="theme-color" content="#494f5c">
+	<meta name="msapplication-TileColor" content="#494f5c">
+<meta itemprop="name" content="Redis 6.0 ACL基于Bitmap实现">
+<meta itemprop="description" content="Redis 6.0在4月30日就要和大家正式见面了，现在redis.io上已经提供了RC版本。在之前的博客中，已经介绍过权限控制新功能的一些用法，主要来源于作者Antirez在Redis Day上的一些演示。Antirez在最后提到，ACL的主要实现是基于Bitmap，因此对性能影响是可以忽略不计的。当时大致猜想了一下实现的思路，那么现在离发布已经很近了，作者也对ACL Logging进行了一些补充，不妨一起来看一下。
+user结构 server.h中定义了对应的user结构保存用户的ACL信息，包括：
+ 用户名 flag，主要是一些特殊状态，例如用户的启用与禁用、整体控制（所有命令可用与否、所有键可访问与否）、免密码等 可用命令（allowed_commands），一个长整型数。每一位代表命令，如果用户允许使用这个命令则置位1 可用子命令（allowed_subcommands），一个指针数组，值也为指针，数组与可用命令一一对应，值为一个SDS数组，SDS数组中存放的是这个命令可用的子命令 用户密码 可用的key patterns。如果这个字段为NULL，用户将不能使用任何Key，除非flag中指明特殊状态如ALLKEYS  typedef struct user { sds name; uint64_t flags; uint64_t allowed_commands[USER_COMMAND_BITS_COUNT/64]; sds **allowed_subcommands; list *passwords; list *patterns; } user;&lt;/code&gt;&lt;/pre&gt; 补充一下一些新鲜的字段描述，allowed_commands实际上是一个（默认）长度为1024的位图，它的index对应各个命令的ID，在历史版本中命令结构redisCommand是通过名字（name）来查找的，id为这个版本中新增的属性，专门用于ACL功能。
+truct redisCommand { ... int id; };&lt;/code&gt;&lt;/pre&gt; user这个结构对应的是client结构的”user”字段，熟悉Redis的同学应该对client也有所了解，就不再赘述了。
+ACL操作选读 ACL的命令很多，总体而言都是围绕着user对象展开的，因此从中挑选了几个函数来看一下具体是如何操作user对象。
+一个需要铺垫的通用方法就是ACLGetUserCommandBit，ACL操作中都会涉及到获取用户的命令位图，ACLGetUserCommandBit()接收一个user结构和命令ID，根据ID定位出命令在allowed_commands中的位置，通过位运算返回用户是否有该命令权限。
+int ACLGetUserCommandBit(user *u, unsigned long id) { uint64_t word, bit; if (ACLGetCommandBitCoordinates(id,&amp;word,&amp;bit) == C_ERR) return 0; return (u-&gt;allowed_commands[word] &amp; bit) != 0; }&lt;/code&gt;&lt;/pre&gt; 当用户进行Redis操作时，例如set操作，操作的命令会保存在client结构的*cmd字段中，*cmd字段就是一个redisCommand结构的指针，redisCommand结构包含了命令的id，因此在使用时通过ACLGetUserCommandBit(u, cmd-&gt;id)传入。">
+<meta itemprop="datePublished" content="2020-03-14T14:00:46&#43;00:00" />
+<meta itemprop="dateModified" content="2020-03-14T14:00:46&#43;00:00" />
+<meta itemprop="wordCount" content="534">
+
+
+
+<meta itemprop="keywords" content="ACL,Redis,源码," /><meta property="og:title" content="Redis 6.0 ACL基于Bitmap实现" />
+<meta property="og:description" content="Redis 6.0在4月30日就要和大家正式见面了，现在redis.io上已经提供了RC版本。在之前的博客中，已经介绍过权限控制新功能的一些用法，主要来源于作者Antirez在Redis Day上的一些演示。Antirez在最后提到，ACL的主要实现是基于Bitmap，因此对性能影响是可以忽略不计的。当时大致猜想了一下实现的思路，那么现在离发布已经很近了，作者也对ACL Logging进行了一些补充，不妨一起来看一下。
+user结构 server.h中定义了对应的user结构保存用户的ACL信息，包括：
+ 用户名 flag，主要是一些特殊状态，例如用户的启用与禁用、整体控制（所有命令可用与否、所有键可访问与否）、免密码等 可用命令（allowed_commands），一个长整型数。每一位代表命令，如果用户允许使用这个命令则置位1 可用子命令（allowed_subcommands），一个指针数组，值也为指针，数组与可用命令一一对应，值为一个SDS数组，SDS数组中存放的是这个命令可用的子命令 用户密码 可用的key patterns。如果这个字段为NULL，用户将不能使用任何Key，除非flag中指明特殊状态如ALLKEYS  typedef struct user { sds name; uint64_t flags; uint64_t allowed_commands[USER_COMMAND_BITS_COUNT/64]; sds **allowed_subcommands; list *passwords; list *patterns; } user;&lt;/code&gt;&lt;/pre&gt; 补充一下一些新鲜的字段描述，allowed_commands实际上是一个（默认）长度为1024的位图，它的index对应各个命令的ID，在历史版本中命令结构redisCommand是通过名字（name）来查找的，id为这个版本中新增的属性，专门用于ACL功能。
+truct redisCommand { ... int id; };&lt;/code&gt;&lt;/pre&gt; user这个结构对应的是client结构的”user”字段，熟悉Redis的同学应该对client也有所了解，就不再赘述了。
+ACL操作选读 ACL的命令很多，总体而言都是围绕着user对象展开的，因此从中挑选了几个函数来看一下具体是如何操作user对象。
+一个需要铺垫的通用方法就是ACLGetUserCommandBit，ACL操作中都会涉及到获取用户的命令位图，ACLGetUserCommandBit()接收一个user结构和命令ID，根据ID定位出命令在allowed_commands中的位置，通过位运算返回用户是否有该命令权限。
+int ACLGetUserCommandBit(user *u, unsigned long id) { uint64_t word, bit; if (ACLGetCommandBitCoordinates(id,&amp;word,&amp;bit) == C_ERR) return 0; return (u-&gt;allowed_commands[word] &amp; bit) != 0; }&lt;/code&gt;&lt;/pre&gt; 当用户进行Redis操作时，例如set操作，操作的命令会保存在client结构的*cmd字段中，*cmd字段就是一个redisCommand结构的指针，redisCommand结构包含了命令的id，因此在使用时通过ACLGetUserCommandBit(u, cmd-&gt;id)传入。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2020-03-14-redis-6-0-acl%E5%9F%BA%E4%BA%8Ebitmap%E5%AE%9E%E7%8E%B0/" />
+<meta property="article:published_time" content="2020-03-14T14:00:46+00:00" />
+<meta property="article:modified_time" content="2020-03-14T14:00:46+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Redis 6.0 ACL基于Bitmap实现"/>
+<meta name="twitter:description" content="Redis 6.0在4月30日就要和大家正式见面了，现在redis.io上已经提供了RC版本。在之前的博客中，已经介绍过权限控制新功能的一些用法，主要来源于作者Antirez在Redis Day上的一些演示。Antirez在最后提到，ACL的主要实现是基于Bitmap，因此对性能影响是可以忽略不计的。当时大致猜想了一下实现的思路，那么现在离发布已经很近了，作者也对ACL Logging进行了一些补充，不妨一起来看一下。
+user结构 server.h中定义了对应的user结构保存用户的ACL信息，包括：
+ 用户名 flag，主要是一些特殊状态，例如用户的启用与禁用、整体控制（所有命令可用与否、所有键可访问与否）、免密码等 可用命令（allowed_commands），一个长整型数。每一位代表命令，如果用户允许使用这个命令则置位1 可用子命令（allowed_subcommands），一个指针数组，值也为指针，数组与可用命令一一对应，值为一个SDS数组，SDS数组中存放的是这个命令可用的子命令 用户密码 可用的key patterns。如果这个字段为NULL，用户将不能使用任何Key，除非flag中指明特殊状态如ALLKEYS  typedef struct user { sds name; uint64_t flags; uint64_t allowed_commands[USER_COMMAND_BITS_COUNT/64]; sds **allowed_subcommands; list *passwords; list *patterns; } user;&lt;/code&gt;&lt;/pre&gt; 补充一下一些新鲜的字段描述，allowed_commands实际上是一个（默认）长度为1024的位图，它的index对应各个命令的ID，在历史版本中命令结构redisCommand是通过名字（name）来查找的，id为这个版本中新增的属性，专门用于ACL功能。
+truct redisCommand { ... int id; };&lt;/code&gt;&lt;/pre&gt; user这个结构对应的是client结构的”user”字段，熟悉Redis的同学应该对client也有所了解，就不再赘述了。
+ACL操作选读 ACL的命令很多，总体而言都是围绕着user对象展开的，因此从中挑选了几个函数来看一下具体是如何操作user对象。
+一个需要铺垫的通用方法就是ACLGetUserCommandBit，ACL操作中都会涉及到获取用户的命令位图，ACLGetUserCommandBit()接收一个user结构和命令ID，根据ID定位出命令在allowed_commands中的位置，通过位运算返回用户是否有该命令权限。
+int ACLGetUserCommandBit(user *u, unsigned long id) { uint64_t word, bit; if (ACLGetCommandBitCoordinates(id,&amp;word,&amp;bit) == C_ERR) return 0; return (u-&gt;allowed_commands[word] &amp; bit) != 0; }&lt;/code&gt;&lt;/pre&gt; 当用户进行Redis操作时，例如set操作，操作的命令会保存在client结构的*cmd字段中，*cmd字段就是一个redisCommand结构的指针，redisCommand结构包含了命令的id，因此在使用时通过ACLGetUserCommandBit(u, cmd-&gt;id)传入。"/>
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+	<link rel="shortcut icon" href="/favicon.ico">
+
+	<title>Redis 6.0 ACL基于Bitmap实现</title>
+	<link rel="stylesheet" href="https://jiekun.dev/css/style.min.eac77496566fd7d5768fd650ddb0b2b181ca6a2d7c5fdd6fe6b8ba4bf47e566f.css" integrity="sha256-6sd0llZv19V2j9ZQ3bCysYHKai18X91v5ri6S/R+Vm8=" crossorigin="anonymous">
+	
+</head>
+
+<body id="page">
+	
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile">
+					
+				<a href="https://jiekun.dev/posts/">Posts</a>
+				<a href="https://jiekun.dev/about-me/">About</a>
+
+				</nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/2014bduck" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:2014bduck" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a></span><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner thin animated fadeIn faster">
+		<h1>Redis 6.0 ACL基于Bitmap实现</h1>
+		<div class="content">
+			<p>Redis 6.0在4月30日就要和大家正式见面了，现在<a href="https://redis.io">redis.io</a>上已经提供了RC版本。在<a href="https://bytedance-hire.me/archives/235">之前的博客</a>中，已经介绍过权限控制新功能的一些用法，主要来源于作者Antirez在Redis Day上的一些演示。Antirez在最后提到，ACL的主要实现是基于Bitmap，因此对性能影响是可以忽略不计的。当时大致猜想了一下实现的思路，那么现在离发布已经很近了，作者也对ACL Logging进行了一些补充，不妨一起来看一下。</p>
+<h1 id="user结构">user结构<a href="#user结构" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>server.h中定义了对应的<code>user</code>结构保存用户的ACL信息，包括：</p>
+<ul>
+<li>用户名</li>
+<li>flag，主要是一些特殊状态，例如用户的启用与禁用、整体控制（所有命令可用与否、所有键可访问与否）、免密码等</li>
+<li>可用命令（allowed_commands），一个长整型数。每一位代表命令，如果用户允许使用这个命令则置位1</li>
+<li>可用子命令（allowed_subcommands），一个指针数组，值也为指针，数组与可用命令一一对应，值为一个SDS数组，SDS数组中存放的是这个命令可用的子命令</li>
+<li>用户密码</li>
+<li>可用的key patterns。如果这个字段为<code>NULL</code>，用户将不能使用任何Key，除非flag中指明特殊状态如<code>ALLKEYS</code></li>
+</ul>
+<pre><code>typedef struct user {
+    sds name;
+    uint64_t flags;
+    uint64_t allowed_commands[USER_COMMAND_BITS_COUNT/64];
+    sds **allowed_subcommands;
+    list *passwords;
+    list *patterns;
+} user;&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>补充一下一些新鲜的字段描述，<code>allowed_commands</code>实际上是一个（默认）长度为1024的位图，它的index对应各个命令的ID，在历史版本中命令结构<code>redisCommand</code>是通过名字（<code>name</code>）来查找的，<code>id</code>为这个版本中新增的属性，专门用于ACL功能。</p>
+<pre><code>truct redisCommand {
+    ...
+    int id;
+};&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p><code>user</code>这个结构对应的是<code>client</code>结构的”user”字段，熟悉Redis的同学应该对<code>client</code>也有所了解，就不再赘述了。</p>
+<h1 id="acl操作选读">ACL操作选读<a href="#acl操作选读" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>ACL的命令很多，总体而言都是围绕着<code>user</code>对象展开的，因此从中挑选了几个函数来看一下具体是如何操作<code>user</code>对象。</p>
+<p>一个需要铺垫的通用方法就是<code>ACLGetUserCommandBit</code>，ACL操作中都会涉及到获取用户的命令位图，<code>ACLGetUserCommandBit()</code>接收一个<code>user</code>结构和命令ID，根据ID定位出命令在<code>allowed_commands</code>中的位置，通过位运算返回<strong>用户是否有该命令权限</strong>。</p>
+<pre><code>int ACLGetUserCommandBit(user *u, unsigned long id) {
+    uint64_t word, bit;
+    if (ACLGetCommandBitCoordinates(id,&amp;word,&amp;bit) == C_ERR) return 0;
+    return (u-&gt;allowed_commands[word] &amp; bit) != 0;
+}&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>当用户进行Redis操作时，例如<code>set</code>操作，操作的命令会保存在<code>client</code>结构的<code>*cmd</code>字段中，<code>*cmd</code>字段就是一个<code>redisCommand</code>结构的指针，<code>redisCommand</code>结构包含了命令的<code>id</code>，因此在使用时通过<code>ACLGetUserCommandBit(u, cmd-&gt;id)</code>传入。</p>
+<h2 id="创建用户">创建用户<a href="#创建用户" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>创建用户分为两步，首先需要创建一个<code>user</code>，通过调用<code>ACLCreateUser(const char *name, size_t namelen)</code>实现，返回的是一个<code>user</code>对象的指针。在创建时，会在<code>server.h</code>定义的<code>Users</code>中查找是否有同名用户，也是本次功能新增的，因为旧版本中只有”default”用户。此时这个用户拥有名称，flag被初始化为禁用用户，其余的属性均为Null或空list等。</p>
+<p>然后，通过调用<code>ACLSetUser(user *u, const char *op, ssize_t oplen)</code>，调整传入用户<code>u</code>的对应属性，调整内容放在名为<code>op</code>操作的参数中。这个函数非常长，主要是针对各种不同的“操作” switch case处理，节选部分如下：</p>
+<pre><code>int ACLSetUser(user *u, const char *op, ssize_t oplen) {
+    if (oplen == -1) oplen = strlen(op);
+    /* Part1 - 处理用户状态(flag)操作 */
+    // 控制用户启用状态
+    if (!strcasecmp(op,&quot;on&quot;)) {
+        u-&gt;flags |= USER_FLAG_ENABLED;
+        u-&gt;flags &amp;= ~USER_FLAG_DISABLED;
+    } else if (!strcasecmp(op,&quot;off&quot;)) {
+        u-&gt;flags |= USER_FLAG_DISABLED;
+        u-&gt;flags &amp;= ~USER_FLAG_ENABLED;
+    // 控制全局键、命令等可用与否
+    } else if (!strcasecmp(op,&quot;allkeys&quot;) ||
+               !strcasecmp(op,&quot;~*&quot;))
+    {
+        u-&gt;flags |= USER_FLAG_ALLKEYS;
+        listEmpty(u-&gt;patterns);
+    }
+    ...
+
+
+    /* Part2 - 操作用户密码增删改查 */
+    // &gt; 和 &amp;lt; 等控制密码的改动删除等
+    else if (op[0] == '&gt;' || op[0] == '#') {
+        sds newpass;
+        if (op[0] == '&gt;') {
+            newpass = ACLHashPassword((unsigned char*)op+1,oplen-1);
+        }
+
+
+    /* Part3 - 操作用户可用命令的范围 */
+    else if (op[0] == '+' &amp;&amp; op[1] != '@') {
+        if (strchr(op,'|') == NULL) {
+            if (ACLLookupCommand(op+1) == NULL) {
+                errno = ENOENT;
+                return C_ERR;
+            }
+            unsigned long id = ACLGetCommandID(op+1);
+            // 根据传入的id参数设置对应allowed_commands位图的值
+            ACLSetUserCommandBit(u,id,1);
+            // 新调整的命令的子命令数组会被重置
+            ACLResetSubcommandsForCommand(u,id);
+        }
+    }&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>补充一下具体调用例子，其实Redis的默认用户就是按照这套流程创建的：初始化名为“default”的空白无权限用户，然后为这个用户设置上所有权限：</p>
+<pre><code>DefaultUser = ACLCreateUser(&quot;default&quot;,7);
+ACLSetUser(DefaultUser,&quot;+@all&quot;,-1);
+ACLSetUser(DefaultUser,&quot;~*&quot;,-1);
+ACLSetUser(DefaultUser,&quot;on&quot;,-1);
+ACLSetUser(DefaultUser,&quot;nopass&quot;,-1);&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><h2 id="拦截不可用命令键">拦截不可用命令/键<a href="#拦截不可用命令键" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>命令/键拦截操作非常简单：</p>
+<ul>
+<li>判断命令/键是否可用
+<ul>
+<li>如果不可用，ACL Log处理以及返回错误</li>
+</ul>
+</li>
+</ul>
+<h3 id="acl判断">ACL判断<a href="#acl判断" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>我们先看一下“不可用”的判断逻辑，然后再回到命令执行流程中看判断方法的调用。</p>
+<p>判断函数同样非常长，展示完后会进行总结：</p>
+<pre><code>int ACLCheckCommandPerm(client *c, int *keyidxptr) {
+    user *u = c-&gt;user;
+    uint64_t id = c-&gt;cmd-&gt;id;
+    // 命令相关的全局flag的检查，若满足则跳过后续部分
+    if (!(u-&gt;flags &amp; USER_FLAG_ALLCOMMANDS) &amp;&amp;
+        c-&gt;cmd-&gt;proc != authCommand)
+    {
+        // 即使当前命令没有在allowed_commands中，还要检查子命令是否可用
+        // 以免出现仅开放了部分子命令权限的情况
+        if (ACLGetUserCommandBit(u,id) == 0) {
+            ...
+            // 遍历子命令
+            long subid = 0;
+            while (1) {
+                if (u-&gt;allowed_subcommands[id][subid] == NULL)
+                    return ACL_DENIED_CMD;
+                if (!strcasecmp(c-&gt;argv[1]-&gt;ptr,
+                                u-&gt;allowed_subcommands[id][subid]))
+                    break; // 子命令可用，跳出循环
+                subid++;
+            }
+        }
+    }
+
+    // 键相关的全局flag检查，若满足则跳过后续部分
+    if (!(c-&gt;user-&gt;flags &amp; USER_FLAG_ALLKEYS) &amp;&amp;
+        (c-&gt;cmd-&gt;getkeys_proc || c-&gt;cmd-&gt;firstkey))
+    {
+        int numkeys;
+        // 先拿到当前要进行操作的Key
+        int *keyidx = getKeysFromCommand(c-&gt;cmd,c-&gt;argv,c-&gt;argc,&amp;numkeys);
+        for (int j = 0; j &amp;lt; numkeys; j++) {
+            listIter li;
+            listNode *ln;
+            listRewind(u-&gt;patterns,&amp;li);
+
+            // 检查当前user所有的关于Key的匹配Pattern
+            // 如果有任意命中则跳出，否则判定不可用
+            int match = 0;
+            while((ln = listNext(&amp;li))) {
+                sds pattern = listNodeValue(ln);
+                size_t plen = sdslen(pattern);
+                int idx = keyidx[j];
+                if (stringmatchlen(pattern,plen,c-&gt;argv[idx]-&gt;ptr,
+                                   sdslen(c-&gt;argv[idx]-&gt;ptr),0))
+                {
+                    match = 1;
+                    break;
+                }
+            }
+            if (!match) {
+                if (keyidxptr) *keyidxptr = keyidx[j];
+                getKeysFreeResult(keyidx);
+                return ACL_DENIED_KEY;
+            }
+        }
+        getKeysFreeResult(keyidx);
+    }
+    return ACL_OK;
+}&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>那么为了方便喜欢跳过代码的同学看结论：</p>
+<ul>
+<li>ACL限制围绕<code>user</code>的各个字段进行</li>
+<li>全局的flag优先级最高，例如设置为所有键可用，所有命令可用，会跳过后续的可用命令遍历和可用键Pattern匹配</li>
+<li>即使在allowed_commands位图中没有被置位，命令也可能可用，因为它是个子命令，而且命令只开放了部分子命令的使用权限</li>
+<li>键通过遍历所有定义了的Pattern检查，如果有匹配上说明可用</li>
+<li>先判断操作是否可用，再判断键（包括全局flag也在操作之后）是否可用，两种判断分别对应不同返回整数值：<code>ACL_DENIED_CMD</code>、<code>ACL_DENIED_KEY</code></li>
+</ul>
+<h3 id="命令执行流程中的调用">命令执行流程中的调用<a href="#命令执行流程中的调用" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>判断逻辑之后到何时调用这套判断。我们先来复习一下Redis如何执行命令：</p>
+<ul>
+<li>用户操作</li>
+<li>客户端RESP协议（Redis 6.0中有RESP3新协议记得关注）压缩发送给服务端</li>
+<li>服务端解读消息，存放至<code>client</code>对象的对应字段中，例如<code>argc</code>、<code>argv</code>等存放命令和参数等内容</li>
+<li><strong>执行前检查（各种执行条件）</strong></li>
+<li>执行命令</li>
+<li><strong>执行后处理（慢查询日志、AOF等）</strong></li>
+</ul>
+<p>目前执行命令的方法是在<code>server.c</code>中的<code>processCommand(client *c)</code>，传入<code>client</code>对象，执行，返回执行成功与否。我们节选其中关于ACL的部分如下：</p>
+<pre><code>int processCommand(client *c) {
+    ...
+    int acl_keypos;
+    int acl_retval = ACLCheckCommandPerm(c,&amp;acl_keypos);
+    if (acl_retval != ACL_OK) {
+        addACLLogEntry(c,acl_retval,acl_keypos,NULL);
+        flagTransaction(c);
+        if (acl_retval == ACL_DENIED_CMD)
+            addReplyErrorFormat(c,
+                &quot;-NOPERM this user has no permissions to run &quot;
+                &quot;the '%s' command or its subcommand&quot;, c-&gt;cmd-&gt;name);
+        else
+            addReplyErrorFormat(c,
+                &quot;-NOPERM this user has no permissions to access &quot;
+                &quot;one of the keys used as arguments&quot;);
+        return C_OK;
+    }
+    ...&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>在命令解析之后，真正执行之前，通过调用<code>ACLCheckCommandPerm</code>获取判断结果，如果判定不通过，进行以下操作：</p>
+<ul>
+<li>记录ACL不通过的日志，这个是作者在RC1之后新增的功能，还在Twitch上进行了直播开发，有兴趣的同学可以在Youtube上看到录播</li>
+<li>如果当前处于事务（MULTI）过程中，将client的<code>flag</code>置为<code>CLIENT_DIRTY_EXEC</code></li>
+<li>根据命令还是键不可用，返回给客户端不同的信息</li>
+</ul>
+<p>因此这次ACL功能影响的是执行命令前后的操作。</p>
+<h3 id="其他功能对acl的调用">其他功能对ACL的调用<a href="#其他功能对acl的调用" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>通过搜索可以发现一共有3处调用了<code>ACLCheckCommandPerm</code>方法：</p>
+<pre><code>/home/duck/study/redis/src/multi.c:
+  179  
+  180          int acl_keypos;
+  181:         int acl_retval = ACLCheckCommandPerm(c,&amp;acl_keypos);
+  182          if (acl_retval != ACL_OK) {
+  183              addACLLogEntry(c,acl_retval,acl_keypos,NULL);
+
+/home/duck/study/redis/src/scripting.c:
+  608      /* Check the ACLs. */
+  609      int acl_keypos;
+  610:     int acl_retval = ACLCheckCommandPerm(c,&amp;acl_keypos);
+  611      if (acl_retval != ACL_OK) {
+  612          addACLLogEntry(c,acl_retval,acl_keypos,NULL);
+
+/home/duck/study/redis/src/server.c:
+ 3394       * ACLs. */
+ 3395      int acl_keypos;
+ 3396:     int acl_retval = ACLCheckCommandPerm(c,&amp;acl_keypos);
+ 3397      if (acl_retval != ACL_OK) {
+ 3398          addACLLogEntry(c,acl_retval,acl_keypos,NULL);&lt;/code&gt;&lt;/pre&gt;
+
+</code></pre><p>形式都是大同小异，了解一下即可。总结一下需要判定ACL的位置：</p>
+<ul>
+<li>正常命令执行流程中</li>
+<li>MULTI事务执行过程中</li>
+<li>Lua脚本</li>
+</ul>
+<h1 id="总结">总结<a href="#总结" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>补充一张图来描述新增的ACL功能相关的结构（点击放大查看）：</p>
+<p><img src="%22./2020/03/Redis_ACL_user-1024x535.png" alt=""></p>
+<p>图中部分的表达可能与实际的数据结构有所差异，主要原因是代码理解和C语言的语法掌握不到位所致。</p>
+<p>阅读代码的过程中留意到，对命令的限制是通过Bitmap来实现的，而对Key的限制是通过特定Pattern来实现的。当对Key的限制Pattern数量特别多时，是否会因为匹配Pattern而对性能造成影响，例如超多次的<code>stringmatchlen()</code>执行。当然这一块内容似乎确实没有想到什么提升非常大的判断方式，后续也会继续关注ACL的相关改进。</p>
+
+		</div>
+	</main>
+
+	<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+		<p>&copy; 2020 <a href="https://jiekun.dev">杰坤</a> &#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+		<p>
+			Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> &#183; Theme <a href="https://github.com/Track3/hermit" target="_blank" rel="noopener">Hermit</a> &#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		</p>
+	</footer>
+
+
+
+	<script src="https://jiekun.dev/js/bundle.min.4a9a0ac3d2217822c7865b4161e6c2a71de1d70492264337755427898dd718f6.js" integrity="sha256-SpoKw9IheCLHhltBYebCpx3h1wSSJkM3dVQniY3XGPY=" crossorigin="anonymous"></script>
+	
+
+</body>
+
+</html>

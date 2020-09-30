@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>分布式 on Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/tags/%E5%88%86%E5%B8%83%E5%BC%8F/</link>
+    <description>Recent content in 分布式 on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Sat, 14 Mar 2020 07:58:10 +0000</lastBuildDate>
+    
+	<atom:link href="https://jiekun.dev/tags/%E5%88%86%E5%B8%83%E5%BC%8F/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Elasticsearch节点选举、分片及Recovery</title>
+      <link>https://jiekun.dev/posts/2020-03-14-elasticsearch%E8%8A%82%E7%82%B9%E9%80%89%E4%B8%BE%E5%88%86%E7%89%87%E5%8F%8Arecovery/</link>
+      <pubDate>Sat, 14 Mar 2020 07:58:10 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-03-14-elasticsearch%E8%8A%82%E7%82%B9%E9%80%89%E4%B8%BE%E5%88%86%E7%89%87%E5%8F%8Arecovery/</guid>
+      <description>隔了挺长一段时间没有更新，主要是因为近段时间忙于业务和刷题，想来刷题除了Po题解和Explanation也是没有什么特别之处，除非钻研得特别深入，所以（@#$%^&amp;amp;找理由）。
+关于Elasticsearch Elasticsearch其实官网的文档特别齐全，所以关于用法没有什么特别好写的，看博客不如RTFM。但是文档特别全的情况下，很多时候又缺少对一些具体细节的描述，一句话说就是不知其所以然。所以今天写的博客内容理应是无关使用的，不涉及命令与操作，大概会更有意义一些吧。
+概述 以Elasticsearch（下称ES）集群启动过程作为索引来展开，ES想要从Red转为Green，需要经历以下过程：
+ 主节点选举。集群启动需要从已知的活跃机器中选取主节点，因为这是PacificA算法的思想——主从模式，使用Master节点管理元信息，数据则去中心化。这块使用类似Bully的算法。 元信息选举。主节点确认后，需要从各节点的元信息中获取最新版本的元信息。由Gateway模块负责。 主副分片选举。由Allocation模块负责，各分片的多个副本中选出主分片和副分片，记录他们所属的节点，重构内容路由表。 恢复分片数据。因为启动可能包含之前没有来得及刷盘的数据，副分片也可能落后于新选出的主分片。  Bully算法与主节点选举 Bully算法 特地查了一下Bully的意思——“仗势欺人者，横行霸道者”，所以这个霸道选举算法如其名，简单暴力地通过选出ID最大的候选者来完成。在Bully算法中有几点假设：
+ 系统是处于同步状态的 进程任何时间都可能失效，包括在算法执行过程中 进程失败则停止，并通过重新启动来恢复 有能够进行失败检测的机制 进程间的消息传递是可靠的 每个进程知道自己的ID和地址，以及其他所有的进程ID和地址  它的选举通过以下几类消息：
+ 选举消息：用来声明一次选举 响应消息：响应选举消息 协调消息：胜利者向参与者发送胜利声明  设想以下场景，集群中存在ID为1、2、3的节点，通过Bully算法选举出了3为主节点，此时之前因为网络分区无法联系上的4节点加入，通过Bully算法成了新的主节点，后续失联的5节点加入，同样成为新主节点。这种不稳定的状态在ES中通过优化选举发起的条件来解决，当主节点确定后，在失效前不进行新一轮的选举。另外其他分布式应用一样，ES通过Quorum来解决脑裂的问题。
+Elasticsearch主节点选举 ES的选举与Bully算法有所出入，它选举的是ID最小的节点，当然这并没有太大影响。另外目前版本中ES的排序影响因素还有集群状态，对应一个状态版本号，排序中会优先将版本号高的节点放在最前。
+在选举过程中有几个概念：
+ 临时Master节点：某个节点认可的Master节点 activeMasters列表：不同节点了解到的其他节点范围可能不一样，因此他们可能各自认可不同的Master节点，这些临时Master节点的集合称为activeMasters列表 masterCanditates列表：所有满足Master资格（一般不满足例原因如配置了某些节点不能作为主节点）的节点列表 正式Master节点：票数足够时临时Master节点确立为真正Master节点  某个节点ping所有节点，获取一份节点列表，并将自己加入其中。通过这份列表查看当前活跃的Master列表，也就是每个节点认为当前的Master节点，加入activeMasters列表中。同样，通过过滤原始列表中不符合Master资格的节点，形成masterCandidates列表。
+如果activeMasters列表不为空，按照ES的（近似）Bully算法选举自己认为的Master节点；如果activeMasters列表空，从masterCandidates列表中选举，但是此时需要判断当前候选人数是否达到Quorum。ES使用具体的比较Master的逻辑如下：
+/** * compares two candidates to indicate which the a better master. * A higher cluster state version is better * 比较两个候选节点以得出更适合作为Master的节点。 * 优先以集群状态版本作为排序 * * @return -1 if c1 is a batter candidate, 1 if c2.</description>
+    </item>
+    
+    <item>
+      <title>短链生成系统设计——Counter&#43;ZooKeeper&#43;Base62</title>
+      <link>https://jiekun.dev/posts/2020-02-15-%E7%9F%AD%E9%93%BE%E7%94%9F%E6%88%90%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1-counterzookeeperbase62/</link>
+      <pubDate>Sat, 15 Feb 2020 05:02:40 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2020-02-15-%E7%9F%AD%E9%93%BE%E7%94%9F%E6%88%90%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1-counterzookeeperbase62/</guid>
+      <description>我们最后设计出的系统架构如图所示，如果想了解最后的结论可以跳到最后一小节。这个系统理论上可以支持大流量的生成请求，分布式部署便于扩展。当然在使用的存储方案性能上没有过多的讨论，因为这次的重点是解决“唯一”、“分布式”的ID问题。
+准备设计 设计一个系统之前，我们应该对系统的需求有所了解。对于短链系统，首先应该有以下思考：
+ 我们需要什么样的短链接，具体是多短？ 短链系统的请求量有多大？ 这是个单实例还是分布式系统？  首先我们可以做一些假设，例如参考Twitter有3亿访问/月，我们假设有它的10%，也就是3千万/月，平均每日100万。
+然后再来假设生成的短链，一般格式为domain/unique_id，例如s-url.com/D28CZ63，我们假设Unique ID的长度最多为7位。
+下面我们根据这些假设条件来完成这个系统的设计。
+数据量计算 根据上面的假设，首先每个原始URL可以按照2KB估算（2048字符），而短URL可以按照17Byte估算；我们可能还需要记录创建时间和过期时间，分别是7Byte。因此可以大致估算每行记录的大小应该为2.031KB。
+我们一共有30M月访问，30M * 2.031KB = 60.7GB，每月约60GB数据，因此一年内估算为0.7TB，5年3.6TB数据量。
+唯一ID算法 我们需要的是一个短的（7位）唯一ID生成方案。考虑Base62和MD5，Base62即使用0-9A-Za-z一共62个字符，MD5使用0-9a-z，一般输出长度为32的字符串。
+使用MD5的话，因为输出长度固定，我们可能需要截取其前7位来作为唯一ID，这种情况下，首先不同的输入可能会输出相同的MD5，其次，不同的MD5的前7位也可能是相同的。这样的话会产生不少的Collision，需要业务上进行保障。而使用MD5的好处，也恰恰是如果不同用户提交相同输入，那么可以得到相同的ID而不需要重复生成新的短链ID，但是同样需要业务进行处理和保证。
+对于Base62，每一位有62个可能字符串，7位则是62^7=3521614606208种组合，每秒产生1000个ID的话也足够使用110年。同时在短URL的要求上，Base62接受输入，产生的输出长度会根据输入变化，因此不需要进行截取，而只需要想办法将7位ID的所有情况消耗完毕就可以满足大部分场景的要求。Base62伪代码如下：
+f base62_encode(deci): s = &#39;0-9A-Za-z&#39; hash_str = &#39;&#39; while deci &amp;gt; 0: hash_str = s[deci % 62] + hash_str deci /= 62 return hash_str&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 存储选择 一般我们会考虑使用RDBMS比如MySQl，或者NoSQL比如Redis。在关系型数据库中，横向扩展会比较麻烦，例如MySQL进行分表和分库，我们可能需要多个实例，而扩展需要一开始就设想好，但是这一点在NoSQL中会相对比较容易，例如使用一个Redis的Cluster，或许向里面添加节点会相对容易一点。而使用NoSQL我们可能需要考虑数据的最终一致性，还有数据的持久化等问题。
+同时根据业务场景，从性能上考虑如果在高峰期有大量短链生成请求需要写入到MySQL或许表现会比Redis差一些。
+对于将“长URL-短URL”的映射关系写入数据库的步骤，重点是确保这个短URL没有被其他长URL使用过。如果使用过，那么你需要想办法使用新的字符串生成这个短URL。
+先来想一下，这是一个两步操作，首先查询是否存在，然后写入。如果这是个串行，那么是可行的。如果这是一个并行操作，很显然，你可能查询的时候发现没有存在这个短URL，而其他Session也查到了同样的结果，最后大家都认为可以写入，然后写入过程中晚写的一方就会出问题。
+在RDBMS中我们可能可以通过一些提供的方法来解决这个问题，例如INSERT_IF_NOT_EXISTS，但是在NoSQL中是没有这些方法的，因为它的设计是要实现最终一致性，所以不会提供这种支持。
+基于以上分析和假设的方案 我们需要确定的内容主要是：
+ 生成算法 存储选择  目前罗列出来的方案主要包括：MD5，Base62，以及MySQL和Redis。
+如果使用MD5的话，需要使用能够解决哈希冲突的RDBMS，因为这个步骤在NoSQL上处理比较麻烦，所以会有MD5+MySQL的组合。这套组合实际上性能并不太满足需求，并且在扩展上会相对另外一组组合难度大些。
+那么另外一种就是我们打算使用的方案：Base62+Redis。如何将7位Base62的所有情况都用尽，我们可以采用一个计数器，从0-62^7的数字转为Base62，作为短链ID使用。这个方案在单实例上是很容易的，并且可以保证冲突问题。那么如何实现它的可扩展性呢？
+在接入大流量的情况下，我们必然需要部署多点的ID生成服务，那么根据思路，我们需要对应的计数来转换成Base62的唯一ID，如果不同的服务拿到了同样的计数，那么就会生成相同的ID，造成冲突，且因为分布式的部署，仍然能够正常写入。
+因此现在问题转化为如何让不同的服务拿到正确的计数。因为总的数字段是已知的（0-62^7），一个很简单的方法就是我们提前将这些数字进行分段，每个ID生成服务都拿到不同段的数字本地使用。例如：
+0-100000 100001-200000 200001-300000 300001-400000 400001-500000 500001-600000 .</description>
+    </item>
+    
+    <item>
+      <title>Redis分布式锁的实现——RedLock</title>
+      <link>https://jiekun.dev/posts/2019-09-21-redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0-redlock/</link>
+      <pubDate>Sat, 21 Sep 2019 10:36:07 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2019-09-21-redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0-redlock/</guid>
+      <description>文章配图是RedLock Python实现的作者optimuspaul的头像。
+在分布式应用中经常会存在一些并发的问题，当多个请求想要处理同样的资源时，比如某个操作需要读取资源，根据读取结果进行修改，再写入，若这个步骤没有原子性，多个请求同时进行这样的操作，那就会变得非常混乱。通常来说可以依靠Redis来实现简单的分布式锁机制。
+Redis分布式锁SETNX 基于之前的描述，当多个请求需要处理同样的内容时，我们为了确保只有其中一个请求被执行，那么可以借助Redis生成一把锁。并发请求向Redis申请锁，申请成功的人占用本次操作的执行权。因为Redis单线程的特性，一次只处理一个请求，因此后续申请锁的操作都可以被排除。具体代码如下：
+t resource_name value ex 5 nx&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; 意味着：
+ 插入一个名为resource_name的键，它的值为value TTL 5秒 只有这个键不存在的情况下才能插入成功  因为nx参数的存在，过期时间内执行相同的操作不会返回1，意味着插入不成功（没申请到锁）。
+简易实现的问题 现在来看一下上面的设计有什么问题。
+超时 假设现在clinet1拿到了锁，在执行一段时间后超过了设定的ttl，锁过期，client2向Redis执行语句申请锁，因为锁不存在所以client2成功申请到了锁。此时client1仍在继续执行未完成的操作，相当于存在client1和client2共同操作资源的行为。
+对于这种问题，当前的锁机制是无法解决的，需要：
+ 避免在分布式中处理超长的任务 适当延长TTL并在执行完后及时对锁DEL 业务上进行处理 取消TTL，改为由client控制锁的DEL  对于最后一种方案，因为client控制锁的归还（del），如果在执行del命令时发生异常，redis服务器没有接收到，或者client出错，没有执行del，将会造成死锁，因为锁会持续存在，其他client不能够正常获取到锁。
+锁被其他线程释放 对于上面的设计，不安全的地方在于，若其他线程执行del resource_name操作，那么看起来可以立刻获取一把新锁，从而达到无视锁机制的效果。
+为此，在锁的设计上，value需要设计成一个unique值，在del操作前，业务上需要确认del的键的值是否匹配，若不匹配，应该取消del操作。
+因此，简单的分布式锁的使用应该修改为：
+t resource_name unique_value px 5000 nx&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt; Redis集群分布式锁RedLock 现在继续来考虑一些简易锁的异常问题：
+ client1申请到了锁，Redis记录了这把锁 Redis服务发生异常退出 Redis服务恢复，但是丢失数据（假设锁没有及时持久化） client2尝试申请锁，因为Redis没有锁存在，因此申请成功 client1、client2一起操作资源  由于服务的不可靠，简易锁的实现在特殊情况下会失效。为此，Redis作者提供了一种基于Redis集群的分布式锁——RedLock：</description>
+    </item>
+    
+  </channel>
+</rss>
