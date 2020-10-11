@@ -50,7 +50,7 @@ Redis的入口位于server.c下，`main()`方法流程如图所示。
         } else if (!strcasecmp(argv[0],"loadmodule") && argc >= 2) {
             queueLoadModule(argv[1],&argv[2],argc-2);
         } else if (!strcasecmp(argv[0],"sentinel")) {
-...</code></pre>
+...
 
 ```
 回到`main`方法的流程，Redis会开始打印启动的日志，执行`initServer()`方法，服务根据配置项，继续**为`server`对象初始化内容**，例如：
@@ -102,7 +102,7 @@ Redis中存在有两种类型的事件：**时间事件**、**文件事件**。
                     fired++;
                 }
             }
-...</code></pre>
+...
 
 ```
 在完成前面的处理后，Redis会继续调用`processTimeEvents()`处理时间事件。遍历整个时间事件链表，如果此时已经过了一段时间（阻塞等待或处理文件事件耗时），有时间事件发生，那么就调用对应时间事件的`timeProc`方法，将所有已经过时的时间事件处理掉：
@@ -116,7 +116,7 @@ Redis中存在有两种类型的事件：**时间事件**、**文件事件**。
             processed++;
             ...
         }
-...</code></pre>
+...
 
 ```
 如果执行了文件事件之后还没有到最近的时间事件发生点，那么本次`aeMain()`循环中将没有时间事件被执行，进入下一次循环。
@@ -141,7 +141,7 @@ static inline int connRead(connection *conn, void *buf, size_t buf_len) {
 static int connSocketRead(connection *conn, void *buf, size_t buf_len) {
     int ret = read(conn->fd, buf, buf_len);
     ...
-}</code></pre>
+}
 
 ```
 然后进入`processInputBuffer(c)`开始读取输入缓冲区中的消息，最后进入`processCommand(c)`开始处理输入的命令。
@@ -164,7 +164,7 @@ static inline int connWrite(connection *conn, const void *data, size_t data_len)
 static int connSocketWrite(connection *conn, const void *data, size_t data_len) {
     int ret = write(conn->fd, data, data_len);
     ...
-}</code></pre>
+}
 
 ```
 # Threaded I/O模型
@@ -199,7 +199,7 @@ void initThreadedIO(void) {
                              "The maximum number is %d.", IO_THREADS_MAX_NUM);
         exit(1);
     }
-...</code></pre>
+...
 
 ```
 Redis会进行一些常规检查，配置数是否符合开启多线程I/O的要求。
@@ -208,7 +208,7 @@ Redis会进行一些常规检查，配置数是否符合开启多线程I/O的要
 ...
     for (int i = 0; i &lt; server.io_threads_num; i++) {
         io_threads_list[i] = listCreate();
-...</code></pre>
+...
 
 ```
 创建一个长度为线程数的`io_threads_list`列表，列表的每个元素都是另一个列表L，L将会用来存放对应线程待处理的多个`client`对象。
@@ -216,7 +216,7 @@ Redis会进行一些常规检查，配置数是否符合开启多线程I/O的要
 ```
 ...
         if (i == 0) continue;
-...</code></pre>
+...
 
 ```
 对于主线程，初始化操作到这里就结束了。
@@ -234,7 +234,7 @@ Redis会进行一些常规检查，配置数是否符合开启多线程I/O的要
         io_threads[i] = tid;
     }
 }
-...</code></pre>
+...
 
 ```
 `io_threads_mutex`是一个互斥锁列表，`io_threads_mutex[i]`即第`i`个线程的锁，用于后续阻塞I/O线程操作，初始化之后将其暂时锁定。然后再对每个线程执行创建操作，`tid`即其指针，保存至`io_threads`列表中。新的线程会一直执行`IOThreadMain`方法，我们将它放到最后讲解。
@@ -250,7 +250,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
     if (processed == 0) return 0;
 
     if (tio_debug) printf("%d TOTAL READ pending clients\n", processed);
-...</code></pre>
+...
 
 ```
 同样，Redis会进行常规检查，是否启用线程化读写并且启用线程化读（只开启前者则只有写操作是线程化），以及是否有等待读取的客户端。
@@ -267,7 +267,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
         listAddNodeTail(io_threads_list[target_id],c);
         item_id++;
     }
-...</code></pre>
+...
 
 ```
 这里将`server.clients_pending_read`的列表转化为方便遍历的链表，然后将列表的每个节点（`*client`对象）以类似Round-Robin的方式分配个各个线程，线程执行各个client的读写顺序并不需要保证，命令抵达的先后顺序已经由`server.clients_pending_read/write`列表记录，后续也会按这个顺序执行。
@@ -275,7 +275,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
 ```
 ...
     io_threads_op = IO_THREADS_OP_READ;
-...</code></pre>
+...
 
 ```
 设置状态标记，标识当前处于多线程读的状态。由于标记的存在，Redis的Threaded I/O瞬时只能处于读或写的状态，不能部分线程读，部分写。
@@ -286,7 +286,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
         int count = listLength(io_threads_list[j]);
         io_threads_pending[j] = count;
     }
-...</code></pre>
+...
 
 ```
 为每个线程记录下各自需要处理的客户端数量。当不同线程读取到自己的pending长度不为0时，就会开始进行处理。注意`j`从1开始，意味着``的主线程的pending长度一直为0，因为主线程马上要在这个方法中同步完成自己的任务，不需要知道等待的任务数。
@@ -300,7 +300,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
         readQueryFromClient(c->conn);
     }
     listEmpty(io_threads_list[0]);
-...</code></pre>
+...
 
 ```
 主线程此时将自己要处理的client处理完。
@@ -314,7 +314,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
         if (pending == 0) break;
     }
     if (tio_debug) printf("I/O READ All threads finshed\n");
-...</code></pre>
+...
 
 ```
 陷入循环等待，`pending`等于各个线程剩余任务数之和，当所有线程都没有任务的时候，本轮I/O处理结束。
@@ -335,7 +335,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
         }
         processInputBuffer(c);
     }
-...</code></pre>
+...
 
 ```
 我们已经在各自线程中将`conn`中的内容读取至对应client的`client.querybuf`输入缓冲区中，所以可以遍历`server.clients_pending_read`列表，串行地进行命令执行操作，同时将`client`从列表中移除。
@@ -345,7 +345,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
     server.stat_io_reads_processed += processed;
 
     return processed;
-}</code></pre>
+}
 
 ```
 处理完成，将处理的数量加到统计属性上，然后返回。
@@ -362,7 +362,7 @@ void *IOThreadMain(void *myid) {
     snprintf(thdname, sizeof(thdname), "io_thd_%ld", id);
     redis_set_thread_title(thdname);
     redisSetCpuAffinity(server.server_cpulist);
-...</code></pre>
+...
 
 ```
 照常执行一些初始化内容。
@@ -384,7 +384,7 @@ void *IOThreadMain(void *myid) {
         serverAssert(io_threads_pending[id] != 0);
 
         if (tio_debug) printf("[%ld] %d to handle\n", id, (int)listLength(io_threads_list[id]));
-...</code></pre>
+...
 
 ```
 线程会检测自己的待处理的client列表长度，当等待队列长度大于0时往下执行，否则会到死循环起点。
@@ -406,7 +406,7 @@ void *IOThreadMain(void *myid) {
                 serverPanic("io_threads_op value is unknown");
             }
         }
-...</code></pre>
+...
 
 ```
 将`io_threads_list[i]`的客户端列表转化为方便遍历的链表，逐个遍历，借助`io_threads_op`标志判断当前是要执行多线程读还是多线程写，完成对自己要处理的客户端的操作。
@@ -418,7 +418,7 @@ void *IOThreadMain(void *myid) {
 
         if (tio_debug) printf("[%ld] Done\n", id);
     }
-}</code></pre>
+}
 
 ```
 清空自己要处理的客户端列表，并且将自己的待处理数量修改为0，结束本轮操作。
@@ -440,7 +440,7 @@ void *IOThreadMain(void *myid) {
 ```
 Server实例: AWS / m5.2xlarge / 8 vCPU / 32 GB
 Benchmark Client实例: AWS / m5.2xlarge / 8 vCPU / 32 GB
-Command: redis-benchmark -h 172.xx.xx.62 -p 6379 -c 100 -d 256 -t get,set -n 10000000 --threads 8</code></pre>
+Command: redis-benchmark -h 172.xx.xx.62 -p 6379 -c 100 -d 256 -t get,set -n 10000000 --threads 8
 
 ```
 ## Threaded I/O off vs. Threaded I/O on
