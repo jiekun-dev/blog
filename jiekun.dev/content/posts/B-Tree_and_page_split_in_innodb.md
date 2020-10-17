@@ -13,26 +13,22 @@ tags:
   - Page
 comments: true
 ---
+
 # Tree
-
 ## Binary Search Tree
-
 在二叉查找树中，左子树的键值总是小于根的键值，右子树的键值总是大于根的键值。
-
 ```
-6
+        6
        / \
       3   7
      / \   \
-    2   5   8</code></pre>
-
+    2   5   8
 ```
 利用这棵二叉树对各个节点进行查找，平均查找次数为`(1+2+3+3+2+3) / 6 = 2.3`次，比起[2，3，5，6，7，8]顺序查找次数`(1+2+3+4+5+6) / 6 = 3.3`次要少。
 
 二叉查找树还可以这样构建：
-
 ```
-2
+    2
      \
       3
        \
@@ -42,64 +38,55 @@ comments: true
            \
             7
              \
-              8</code></pre>
-
+              8
 ```
 这时查找的平均次数退化为顺序查找次数。
 
 因此如果想高性能地构造一棵二叉查找树，需要这棵二叉查找树是**平衡**的。
 
 ## Balance Tree
-
 平衡二叉树符合二叉查找树的定义，并且满足任何节点的两个子树高度最大差为1。
 
 ```
-6                     6
+        6                     6
        / \                  /   \
       3   7                3     8
      / \   \              / \   / \
     2   5   8            2   5 7   9
              \
-              9</code></pre>
-
+              9
 ```
+
 在插入新节点后，平衡二叉树节点7的左右子树高度差为2，需要通过一次左旋操作来让树重新保持平衡。
 
 但是有的情况可能需要旋转多次才能达到平衡。
-
 ```
-2             2             2               4    
+      2             2             2               4    
      / \           / \           / \             / \   
     1   5         1   5         1   4           2   5  
        / \           / \           / \         / \   \ 
       4   9         4   9         3   5       1   3   9
                    /                   \                  
-                  3                     9                 </code></pre>
-
+                  3                     9                 
 ```
 除了插入操作，还有更新和删除操作都会导致平衡树需要进行旋转。因此维护一棵平衡树是有一定开销的。
 
 # B+ Tree
-
 B+树是：
-
-  * 一棵n叉树(m-ary)
-  * 记录节点按照键值大小顺序存放在同一层叶子节点上，各叶子节点指针进行连接
+- 一棵n叉树(m-ary)
+- 记录节点按照键值大小顺序存放在同一层叶子节点上，各叶子节点指针进行连接
 
 ## B+ Tree插入操作
-
-  * Leaf Page未满、Index Page未满时，直接将记录插入到叶子节点
-  * Leaf Page满、Index Page未满时，拆分Leaf Page，将中间的节点（指的是Leaf Page几个节点的中间）放入到Index Page中，小于中间节点的记录放左边，大于中间节点的记录放右边
-  * Leaf Page满、Index Page满时，拆分Leaf Page，小于中间节点的记录放左边，大于中间节点的记录放右边；拆分Index Page，原理同上，此时树的高度+1
+- Leaf Page未满、Index Page未满时，直接将记录插入到叶子节点
+- Leaf Page满、Index Page未满时，拆分Leaf Page，将中间的节点（指的是Leaf Page几个节点的中间）放入到Index Page中，小于中间节点的记录放左边，大于中间节点的记录放右边
+- Leaf Page满、Index Page满时，拆分Leaf Page，小于中间节点的记录放左边，大于中间节点的记录放右边；拆分Index Page，原理同上，此时树的高度+1
 
 ## B+ Tree删除操作
-
-  * Leaf Page大于填充因子、Index Page大于填充因子，直接删除，如果该节点是Index Page节点，用该节点的右节点代替
-  * Leaf Page小于填充因子、Index Page大于填充因子，合并Leaf Page和它的兄弟节点，同时更新Index Page
-  * Leaf Page小于填充因子、Index Page小于填充因子，合并Leaf Page和它的兄弟节点，更新Index Page，合并Index Page和它的兄弟节点
+- Leaf Page大于填充因子、Index Page大于填充因子，直接删除，如果该节点是Index Page节点，用该节点的右节点代替
+- Leaf Page小于填充因子、Index Page大于填充因子，合并Leaf Page和它的兄弟节点，同时更新Index Page
+- Leaf Page小于填充因子、Index Page小于填充因子，合并Leaf Page和它的兄弟节点，更新Index Page，合并Index Page和它的兄弟节点
 
 ## 示例
-
 一棵高度为2，扇出值为5的B+树：
 
 ![](../2020/08/1.jpg)
@@ -169,61 +156,53 @@ mysql> show index from a_real_secret_table_for_testing_000087\G
          Null:                                                -- 是否索引列含有NULL值
    Index_type: BTREE                                          -- 索引类型，InnoDB均为BTREE
       Comment:
-Index_comment:</code></pre>
+Index_comment:
 
 ```
 ## Cardinality值
-
 Cardinality值与表的行数比应该尽可能接近1，否则说明这个索引列选择性小，可能需要考虑是否删除此索引，例如在用户表中的性别等。
 
 Cardinality值非常关键，优化器会根据这个值来判断是否使用这个索引。它代表索引中唯一值的数目的估计值，因此真实值在每次`INSERT`、`UPDATE`、`DELETE`操作时都会改变，InnoDB不可能在每次写操作时都更新该值，因为这样做代价太大了，所以Cardinality是一个估计值，如果需要更新Cardinality信息，可以使用`ANALYZE TABLE`命令。
 
 在InnoDB中，更新Cardinality值的策略为：
-
-  * 表中1/16的数据已经发生过变化
-  * stat\_modified\_counter > 2,000,000,000
+- 表中1/16的数据已经发生过变化
+- stat_modified_counter > 2,000,000,000
 
 在满足更新条件的情况下，InnoDB通过采样的方法统计Cardinality值：
-
-  * 取得B+树索引中叶子节点的数量，记为P
-  * 随机取所有叶子节点中的8（默认，`innodb_stats_sample_pages`配置）个叶子节点，统计每个页不同值的个数，记为N0, N1, … ,N7
-  * Cardinality预估值 = (N0 + N1 + … + N7) / 8 * P
+- 取得B+树索引中叶子节点的数量，记为P
+- 随机取所有叶子节点中的8（默认，`innodb_stats_sample_pages`配置）个叶子节点，统计每个页不同值的个数，记为N0, N1, ... ,N7
+- Cardinality预估值 = (N0 + N1 + ... + N7) / 8 * P
 
 因此，Cardinality不是一个精确值，同时，即使没有数据改动，每次统计得到的值也可能会不同。
 
 ## Online Schema Change
-
 在MySQL 5.5版本前，对索引的增删改这类DDL操作，MySQL的操作过程为：
-
-  * 创建一张新的临时表，表结构为`ALTER`命令定义的新结构
-  * 将原表数据导入临时表
-  * 删除原表
-  * 临时表重命名为原表
+- 创建一张新的临时表，表结构为`ALTER`命令定义的新结构
+- 将原表数据导入临时表
+- 删除原表
+- 临时表重命名为原表
 
 这意味着在对大表的索引进行添加删除操作时会需要很长时间，并且服务会对其他事务不可用。
 
 Facebook用PHP脚本实现OSC：
-
-  * init，验证表的主键、触发器、外键等是否满足
-  * createCopyTable，创建和原始表结构一样的新表
-  * alterCopyTable，对新表进行`ALTER`操作，如添加索引或列
-  * createDeltasTable，创建`deltas`表
-  * createTriggers，对原表创建`INSERT`、`UPDATE`、`DELETE`操作对触发器，触发操作产生的记录会被写到`deltas`表
-  * startSnpshotXact，开始OSC操作的事务
-  * seletTableIntoOutfile，将原表中的数据写入外部文件
-  * dropNCIndexs，导入数据到新表前，删除新表中的所有辅助索引
-  * loadCopyTable，将导出的文件导入到新表
-  * replayChanges，将OSC过程中原表的DML操作（保存在`deltas`表）的记录应用到新表中
-  * recreateNCIndexes，重新创建辅助索引
-  * replayChanges，再次进行DML日志的回放操作，这些操作是在重建辅助索引时产生的
-  * swapTables，原子的`RENAME`操作互换新旧表名
+- init，验证表的主键、触发器、外键等是否满足
+- createCopyTable，创建和原始表结构一样的新表
+- alterCopyTable，对新表进行`ALTER`操作，如添加索引或列
+- createDeltasTable，创建`deltas`表
+- createTriggers，对原表创建`INSERT`、`UPDATE`、`DELETE`操作对触发器，触发操作产生的记录会被写到`deltas`表
+- startSnpshotXact，开始OSC操作的事务
+- seletTableIntoOutfile，将原表中的数据写入外部文件
+- dropNCIndexs，导入数据到新表前，删除新表中的所有辅助索引
+- loadCopyTable，将导出的文件导入到新表
+- replayChanges，将OSC过程中原表的DML操作（保存在`deltas`表）的记录应用到新表中
+- recreateNCIndexes，重新创建辅助索引
+- replayChanges，再次进行DML日志的回放操作，这些操作是在重建辅助索引时产生的
+- swapTables，原子的`RENAME`操作互换新旧表名
 
 # 与页和B+ Tree相关的查询Case
-
 示例的查询会使用索引吗 / 会使用哪个索引 / 为什么？
-
-```
-Table Schema
+```sql
+-- Table Schema
 create table t (
   id int not null auto_increment comment "unique id",
   a int not null default 0 comment "column a",
@@ -263,5 +242,5 @@ mysql> select * from t limit 10;
 
 -- Query
 explain select * from t where a > ???;
-xplain select a from t where b > ???;</code></pre>
+explain select a from t where b > ???;
 ```
