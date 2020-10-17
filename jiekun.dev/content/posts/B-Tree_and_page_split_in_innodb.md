@@ -11,7 +11,7 @@ tags:
   - B-Tree
   - InnoDB
   - Page
-
+comments: true
 ---
 # Tree
 
