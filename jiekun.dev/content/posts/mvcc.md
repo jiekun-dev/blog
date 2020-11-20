@@ -11,7 +11,7 @@ comments: true
 > Paper Reading系列旨在分享著名Conference上发表的论文。VLDB（Very Large Data Bases）是数据库业界三大会议之一，其余两者为ICDE（The International Council for Open and Distance Education）和SIGMOD。
 
 # 关于Paper
-**《An Empirical Evaluation of In-Memory Multi-Version Concurrency Control》**出自2017年VLDB，主要贡献是对主流的MVCC技术要点进行了完整的梳理，并且在自研的**Peloton**数据库实现了所有Approaches，用于固定变量进行横向测试对比。
+**《An Empirical Evaluation of In-Memory Multi-Version Concurrency Control》** 出自2017年VLDB，主要贡献是对主流的MVCC技术要点进行了完整的梳理，并且在自研的**Peloton**数据库实现了所有Approaches，用于固定变量进行横向测试对比。
 
 有趣的是，论文最初投稿时使用的并不是这个标题。据Andrew Pavlo（论文作者之一，CMU Associate Professor）称他们给VLDB投稿时得到的Review反馈非常正面，除了要求改掉当时的标题：**《This is the Best Paper Ever on In-Memory Multi-Version Concurrency Control》**。
 
