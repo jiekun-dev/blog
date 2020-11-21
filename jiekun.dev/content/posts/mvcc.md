@@ -19,7 +19,7 @@ comments: true
 但是作者们还是想在这篇论文标题上得意洋洋一番，所以后续又以下图这些标题重新投递过两次。
 
 ![](../202012-mvcc/mvcc_paper.png)
-Fig 0: About The Paper
+Fig 1: About The Paper
 
 当然，这些主观性强的标题都是没办法发表的，最后他们也不得不改成了现在所见到的标题。
 
@@ -68,12 +68,12 @@ MVCC的实现主要可以分为四个关键模块设计：
 - `pointer`：指向同一行数据相邻（新/旧）版的指针，依靠指针，版本数据可以形成一个**单向**链表
 
 ![](../202012-mvcc/mvcc_tuple_metadata.png)
-Fig 1: MVCC Metadata Sample
+Fig 2: MVCC Metadata Sample
 
 MVCC中的MV是通过版本数据行的这些Metadata实现的，如果我们把模型稍微简化一下，只要记录有`begin-ts`和`end-ts`，我们就可以通过对比他们与当前事务的`TID`判断出哪个版本行才是事务可见的。而CC的实现，实际上也可以独立于MV存在，例如通过Timestamp Ordering或Two-phase Locking保持事务的串行性。
 
 ![](../202012-mvcc/mvcc_version_link.png)
-Fig 2: MVCC Tuple Linked List
+Fig 3: MVCC Tuple Linked List
 
 # 并发控制协议
 每个DBMS系统都需要有一套并发控制协议，这套协议需要做的事情有两个：
@@ -94,7 +94,7 @@ MVTO的实现关键在于借助事务的唯一标识符（TID，即时间戳）�
 当事务T对逻辑数据行A进行读操作时，DBMS需要根据当前的TID搜寻A合适的版本数据，使得TID落在begin-ts和end-ts之间。同时，事务T能读到的数据必须是`txn-id`为0或`TID`的，意味着数据行没有被其他事务加上写锁，因为MVTO不允许事务读取到未提交的改动。在读取A的版本数据Ax时，如果Ax的`read-ts`小于TID，则将该字段修改为TID。
 
 ![](../202012-mvcc/mvcc_mvto.png)
-Fig 3: MVCC Timestamp Ordering Concurrency Control
+Fig 4: MVCC Timestamp Ordering Concurrency Control
 
 在MVTO中，事务更新数据行的结果总是生成一个该数据行的最新版本。事务T在满足如下条件的时候，可以对版本`Bx`进行更新：
 - `Bx`版本数据没有被其他事务加上写锁
@@ -108,7 +108,7 @@ MV2PL仍然使用`begin-ts`和`end-ts`来决定版本记录是否可见。是否
 MV2PL使用`read-cnt`作为读锁，当寻找到对应版本行数据时，通过`read-cnt`加1可以给版本数据加读锁。同时，在版本数据持有写锁时，`read-cnt`不能进行递增。
 
 ![](../202012-mvcc/mvcc_mv2pl.png)
-Fig 4: MVCC Two-phase Locking Concurrency Control
+Fig 5: MVCC Two-phase Locking Concurrency Control
 
 同样，使用`txn-id`作为写锁，写锁决定版本数据是否能被修改：
 - 当版本数据的`txn-id`为0或当前TID
@@ -130,7 +130,7 @@ MVTO和MV2PL数据行结构都非常相似，在上面的简述中可以看出�
 Append-only将所有数据行的不同版本（包括master版本）都存放在同一块空间中（例如同一张表）。每当有逻辑数据更新时，DMBS在表中先请求一个数据行的空间，然后将最新版本的数据复制一份到新数据行空间中，最后将变更内容应用到这一行上。
 
 ![](../202012-mvcc/mvcc_append_only.png)
-Fig 5: MVCC Append-only Storage
+Fig 6: MVCC Append-only Storage
 
 前面说过，因为锁的关系，没有办法维护一个双向链表的版本数据，那么版本数据的方向就变得非常重要：
 - 如果版本数据是从老到新（O2N）排列的，那么每次获取较新的版本数据（大部分场景都是如此）都需要遍历整个链表
@@ -141,7 +141,7 @@ Fig 5: MVCC Append-only Storage
 而在N2O的方案中，也有方法可以减少变更起点的次数，就是采用一个映射entry代表链表的起点，这样当新版本数据产生时，只有entry指向的地址需要改变，而指向entry的索引则可以不发生变更。这种优化在辅助索引非常多的表上有很好的提升，但是会需要额外的存储空间。
 
 ![](../202012-mvcc/mvcc_o2n_n2o.png)
-Fig 5: MVCC O2N vs. N2O
+Fig 7: MVCC O2N vs. N2O
 
 由于Append-only存储的是完整的数据行，即使数据行中只有少量字段发生了变更。这种行为在表中带有非内联数据（即数据不记录在tuple内，如BLOB、TEXT）时会导致引入大量的重复且大体积数据。其中一个优化方式是允许不同的版本数据行指向同一个BLOB、TEXT对象，并且增加`cnt`元数据来记录引用次数，便于GC处理。
 
@@ -151,7 +151,7 @@ Time-Travel和Append-only的存储很相似，版本数据都是链表记录数�
 在更新逻辑行时，DBMS将master版本的数据复制进“Time-Travel”表中，然后原地更新主表中的数据行，形成新的版本数据。
 
 ![](../202012-mvcc/mvcc_time_travel.png)
-Fig 6: MVCC Time-Travel Storage
+Fig 8: MVCC Time-Travel Storage
 
 Time-Travel的设计可以避免索引上的指针频繁更新，因为他们始终指向主表上的master版本数据，并且数据原地更新，地址也没有发生变更。
 
@@ -163,7 +163,7 @@ Time-Travel的设计可以避免索引上的指针频繁更新，因为他们始
 在更新逻辑数据行时，DMBS同样先申请“delta”空间的位置，然后将被改动的属性的老版本数据写入其中，而不是完整的tuple行。最后DMBS在主表上原地更新master版本的数据。
 
 ![](../202012-mvcc/mvcc_delta.png)
-Fig 7: MVCC Delta Storage
+Fig 9: MVCC Delta Storage
 
 Delta存储在记录版本数据时表现非常优秀，当UPDATE只操作了数据行的子集时，减少了内存的分配占用，也没有外联数据版本体积过大的问题。然而，在重度读的场景中，为了获得对应的版本数据，DMBS必须从各个字段的版本数据链中获取到对应版本的字段值，再进行拼凑，这就带来了一定的额外开销。
 
@@ -190,7 +190,7 @@ GC可以分作3个步骤：
 Background Vacuuming（VAC）使用一个后台线程，周期性地扫描数据库以寻找过时的版本。这种方案最简单的实现就是遍历版本数据链表，但是这样做的GC性能很难在数据量增长时同步提升，我们需要减少无目的的遍历，或者让遍历范围能缩小下来。一种优化的方案是让DBMS维护一个bitmap，映射包含改动过数据的block，这样后台的vacuum线程就可以跳过上一次GC以来没有发生数据变更的block。
 
 ![](../202012-mvcc/mvcc_tuple_gc.png)
-Fig 8: MVCC Tuple-level GC
+Fig 10: MVCC Tuple-level GC
 
 Cooperative Cleaning（COOP）的思路是改用worker线程进行GC。寻找版本数据时，worker线程也需要跟着版本链表进行遍历，在遍历过程中，如果发现过时版本数据，就直接进行清理。这种方案会存在两个问题：
 - 只支持O2N的版本数据记录方式，否则worker线程每次遍历的都是靠前的活跃版本数据，找到目标后就停止，不能发现过时数据
@@ -200,7 +200,7 @@ Cooperative Cleaning（COOP）的思路是改用worker线程进行GC。寻找版
 事务维度的GC一般通过事务记录它读写数据行的集合，DBMS需要监控集合中的版本数据是否都过时了。当某个事务的版本数据集合对所有的活跃事务都不可见时，就可以将这个集合中的版本数据都进行GC清理。
 
 ![](../202012-mvcc/mvcc_tx_gc.png)
-Fig 8: MVCC Transaction-level GC
+Fig 11: MVCC Transaction-level GC
 
 
 ## 小结
