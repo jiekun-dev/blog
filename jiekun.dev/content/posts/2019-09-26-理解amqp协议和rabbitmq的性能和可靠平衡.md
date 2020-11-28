@@ -10,6 +10,7 @@ categories:
 tags:
   - AMQP
   - RabbitMQ
+archieved: Arc'd
 
 ---
 # 前言

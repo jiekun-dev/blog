@@ -10,6 +10,7 @@ categories:
 tags:
   - ES分片
   - 倒排索引
+archieved: Arc'd
 
 ---
 # Elasticsearch在生产中充当的角色

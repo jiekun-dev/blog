@@ -5,8 +5,7 @@ type: post
 date: 2020-09-20T05:16:52+00:00
 excerpt: Redis可以轻松支撑100k+ QPS，离不开基于Reactor模型的I/O Multiplexing，In-memory操作，以及单线程执行命令避免竞态消耗。尽管性能已经能满足大多数应用场景，但是如何继续在迭代中继续优化，以及在多核时代利用上多线程的优势，也是大家关注的重点。我们知道性能优化在系统资源层面可以从I/O以及CPU上入手，对于Redis而言，其功能不过度依赖CPU计算能力，即不是CPU密集型的应用，而In-memory的操作也绕开了通常会拖慢性能的磁盘I/O，所以在Redis 6.0版本中，作者Antirez从网络I/O入手，引入Threaded I/O辅助读写，在一些场景下实现了大幅度的性能提升。本文将介绍Redis的事件模型，分析Threaded I/O是如何帮助提升性能，以及其实现的原理。
 featured_image: /wp-content/uploads/2020/06/Redis.png
-categories:
-  - 消息队列/中间件
+category: Middleware
 comments: true
 
 ---

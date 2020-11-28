@@ -17,6 +17,7 @@ tags:
   - Redis
   - RedLock
   - 分布式
+archieved: Arc'd
 
 ---
 ![](../2019/09/redlock-py.png")

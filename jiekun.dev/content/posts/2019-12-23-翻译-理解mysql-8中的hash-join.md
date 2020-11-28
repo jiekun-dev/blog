@@ -17,6 +17,7 @@ categories:
 tags:
   - Hash
   - MySQL
+archieved: Arc'd
 
 ---
 <blockquote class="wp-block-quote">

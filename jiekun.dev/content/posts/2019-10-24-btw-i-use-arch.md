@@ -15,6 +15,7 @@ tags:
   - ArchLinux
   - AwesomeWM
   - Linux
+archieved: Arc'd
 
 ---
 rm -rf当然是假的啊，怎么可能失败？

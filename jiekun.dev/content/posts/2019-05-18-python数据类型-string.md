@@ -13,6 +13,7 @@ rank_math_internal_links_processed:
   - 1
 categories:
   - Python
+archieved: Arc'd
 
 ---
 又隔了好久好久没有写博客，过完了春节元宵清明五一一大堆节日，今年就没了一半了，所以需要抓紧时间充实一下。立好Flag以后看书一定要随时笔记不然厚厚的书翻起来跟天书一样难找。

@@ -30,6 +30,7 @@ googleAnalytics = "G-Q11C6RN8VS"
   dateformShort   = "Jan 2"
   dateformNum     = "2006-01-02"
   dateformNumTime = "2006-01-02 15:04 -0700"
+  dateformMonth   = "Jan, 2006"
 
   # Metadata mostly used in document's head
   # description = ""
@@ -69,7 +70,11 @@ googleAnalytics = "G-Q11C6RN8VS"
 
   [[params.social]]
     name = "email"
-    url = "mailto:2014bduck@gmail.com"
+    url = "mailto:jiekun.dev@gmail.com"
+
+  [[params.social]]
+    name = "qq"
+    url = "http://wpa.qq.com/msgrd?v=3&uin=136986560&site=qq&menu=yes"
 
 [menu]
 

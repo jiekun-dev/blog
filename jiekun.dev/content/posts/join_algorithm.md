@@ -5,8 +5,7 @@ type: post
 date: 2020-08-08T08:54:53+00:00
 excerpt: Join查询的几种基础算法
 featured_image: /wp-content/uploads/2020/08/join_algorithm.png
-categories:
-  - 数据库
+category: Database
 comments: true
 ---
 
