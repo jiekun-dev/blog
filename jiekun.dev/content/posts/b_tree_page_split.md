@@ -6,11 +6,8 @@ date: 2020-08-05T12:58:10+00:00
 excerpt: 介绍B树与B+树索引在InnoDB中的分裂、合并操作
 featured_image: /wp-content/uploads/2020/08/Btree.png
 category: Database
-tags:
-  - B-Tree
-  - InnoDB
-  - Page
 comments: true
+archieved: false
 ---
 
 # Tree

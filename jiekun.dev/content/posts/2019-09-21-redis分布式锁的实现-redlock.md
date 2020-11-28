@@ -13,11 +13,7 @@ rank_math_internal_links_processed:
   - 1
 categories:
   - 最佳实践
-tags:
-  - Redis
-  - RedLock
-  - 分布式
-archieved: Arc'd
+archieved: true
 
 ---
 ![](../2019/09/redlock-py.png")

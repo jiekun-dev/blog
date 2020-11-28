@@ -11,11 +11,7 @@ rank_math_internal_links_processed:
   - 1
 categories:
   - 消息队列/中间件
-tags:
-  - Redis
-  - 缓存
-  - 预热
-archieved: Arc'd
+archieved: true
 
 ---
 ## 业务背景

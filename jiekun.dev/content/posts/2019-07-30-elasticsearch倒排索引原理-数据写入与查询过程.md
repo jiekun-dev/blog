@@ -7,10 +7,7 @@ excerpt: 'Elasticsearch的倒排索引原理 & 基于Lucene索引的分片文档
 featured_image: /wp-content/uploads/2019/08/lucene_index.png
 categories:
   - Elasticsearch
-tags:
-  - ES分片
-  - 倒排索引
-archieved: Arc'd
+archieved: true
 
 ---
 # Elasticsearch在生产中充当的角色

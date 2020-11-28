@@ -13,12 +13,7 @@ rank_math_internal_links_processed:
   - 1
 categories:
   - 最佳实践
-tags:
-  - Django
-  - Mock
-  - Python
-  - QuerySet
-archieved: Arc'd
+archieved: true
 
 ---
 # 问题

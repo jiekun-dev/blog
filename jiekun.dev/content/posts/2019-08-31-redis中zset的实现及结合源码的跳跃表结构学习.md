@@ -7,13 +7,7 @@ excerpt: 了解Redis使用的zset实现，为什么zset的成员查找为O(1)，
 featured_image: /wp-content/uploads/2019/09/skiplist_cover.jpg
 categories:
   - 消息队列/中间件
-tags:
-  - Redis
-  - skiplist
-  - zset
-  - 有序集合
-  - 跳跃表
-archieved: Arc'd
+archieved: true
 
 ---
 ## O(1)的skiplist成员查找？

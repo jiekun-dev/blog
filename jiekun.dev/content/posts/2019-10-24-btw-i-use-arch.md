@@ -11,11 +11,7 @@ excerpt: |
 featured_image: /wp-content/uploads/2019/10/001-zhujiekun-screens.jpg
 categories:
   - 最佳实践
-tags:
-  - ArchLinux
-  - AwesomeWM
-  - Linux
-archieved: Arc'd
+archieved: true
 
 ---
 rm -rf当然是假的啊，怎么可能失败？

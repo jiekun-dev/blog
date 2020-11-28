@@ -13,11 +13,7 @@ rank_math_internal_links_processed:
   - 1
 categories:
   - 消息队列/中间件
-tags:
-  - ACL
-  - Redis
-  - 源码
-archieved: Arc'd
+archieved: true
 
 ---
 Redis 6.0在4月30日就要和大家正式见面了，现在[redis.io][1]上已经提供了RC版本。在[之前的博客][2]中，已经介绍过权限控制新功能的一些用法，主要来源于作者Antirez在Redis Day上的一些演示。Antirez在最后提到，ACL的主要实现是基于Bitmap，因此对性能影响是可以忽略不计的。当时大致猜想了一下实现的思路，那么现在离发布已经很近了，作者也对ACL Logging进行了一些补充，不妨一起来看一下。

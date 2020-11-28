@@ -14,10 +14,7 @@ rank_math_internal_links_processed:
 categories:
   - 数据库
   - 翻译
-tags:
-  - Hash
-  - MySQL
-archieved: Arc'd
+archieved: true
 
 ---
 <blockquote class="wp-block-quote">

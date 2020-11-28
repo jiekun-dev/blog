@@ -13,7 +13,7 @@ rank_math_internal_links_processed:
   - 1
 categories:
   - 最佳实践
-archieved: Arc'd
+archieved: true
 
 ---
 ## 什么是SYN Flood

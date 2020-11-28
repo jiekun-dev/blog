@@ -13,13 +13,7 @@ rank_math_internal_links_processed:
   - 1
 categories:
   - Elasticsearch
-tags:
-  - Elasticsearch
-  - 分布式
-  - 分片
-  - 恢复
-  - 选举
-archieved: Arc'd
+archieved: true
 
 ---
 隔了挺长一段时间没有更新，主要是因为近段时间忙于业务和刷题，想来刷题除了Po题解和Explanation也是没有什么特别之处，除非钻研得特别深入，所以（@#$%^&找理由）。

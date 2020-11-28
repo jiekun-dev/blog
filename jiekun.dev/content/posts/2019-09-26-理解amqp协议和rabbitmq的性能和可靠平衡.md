@@ -7,10 +7,7 @@ excerpt: 快速了解AMQP协议的基本知识，同时协议（以及RabbitMQ�
 featured_image: /wp-content/uploads/2019/09/AMQP.jpg
 categories:
   - 消息队列/中间件
-tags:
-  - AMQP
-  - RabbitMQ
-archieved: Arc'd
+archieved: true
 
 ---
 # 前言
