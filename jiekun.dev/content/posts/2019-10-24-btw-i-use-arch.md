@@ -44,7 +44,7 @@ ArchLinux是Linux的一个发行版。
 CPU.........: Intel(R) Core(TM) i3-4150 CPU @ 3.50GHz
 MOTHERBOARD.: B85M-DS3H-A Gigabyte Technology Co., Ltd.
 MEMORY......: 8GB
-STORAGE.....: 120GB SSD</code></pre>
+STORAGE.....: 120GB SSD
 
 ```
 ## Installation Note
@@ -105,7 +105,7 @@ grub-install /dev/sda
 grub-mkconfig -o /boot/grub/grub.cfg
 
 exit
-boot</code></pre>
+boot
 
 ```
 ### Troubleshooting
@@ -146,7 +146,7 @@ xinit允许用户手动启动一个Xorg display server。通常来说就用用�
 基于上述内容，开始配置之前需要安装：
 
 ```
-udo pacman -S xorg xorg-xinit awesome</code></pre>
+udo pacman -S xorg xorg-xinit awesome
 
 ```
 当然，除了三件套以外还有一些相关的包，例如字体相关包，awesome默认设置了nano为编辑器，因此需要安装nano，默认设置了xtrem为终端，因此还需要安装xtrem等。
@@ -161,7 +161,7 @@ xinit配置在`/etc/X11/xinit/xinitrc`文件，复制一份到家目录下并更
 
 ```
 /etc/X11/xinit/xinitrc ~/.xinitrc
-mv /etc/X11/xinit/xinitrc /etc/X11/xinit/xinitrc.bak</code></pre>
+mv /etc/X11/xinit/xinitrc /etc/X11/xinit/xinitrc.bak
 
 ```
 这样xinit运行（startx)的时候会读取家目录下的配置。
@@ -219,7 +219,7 @@ if [ -d /etc/X11/xinit/xinitrc.d ] ; then
  unset f
 fi
 
-xec awesome</code></pre>
+xec awesome
 
 ```
 默认示例配置中最后一段打开了3个不同大小的小窗口，其他内容直接省略，只需要保留`# start some nice programs`后的内容，运行程序修改为awesome：
@@ -235,7 +235,7 @@ if [ -d /etc/X11/xinit/xinitrc.d ] ; then
  unset f
 fi
 
-xec awesome</code></pre>
+xec awesome
 
 ```
 xinit配置完毕，执行startx即可运行配置中的内容。
@@ -254,7 +254,7 @@ awesome配置分为两部分：
 ```
 mkdir ~/.config
 mkdir ~/.config/awesome
- /etc/xdg/awesome/rc.lua ~/.config/awesome/rc.lua</code></pre>
+ /etc/xdg/awesome/rc.lua ~/.config/awesome/rc.lua
 
 ```
 #### theme配置
@@ -267,7 +267,7 @@ mkdir ~/.config/awesome
     将默认的配置复制到家目录下：
 
 ```
-usr/share/awesome/* ~/.config/awesome/</code></pre>
+usr/share/awesome/* ~/.config/awesome/
 
 ```
 #### 具体配置及效果示例
@@ -279,37 +279,37 @@ awesome默认使用xtrem作为终端，没有安装的情况下进入桌面是�
 sudo pacman -S rxvt-unicode
 
 # 修改rc.lua
-vim ~/.config/awesome/rc.lua</code></pre>
+vim ~/.config/awesome/rc.lua
 
 ```
 搜索关键词terminal并将：
 
 ```
-terminal     = "xtrem"</code></pre>
+terminal     = "xtrem"
 
 ```
 修改为：
 
 ```
-terminal     = "urxvtc"</code></pre>
+terminal     = "urxvtc"
 
 ```
 awesome默认主题为default，并且提供了几个内置主题，将主题修改为sky：
 
 ```
-vim ~/.config/awesome/rc.lua</code></pre>
+vim ~/.config/awesome/rc.lua
 
 ```
 搜索关键词theme并将：
 
 ```
-utiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")</code></pre>
+utiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
 
 ```
 修改为：
 
 ```
-utiful.init("/home/duck/.config/awesome/themes/sky/theme.lua")</code></pre>
+utiful.init("/home/duck/.config/awesome/themes/sky/theme.lua")
 
 ```
 原代码使用lib中的gears.filesystem.get\_themes\_dir()方法拿到主题文件夹路径，正确配置之后可以直接修改主题名即可，这里示例使用了绝对路径。
@@ -317,25 +317,25 @@ utiful.init("/home/duck/.config/awesome/themes/sky/theme.lua")</code></pre>
 主题默认壁纸在主题文件夹内，修改壁纸为自定义的图片：
 
 ```
-vim ~/.config/awesome/themes/sky/theme.lua</code></pre>
+vim ~/.config/awesome/themes/sky/theme.lua
 
 ```
 搜索关键词wallpaper并将：
 
 ```
-theme.wallpaper = themes_path .. "sky/sky-background.png"</code></pre>
+theme.wallpaper = themes_path .. "sky/sky-background.png"
 
 ```
 修改为：
 
 ```
-utiful.init("/home/duck/.config/awesome/themes/sky/my_background.png")</code></pre>
+utiful.init("/home/duck/.config/awesome/themes/sky/my_background.png")
 
 ```
 完成之后启动awesomeWM：
 
 ```
-tartx</code></pre>
+tartx
 
 ```
 即可看到效果。
@@ -536,7 +536,7 @@ if [ -f  ${config_directory}/custom.cfg ]; then
 elif [ -z "${config_directory}" -a -f  $prefix/custom.cfg ]; then
   source $prefix/custom.cfg;
 fi
-### END /etc/grub.d/41_custom ###</code></pre>
+### END /etc/grub.d/41_custom ###
 
 ```
 ## Kernel
@@ -544,13 +544,13 @@ fi
 内核负责根据grub.cfg中声明的`root='hd0,msdos1'`挂载文件系统，并且执行`/sbin/init`的程序。因为init是第一个被Linux内核执行的程序，所以`ps aux | grep init`的pid为1。
 
 ```
-t         1  0.0  0.0 165304 10528 ?        Ss   11:45   0:13 /sbin/init splash</code></pre>
+t         1  0.0  0.0 165304 10528 ?        Ss   11:45   0:13 /sbin/init splash
 
 ```
 grub.cfg中有一行：
 
 ```
-initrd  /boot/initramfs-linux.img</code></pre>
+initrd  /boot/initramfs-linux.img
 
 ```
 initrd即初始化RAM Disk，使用initramfs-linux.img镜像，作为临时的root文件系统，直到启动后真正的文件系统挂载。initrd同时还包括了一些必要的驱动，让内核可以获取分区和硬件等信息。
@@ -575,7 +575,7 @@ Linux启动时，你会看到各种服务启动，比如“starting sendmail …
 
 ```
 # Run level ?
- /etc/rc.d/rc?.d/</code></pre>
+ /etc/rc.d/rc?.d/
 
 ```
 在目录下有“S”和“K”开头的程序，S代表startup的时候运行，K代表kill的时候运行。
@@ -810,7 +810,7 @@ int main(int argc, char **argv)
     } while ((flags & FREE_REPEAT));
 
     exit(EXIT_SUCCESS);
-}</code></pre>
+}
 
 ```
 可以观察到命令主要做了几件事：
@@ -939,7 +939,7 @@ nextline:
       kb_main_available = kb_main_free;
 #endif /* linux */
   }
-}</code></pre>
+}
 
 ```
 主要进行了：
@@ -965,7 +965,7 @@ FILE\_TO\_BUF方法具体没有找到定义，在sysinfo.c中有一段相关注�
     _exit(103);                     \
     }                               \
     buf[local_n] = '\0';                    \
-}while(0)</code></pre>
+}while(0)
 
 ```
 可以看到FILE\_TO\_BUF()主要进行了：

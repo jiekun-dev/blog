@@ -25,7 +25,7 @@ tags:
 在开发过程中，整个数据流向为：
 
 ```
-爬虫抓取数据->数据中端进行数据清洗->入库Web端定义的业务表</code></pre>
+爬虫抓取数据->数据中端进行数据清洗->入库Web端定义的业务表
 
 ```
 由于整个流程比较长，而且由于爬虫开发的不稳定性以及数据统计的复杂度，完整的开发往往不能完全异步进行，因为最后面向业务的Web端需要等待清洗入库的数据进行测试。
@@ -70,7 +70,7 @@ def charfield_generator(min_length=0, max_length=20, choices=[]):
     if not choices:
         return ''.join(choice(string.ascii_letters) for i in range(randint(min_length, max_length)))
     else:
-        return choice(choices)</code></pre>
+        return choice(choices)
 
 ```
 #### IntegerField
@@ -82,7 +82,7 @@ f integerfield_generator(min_value, max_value, choices=[]):
     if not choices:
         return randint(min_value, max_value)
     else:
-        return choice(choices)</code></pre>
+        return choice(choices)
 
 ```
 #### TextField
@@ -96,7 +96,7 @@ DatetimeField生成对应的时间对象，考虑生成一个大于起始时间(
 ```
 f datetime_generator(start_dt=datetime.now(), end_dt=datetime.now()):
     dt_delta = end_dt - start_dt
-    return start_dt + timedelta(seconds=randint(0, 24 * 3600 * dt_delta.days + dt_delta.seconds))</code></pre>
+    return start_dt + timedelta(seconds=randint(0, 24 * 3600 * dt_delta.days + dt_delta.seconds))
 
 ```
 简单执行一下看看第一版效果：
@@ -107,7 +107,7 @@ for i in range(10):
     print(charfield_generator())
     print(integerfield_generator(0, 1000))
     print(datetime_generator(datetime.strptime('2018-09-01 00:00:00', '%Y-%m-%d %H:%M:%S')))
-    print('-------------- GENERATED SET %s -------------- ' % i, '\n')</code></pre>
+    print('-------------- GENERATED SET %s -------------- ' % i, '\n')
 
 ```
 ```
@@ -171,7 +171,7 @@ oIDFdOUKs
 2018-09-21 19:59:06
 -------------- GENERATED SET 9 --------------  
 
-[Finished in 0.2s]</code></pre>
+[Finished in 0.2s]
 
 ```
 有了模拟数据之后，需要做几件事：
@@ -186,7 +186,7 @@ f model_generator(models, length):
     : length int :
     : rtype QuerySet List :
     """
-    return []</code></pre>
+    return []
 
 ```
 # 最佳实践

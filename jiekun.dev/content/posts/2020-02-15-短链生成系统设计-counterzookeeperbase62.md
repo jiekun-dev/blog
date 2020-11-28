@@ -56,7 +56,7 @@ f base62_encode(deci):
     while deci > 0:
         hash_str = s[deci % 62] + hash_str
         deci /= 62
-    return hash_str</code></pre>
+    return hash_str
 
 ```
 ## 存储选择
@@ -95,7 +95,7 @@ f base62_encode(deci):
 300001-400000
 400001-500000
 500001-600000
-...</code></pre>
+...
 
 ```
 当服务的计数消耗完毕后，继续向计数分配的服务请求下一段可用的数字。例如目前有3个ID生成服务A、B、C，在最初的分配中A拿到了0-100000号码段，B拿到了100001-200000，C拿到了200001-300000。当A使用完之后，询问分配服务，拿到下一段300001-400000。如此即可解决计数器分布式部署的问题。
@@ -131,7 +131,7 @@ data = json.dumps({
 zk.create("/url-shortener/range-", value=data, sequence=True)
 
 children = zk.get_children("/url-shortener")
-int(children)</code></pre>
+int(children)
 
 ```
 连接上本地的ZK，如果目录已经存在，说明已经完成过初始化了，直接结束。
@@ -182,7 +182,7 @@ def get_range():
     return
 
 if __name__ == '__main__':
-    get_range()</code></pre>
+    get_range()
 
 ```
 取号逻辑也很简单，暂时还没有完善异常处理。检查指定的Path下是否有znode可用，如果没有的话可能是异常或号段用完，对应处理一下即可。然后获取znode的值，作为自己目前的号段范围。
@@ -195,7 +195,7 @@ if __name__ == '__main__':
 
 ```
 [zk: localhost:2181(CONNECTED) 121] ls /url-shortener-lock
-[1f5cda205022418c8b7db432a667dfd5__lock__0000000342, 9dffb44d40a74bbc969c4c64616b77d2__lock__0000000344, a829fbf9835c46bbaa4af4dda02aa9c1__lock__0000000343]</code></pre>
+[1f5cda205022418c8b7db432a667dfd5__lock__0000000342, 9dffb44d40a74bbc969c4c64616b77d2__lock__0000000344, a829fbf9835c46bbaa4af4dda02aa9c1__lock__0000000343]
 
 ```
 我们运行了3个并行的进程，因此有3个znode被创建，只有其中1个能执行临界区的代码。执行结果就是各自获取到了不同的range，符合期望：
@@ -205,5 +205,5 @@ if __name__ == '__main__':
 Process 14188 gets range: 3521648606548-3521648706548
 Process 14186 gets range: 3521648706549-3521648806549
 Process 14187 gets range: 3521648806550-3521648906550
-All done</code></pre>
+All done
 ```

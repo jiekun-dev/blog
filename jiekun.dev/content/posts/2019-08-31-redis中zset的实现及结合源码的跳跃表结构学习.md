@@ -29,7 +29,7 @@ tags:
 typedef struct zset {
     dict *dict;
     zskiplist *zsl;
-} zset;</code></pre>
+} zset;
 
 ```
 可以看到一个ZSET结构使用了一个dict和一个zskiplist（特殊版本的skiplist），具体代码在SkipList小节中再叙述。ZSET的结构可以由下图来标识：
@@ -72,7 +72,7 @@ typedef struct zskiplist {
     unsigned long length;
     # 层数 即跳跃表中各节点层数的最大值（头节点不算）
     int level;
-} zskiplist;</code></pre>
+} zskiplist;
 
 ```
 t的结构可以由下图来表示：
@@ -150,7 +150,7 @@ zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
         zsl->tail = x;
     zsl->length++;
     return x;
-}</code></pre>
+}
 
 ```
 可以观察到：

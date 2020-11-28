@@ -47,7 +47,7 @@ lrwxrwxrwx 1 root root 0 11月 13 17:42 net -> 'net:[4026531992]'
 lrwxrwxrwx 1 root root 0 11月 13 17:42 pid -> 'pid:[4026531836]'
 lrwxrwxrwx 1 root root 0 11月 13 17:42 pid_for_children -> 'pid:[4026531836]'
 lrwxrwxrwx 1 root root 0 11月 13 17:42 user -> 'user:[4026531837]'
-lrwxrwxrwx 1 root root 0 11月 13 17:42 uts -> 'uts:[4026531838]'</code></pre>
+lrwxrwxrwx 1 root root 0 11月 13 17:42 uts -> 'uts:[4026531838]'
 
 ```
 如果两个进程指向的`namespace`编号相同，就说明它们在同一个`namespace`下。查看宿主机的其他进程的ns发现是指向同样编号的ns。
@@ -65,7 +65,7 @@ lrwxrwxrwx 1 root root 0 Nov 13 09:44 net -> 'net:[4026532669]'
 lrwxrwxrwx 1 root root 0 Nov 13 09:44 pid -> 'pid:[4026532667]'
 lrwxrwxrwx 1 root root 0 Nov 13 09:44 pid_for_children -> 'pid:[4026532667]'
 lrwxrwxrwx 1 root root 0 Nov 13 09:44 user -> 'user:[4026531837]'
-lrwxrwxrwx 1 root root 0 Nov 13 09:44 uts -> 'uts:[4026532664]'</code></pre>
+lrwxrwxrwx 1 root root 0 Nov 13 09:44 uts -> 'uts:[4026532664]'
 
 ```
 可见容器内的进程是指向不同的namespaces的，他们之间的资源互不可见。
@@ -89,7 +89,7 @@ cgroup.clone_children  init.scope                  memory.kmem.max_usage_in_byte
 cgroup.event_control   memory.failcnt              memory.kmem.slabinfo                memory.kmem.usage_in_bytes       memory.oom_control          memory.usage_in_bytes  tasks
 cgroup.procs           memory.force_empty          memory.kmem.tcp.failcnt             memory.limit_in_bytes            memory.pressure_level       memory.use_hierarchy   user.slice
 cgroup.sane_behavior   memory.kmem.failcnt         memory.kmem.tcp.limit_in_bytes      memory.max_usage_in_bytes        memory.soft_limit_in_bytes  notify_on_release
-ker                 memory.kmem.limit_in_bytes  memory.kmem.tcp.max_usage_in_bytes  memory.move_charge_at_immigrate  memory.stat                 release_agent</code></pre>
+ker                 memory.kmem.limit_in_bytes  memory.kmem.tcp.max_usage_in_bytes  memory.move_charge_at_immigrate  memory.stat                 release_agent
 
 ```
 这些以资源开头（比如memory.limit\_in\_bytes）的文件就是相关的配置文件。

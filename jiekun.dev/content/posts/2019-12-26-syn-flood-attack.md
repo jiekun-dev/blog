@@ -40,7 +40,7 @@ IP
 UDP/TCP
   -s  --baseport   base source port             (default random)
   -p  --destport   [+][+]&lt;port> destination port(default 0) ctrl+z inc/dec
-  -S  --syn        set SYN flag</code></pre>
+  -S  --syn        set SYN flag
 
 ```
 尝试攻击部署在阿里云的个人博客：
@@ -54,7 +54,7 @@ len=46 ip=120.25.247.125 ttl=49 DF id=0 sport=443 flags=SA seq=2 win=29200 rtt=1
 len=46 ip=120.25.247.125 ttl=49 DF id=0 sport=443 flags=SA seq=3 win=29200 rtt=12.6 ms
 len=46 ip=120.25.247.125 ttl=49 DF id=0 sport=443 flags=SA seq=4 win=29200 rtt=11.5 ms
 len=46 ip=120.25.247.125 ttl=49 DF id=0 sport=443 flags=SA seq=5 win=29200 rtt=10.5 ms
-...</code></pre>
+...
 
 ```
 此时可以在ECS上看到网络情况，通过netstat命令查看到处于SYN_RECV的大量TCP连接，如图所示：
@@ -66,7 +66,7 @@ len=46 ip=120.25.247.125 ttl=49 DF id=0 sport=443 flags=SA seq=5 win=29200 rtt=1
 
 ```
 uck@iZwz92ujq5zpxvm1vtq0gtZ:~$ netstat -n | grep SYN | wc -l
-128</code></pre>
+128
 
 ```
 只有128个TCP半连接，与发包数量相差很大。猜测是系统配置限制了总TCP连接数上限或者半连接状态连接数上限。
@@ -96,7 +96,7 @@ net.ipv6.conf.default.disable_ipv6 = 1
 net.ipv6.conf.lo.disable_ipv6 = 1
 net.ipv6.conf.eth0.disable_ipv6 =1
 
-kernel.sysrq = 1</code></pre>
+kernel.sysrq = 1
 
 ```
 其中一项`net.ipv4.tcp_max_syn_backlog = 128`可能是有关项，并且通过查阅文件中提供的阿里云文档，得到参数和它相关参数的具体描述：

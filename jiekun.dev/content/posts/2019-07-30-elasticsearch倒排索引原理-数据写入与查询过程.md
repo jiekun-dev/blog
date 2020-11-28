@@ -25,264 +25,41 @@ tags:
 为了便于理解，介绍的实现与具体实现会有不一致。  
 现在有以下的数据行：
 
-<table class="wp-block-table">
-  <tr>
-    <th>
-      id
-    </th>
-    
-    <th>
-      书名
-    </th>
-    
-    <th>
-      出版社
-    </th>
-  </tr>
-  
-  <tr>
-    <td>
-      1
-    </td>
-    
-    <td>
-      高性能MySQL
-    </td>
-    
-    <td>
-      电子工业出版社
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      2
-    </td>
-    
-    <td>
-      Elasticsearch服务器开发
-    </td>
-    
-    <td>
-      人民邮电出版社
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      3
-    </td>
-    
-    <td>
-      深入理解Elasticsearch
-    </td>
-    
-    <td>
-      机械工业出版社
-    </td>
-  </tr>
-</table>
+| id |           书名          |     出版社     |
+|:--:|:-----------------------:|:--------------:|
+| 1  | 高性能MySQL             | 电子工业出版社 |
+| 2  | Elasticsearch服务器开发 | 人民邮电出版社 |
+| 3  | 深入理解Elasticsearch   | 机械工业出版社 |
 
 在写入数据，也就是索引（动词）的过程中：  
 （1）ES首先会将数据进行分析，如&#8221;高性能MySQL&#8221;拆分成“高性能”和“MySQL”等词条（tokens），同理，“电子工业出版社”可以被拆分成“电子”、“工业”、“出版社”；  
 （2) 拆分完毕后添加至对应的倒排索引中：
 
-<table class="wp-block-table">
-  <tr>
-    <th>
-      词条
-    </th>
-    
-    <th>
-      对应id
-    </th>
-  </tr>
-  
-  <tr>
-    <td>
-      高性能
-    </td>
-    
-    <td>
-      1
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      MySQL
-    </td>
-    
-    <td>
-      1
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      电子
-    </td>
-    
-    <td>
-      1
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      工业
-    </td>
-    
-    <td>
-      1
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      出版社
-    </td>
-    
-    <td>
-      1
-    </td>
-  </tr>
-</table>
+|  词条  | 对应id |
+|:------:|:------:|
+| 高性能 | 1      |
+| MySQL  | 1      |
+| 电子   | 1      |
+| 工业   | 1      |
+| 出版社 | 1      |
 
 （3）这样当Client查询“工业”一词的时候，就可以快速定位到id为1的数据行；  
 （4）同理对id为2和3的数据分析和索引之后，倒排索引变成：
 
-<table class="wp-block-table">
-  <tr>
-    <th>
-      词条
-    </th>
-    
-    <th>
-      对应id
-    </th>
-  </tr>
-  
-  <tr>
-    <td>
-      高性能
-    </td>
-    
-    <td>
-      1
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      MySQL
-    </td>
-    
-    <td>
-      1
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      电子
-    </td>
-    
-    <td>
-      1
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      工业
-    </td>
-    
-    <td>
-      1, 3
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      出版社
-    </td>
-    
-    <td>
-      1, 2, 3
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      Elasticsearch
-    </td>
-    
-    <td>
-      2, 3
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      服务器
-    </td>
-    
-    <td>
-      2
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      开发
-    </td>
-    
-    <td>
-      2
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      人民
-    </td>
-    
-    <td>
-      2
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      邮电
-    </td>
-    
-    <td>
-      2
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      深入
-    </td>
-    
-    <td>
-      3
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      理解
-    </td>
-    
-    <td>
-      3
-    </td>
-  </tr>
-</table>
+|      词条     |  对应id |
+|:-------------:|:-------:|
+| 高性能        | 1       |
+| MySQL         | 1       |
+| 电子          | 1       |
+| 工业          | 1, 3    |
+| 出版社        | 1, 2, 3 |
+| Elasticsearch | 2, 3    |
+| 服务器        | 2       |
+| 开发          | 2       |
+| 人民          | 2       |
+| 邮电          | 2       |
+| 深入          | 3       |
+| 理解          | 3       |
 
 (5)举例搜索“工业”一词的时候，就应该定位到id为1和2的行
 
@@ -306,7 +83,7 @@ over    |   X   |  X
 quick   |   X   |
 summer  |       |  X
 the     |   X   |
-------------------------</code></pre>
+------------------------
 
 ```
 ### 倒排索引和分析的具体实现
@@ -375,12 +152,12 @@ PUT /my_logs
   "settings": {
     "refresh_interval": "30s" 
   }
-}</code></pre>
+}
 
 ```
 ```
 # 请求接口对blogs进行refresh操作
-POST /blogs/_refresh </code></pre>
+POST /blogs/_refresh 
 
 ```
 ### 数据持久化
@@ -400,7 +177,7 @@ ES中使用了一个translog，在文档被索引（动词）后，就会被添�
 同样，flush操作也和refresh类似，有对应API可调用：
 
 ```
-POST /blogs/_flush </code></pre>
+POST /blogs/_flush 
 
 ```
 这里引用官方文档对translog的安全性的描述：
@@ -424,7 +201,7 @@ PUT /my_index/_settings
 {
     "index.translog.durability": "async",
     "index.translog.sync_interval": "5s"
-}</code></pre>
+}
 
 ```
 这个选项可以针对索引单独设置，并且可以动态进行修改。如果你决定使用异步 translog 的话，你需要 保证 在发生crash时，丢失掉 sync_interval 时间段的数据也无所谓。请在决定前知晓这个特性。

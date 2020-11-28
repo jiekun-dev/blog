@@ -40,7 +40,7 @@ typedef struct user {
     sds **allowed_subcommands;
     list *passwords;
     list *patterns;
-} user;</code></pre>
+} user;
 
 ```
 补充一下一些新鲜的字段描述，`allowed_commands`实际上是一个（默认）长度为1024的位图，它的index对应各个命令的ID，在历史版本中命令结构`redisCommand`是通过名字（`name`）来查找的，`id`为这个版本中新增的属性，专门用于ACL功能。
@@ -49,7 +49,7 @@ typedef struct user {
 truct redisCommand {
     ...
     int id;
-};</code></pre>
+};
 
 ```
 `user`这个结构对应的是`client`结构的&#8221;user&#8221;字段，熟悉Redis的同学应该对`client`也有所了解，就不再赘述了。
@@ -65,7 +65,7 @@ int ACLGetUserCommandBit(user *u, unsigned long id) {
     uint64_t word, bit;
     if (ACLGetCommandBitCoordinates(id,&word,&bit) == C_ERR) return 0;
     return (u->allowed_commands[word] & bit) != 0;
-}</code></pre>
+}
 
 ```
 当用户进行Redis操作时，例如`set`操作，操作的命令会保存在`client`结构的`*cmd`字段中，`*cmd`字段就是一个`redisCommand`结构的指针，`redisCommand`结构包含了命令的`id`，因此在使用时通过`ACLGetUserCommandBit(u, cmd->id)`传入。
@@ -119,7 +119,7 @@ int ACLSetUser(user *u, const char *op, ssize_t oplen) {
             // 新调整的命令的子命令数组会被重置
             ACLResetSubcommandsForCommand(u,id);
         }
-    }</code></pre>
+    }
 
 ```
 补充一下具体调用例子，其实Redis的默认用户就是按照这套流程创建的：初始化名为“default”的空白无权限用户，然后为这个用户设置上所有权限：
@@ -129,7 +129,7 @@ DefaultUser = ACLCreateUser("default",7);
 ACLSetUser(DefaultUser,"+@all",-1);
 ACLSetUser(DefaultUser,"~*",-1);
 ACLSetUser(DefaultUser,"on",-1);
-ACLSetUser(DefaultUser,"nopass",-1);</code></pre>
+ACLSetUser(DefaultUser,"nopass",-1);
 
 ```
 ## 拦截不可用命令/键
@@ -205,7 +205,7 @@ int ACLCheckCommandPerm(client *c, int *keyidxptr) {
         getKeysFreeResult(keyidx);
     }
     return ACL_OK;
-}</code></pre>
+}
 
 ```
 那么为了方便喜欢跳过代码的同学看结论：
@@ -247,7 +247,7 @@ int processCommand(client *c) {
                 "one of the keys used as arguments");
         return C_OK;
     }
-    ...</code></pre>
+    ...
 
 ```
 在命令解析之后，真正执行之前，通过调用`ACLCheckCommandPerm`获取判断结果，如果判定不通过，进行以下操作：
@@ -282,7 +282,7 @@ int processCommand(client *c) {
  3395      int acl_keypos;
  3396:     int acl_retval = ACLCheckCommandPerm(c,&acl_keypos);
  3397      if (acl_retval != ACL_OK) {
- 3398          addACLLogEntry(c,acl_retval,acl_keypos,NULL);</code></pre>
+ 3398          addACLLogEntry(c,acl_retval,acl_keypos,NULL);
 
 ```
 形式都是大同小异，了解一下即可。总结一下需要判定ACL的位置：

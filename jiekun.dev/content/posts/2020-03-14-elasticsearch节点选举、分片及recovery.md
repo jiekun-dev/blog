@@ -106,7 +106,7 @@ public static int compare(MasterCandidate c1, MasterCandidate c2) {
     }
     // ID比较
     return o1.getId().compareTo(o2.getId());
-}</code></pre>
+}
 
 ```
 确定之后进行投票，ES的投票是通过发送Join请求进行的，票数即为当前连接数。
@@ -207,7 +207,7 @@ Elasticsearch是个易用又复杂的分布式项目，其中很多分布式相�
 
 ```
 uck@duck-MS-7A34:~/study/tmp$ du -sh elasticsearch/
-949M    elasticsearch/</code></pre>
+949M    elasticsearch/
 
 ```
 因此其中很多模块都没有了解清楚，希望以后可以保持学习的新鲜感，继续摸索更多的内容。

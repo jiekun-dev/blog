@@ -50,7 +50,7 @@ CREATE TABLE `t2` (
 `c2` int(11) NOT NULL DEFAULT '0',
 PRIMARY KEY (`id`),
 KEY `idx_c1` (`c1`)
-) ENGINE=InnoDB;</code></pre>
+) ENGINE=InnoDB;
 
 ```
 我向两个表都插入了131072行随机数据。
@@ -61,7 +61,7 @@ mysql> select count(*) from t1;
 | count(*) |
 +----------+
 | 131072   |
-+----------+</code></pre>
++----------+
 
 ```
 ## 测试1 &#8211; Hash Joins
@@ -77,7 +77,7 @@ EXPLAIN: -> Aggregate: count(0)
 -> Hash
 -> Table scan on t1 (cost=13219.45 rows=131472)
 
-1 row in set (0.00 sec)</code></pre>
+1 row in set (0.00 sec)
 
 ```
 我们使用`explain format=tree`来查看Hash Join是否生效，默认情况下(explain)会误导说这会是个嵌套循环。我已经提了[bug report][2]，在工单中你可以看到开发者回复：
@@ -99,7 +99,7 @@ mysql> select count(*) from t1 join t2 on t1.c2 = t2.c2;
 +----------+
 | 17172231 |
 +----------+
-1 row in set (0.73 sec)</code></pre>
+1 row in set (0.73 sec)
 
 ```
 17000000多行数据，0.73秒。看起来很不错。
@@ -115,7 +115,7 @@ mysql> select /*+ NO_HASH_JOIN (t1,t2) */ count(*) from t1 join t2 on t1.c2 = t2
 +----------+
 | 17172231 |
 +----------+
-1 row in set (13 min 36.36 sec)</code></pre>
+1 row in set (13 min 36.36 sec)
 
 ```
 同样的查询使用了超过13分钟。非常大的差距，可以看到Hash Join性能提升明显。
@@ -134,7 +134,7 @@ mysql> select count(*) from t1 join t2 on t1.c2 = t2.c2;
 +----------+
 | 17172231 |
 +----------+
-1 row in set (2.63 sec)</code></pre>
+1 row in set (2.63 sec)
 
 ```
 2.6秒。在这个测试用例中Hash Join比基于索引的Join还要快。
@@ -150,7 +150,7 @@ EXPLAIN: -> Aggregate: count(0)
 -> Hash
 -> Table scan on t1 (cost=13219.45 rows=131472)
 
-1 row in set (0.00 sec)</code></pre>
+1 row in set (0.00 sec)
 
 ```
 我在想即使索引存在的情况下，优化器也能够根据提示使用Hash Join，这样我们就不需要在各种表上`ignore index`了。我已经提了[feature request][3]。

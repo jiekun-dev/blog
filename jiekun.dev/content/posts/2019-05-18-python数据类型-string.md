@@ -49,8 +49,6 @@ b'\xe4\xbd\xa0\xe5\xa5\xbd'
 2
 >>> len(b)
 6
- </code></pre>
-
 ```
 ## 字节
 
@@ -63,8 +61,7 @@ b'\xe5\xbe\x88\xe5\xa5\xbd\xe7\x8e\xa9\xe7\x9a\x84\xe4\xbb\xa3\xe7\xa0\x81'
 >>> my_char[0]
 229
 >>> my_char[0:1]
-b'\xe5'</code></pre>
-
+b'\xe5'
 ```
 好吧本来以为是`str`类型很好玩，其实Python里面的其他顺序类型也是这么做的，指定某个index的时候返回的是对应的元素，[a:b]切片的时候返回的是同类型的序列，只是`str`类型看起来像是比较奇怪，只返回了值。
 
@@ -73,8 +70,7 @@ b'\xe5'</code></pre>
 >>> l1[0]
 '好'
 >>> l1[0:1]
-['好']</code></pre>
-
+['好']
 ```
 二进制序列的表示方法有几种，如果不知道什么叫二进制序列的表示方法，请看：
 
@@ -88,8 +84,7 @@ b'cafe\xe5\x92\x96\xe5\x95\xa1'
 ... test
 ... """
 >>> s.encode('utf-8')
-b'\nhave\na \ntest\n'</code></pre>
-
+b'\nhave\na \ntest\n'
 ```
 cafe\xe5\x92\x96\xe5\x95\xa1
 
@@ -116,8 +111,7 @@ b'GIF89a+\x02\xe6\x00'
 >>> struct.unpack(fmt, header)  # 按照fmt规则unpack这个memoryview对象，得到一个元组
 (b'GIF', b'89a', 555, 230)
 >>> del header
- del img</code></pre>
-
+ del img
 ```
 虽然搞不懂有什么用不过看起来很厉害就是了。
 
@@ -135,8 +129,7 @@ utf_8    b'This is \xe5\x90\x8c\xe6\xa0\xb7\xe7\x9a\x84\xe6\x96\x87\xe5\xad\x97'
 utf_16    b'\xff\xfeT\x00h\x00i\x00s\x00 \x00i\x00s\x00 \x00\x0cT7h\x84v\x87eW['  # UTF-16编码结果
 Traceback (most recent call last):
   File "&lt;stdin>", line 2, in &lt;module>
-UnicodeEncodeError: 'latin-1' codec can't encode characters in position 8-12: ordinal not in range(256)  # Lartin-1不支持中文</code></pre>
-
+UnicodeEncodeError: 'latin-1' codec can't encode characters in position 8-12: ordinal not in range(256)  # Lartin-1不支持中文
 ```
 不支持中文肯定不行，所以有一些处理`UnicodeEncodeError`的方法，包括将不支持的字符转**跳过**、**替换**。
 
@@ -146,8 +139,7 @@ latin_1    b'This is '
 >>> print(codec, 'This is 同样的文字'.encode('latin_1', errors='replace'), sep='\t')
 latin_1    b'This is ?????'
 >>> print(codec, 'This is 同样的文字'.encode('latin_1', errors='xmlcharrefreplace'), sep='\t')
-latin_1    b'This is &#21516;&#26679;&#30340;&#25991;&#23383;'</code></pre>
-
+latin_1    b'This is &#21516;&#26679;&#30340;&#25991;&#23383;'
 ```
 对应的，如果要将`bytes`解码，也会有UnicodeDecodeError。
 
@@ -160,16 +152,14 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid 
 >>> b.decode('utf-8', errors='replace')
 '��T\x00h\x00i\x00s\x00 \x00i\x00s\x00 \x00\x0cT7h�v�eW['  # 代替
 >>> b.decode('utf-8', errors='ignore')
-'T\x00h\x00i\x00s\x00 \x00i\x00s\x00 \x00\x0cT7hveW['  # 忽略</code></pre>
-
+'T\x00h\x00i\x00s\x00 \x00i\x00s\x00 \x00\x0cT7hveW['  # 忽略
 ```
 ## 使用预期之外的编码抛出SyntaxError
 
 文件顶部加上注释
 
 ```
-# coding: cp1252</code></pre>
-
+# coding: cp1252
 ```
 Python3默认使用UTF-8，GUN/Linux和OS X默认都是UTF-8，Windows则不是，所以可能会报这种反人类的错误。因此，和前面说的一样，不要依赖系统编码，全部手动指定可以让你的脚本正常运行于不同系统。
 
@@ -186,8 +176,7 @@ u16_en = 'El Niño'.encode('utf_16')
 >>> u16_en
 b'\xff\xfeE\x00l\x00 \x00N\x00i\x00\xf1\x00o\x00'
 >>> u16_cn
-b'\xff\xfe\tg&lt;\x9b' </code></pre>
-
+b'\xff\xfe\tg&lt;\x9b' 
 ```
 奇怪，好像两段没有一个字相同的字符，但经过编码后的字节序列都是以`\xff\xfe`开头的。没错这就是`BOM`(byte-order mark)，指明编码时使用小字节序（little-endian byte ordering）。  
 小字节序中，字母E的位码是U+0045，在字节便宜的第二位和第三位的编码为69和0；而大字节序中是编码顺序是相反的，E的编码为0和69。  
@@ -201,8 +190,7 @@ xfe&#8217; 必定是 ZERO WIDTH NO-BREAK SPACE ,所以编解码器知道该用�
 ```
 n('cafe.txt', 'w', encoding='utf_8').write('café')
 4
- open('cafe.txt').read()</code></pre>
-
+ open('cafe.txt').read()
 ```
 如果在Windows上，最后的输出可能就不是`café`了，因为首次打开文件的时候指定了UTF-8编码，而再次打开的时候没有指定编码，则会依照系统的默认编码。Linux上默认均为UTF-8，会给人一种代码没有问题的假象，实际上并不是这样的。  
 另外，如果在open的参数中声明是在二进制模式中读取文件，将会得到一个`BufferedReader`对象，而正常情况下会得到一个`TextIOWrapper`对象。
@@ -213,8 +201,7 @@ f = open('cafe.txt','rb')
 &lt;_io.BufferedReader name='cafe.txt'>
 >>> f = open('cafe.txt','r')
 >>> f
-&lt;_io.TextIOWrapper name='cafe.txt' mode='r' encoding='UTF-8'></code></pre>
-
+&lt;_io.TextIOWrapper name='cafe.txt' mode='r' encoding='UTF-8'>
 ```
 打开文件时没有指定encoding参数，编码会由`locale.getpreferredencoding()`指定，类似的还有一个用于编解码文件名的方法`sys.getfilesystemencoding()`。
 
@@ -230,8 +217,7 @@ f = open('cafe.txt','rb')
 >>> s1 == s2
 False
 >>> len(s1), len(s2)
-(4, 5)</code></pre>
-
+(4, 5)
 ```
 看到两种表示的`café`并不相等，因为Python看到的是不同的码位序列。解决办法是将Unicode规范化，使用`unicodedata.normalize`。  
 `normalize`有4种参数: `NFC`，`NFD`，`NFKC`，`NFKD`。前两个分别对应“使用最少的bytes构成等价字符串”和“把字符串分解成基本字符和单独的组合字符”，也就是类似于`café`和`cafe\u0301`两种形式；后两个分别是前两个的“兼容分解”模式，`K`表示“compatibility”，这样做格式会有所损失，例如`1⁄2`（这实际上是一个字符，1在上2在下）经过“兼容分解”后会变成`1/2`（这是3个字符）。  
@@ -242,8 +228,7 @@ from unicodedata import normalize
 >>> s1 == normalize('NFC', s2)
 True
 >>> s2 == normalize('NFD', s1)
-True</code></pre>
-
+True
 ```
 ## 大小写折叠(Case Fold)
 
@@ -253,8 +238,7 @@ True</code></pre>
 'ß'.casefold()
 'ss'  # ß在德语中是“sharp s”
 >>> 'ß'.lower()
-'ß'</code></pre>
-
+'ß'
 ```
 ## 规范化总结
 
@@ -272,14 +256,12 @@ True</code></pre>
 ```
 fruits = ['caju', 'atemoia', 'cajá', 'açaí', 'acerola']
 >>> sorted(fruits)
-['acerola', 'atemoia', 'açaí', 'caju', 'cajá']</code></pre>
-
+['acerola', 'atemoia', 'açaí', 'caju', 'cajá']
 ```
 期望得到的结果是`ç`按照`c`排序，`á`按照`a`排序：
 
 ```
-['açaí', 'acerola', 'atemoia', 'cajá', 'caju']</code></pre>
-
+['açaí', 'acerola', 'atemoia', 'cajá', 'caju']
 ```
 非ASCII文本的标准排序方式是使用`locale.strxfrm`函数，这个函数的结果跟当前所在区域有关，通过使用`locale.setlocale()`改变所在区域以达到按照特定区域的习惯排序的效果。
 
@@ -289,8 +271,7 @@ import locale
 'zh_CN.UTF-8'
 >>> fruits = ['caju', 'atemoia', 'cajá', 'açaí', 'acerola']
 >>> sorted(fruits, key=locale.strxfrm)
-['açaí', 'acerola', 'atemoia', 'cajá', 'caju']</code></pre>
-
+['açaí', 'acerola', 'atemoia', 'cajá', 'caju']
 ```
 ## Unicode 数据库
 

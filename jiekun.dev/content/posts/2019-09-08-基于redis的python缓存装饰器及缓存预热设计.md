@@ -102,7 +102,7 @@ def cache_target_judger(default_kwargs, innerkwargs):
     :param innerkwargs:
     :return:
     """
-    return all(item in innerkwargs.iteritems() for item in default_kwargs.iteritems())</code></pre>
+    return all(item in innerkwargs.iteritems() for item in default_kwargs.iteritems())
 
 ```
 先来说明一下原有缓存的逻辑，其实实现非常简单：
@@ -114,7 +114,7 @@ def cache_target_judger(default_kwargs, innerkwargs):
 def sample_method(arg1, arg2, arg3, arg4):
         pass
 
-sample_method(arg1=1, arg2=20, arg3='hello', arg4='world')</code></pre>
+sample_method(arg1=1, arg2=20, arg3='hello', arg4='world')
 
 ```
 #### 判定缓存目标
@@ -132,7 +132,7 @@ sample_method(arg1=1, arg2=20, arg3='hello', arg4='world')</code></pre>
 设计键名为：
 
 ```
-前缀 + 方法名 + 方法参数键值对</code></pre>
+前缀 + 方法名 + 方法参数键值对
 
 ```
 不使用hash是因为前期缺少cache_name注释的情况下无法通过redis键名（如果是hash）判断出这个缓存对应的功能。  
@@ -166,13 +166,13 @@ sample_method(arg1=1, arg2=20, arg3='hello', arg4='world')</code></pre>
 def sample_method(arg1, arg2, arg3, arg4):
         pass
 
-sample_method(arg1=1, arg2=20, arg3='hello', arg4='world', force_update=True)</code></pre>
+sample_method(arg1=1, arg2=20, arg3='hello', arg4='world', force_update=True)
 
 ```
   * 这个force_update要在装饰器执行func之前处理，因为`sampe_method`的定义中没有这个参数，因此当执行func的时候传的参数必须仍然只有前面几个。因此装饰器中加上：
 
 ```
-force_update = innerkwargs.pop('force_update', False)</code></pre>
+force_update = innerkwargs.pop('force_update', False)
 
 ```
   * 正常调用不会包含这个方法，但是仍然会经过装饰器，因此默认False
@@ -191,7 +191,7 @@ force_update = innerkwargs.pop('force_update', False)</code></pre>
 因此是否可以做一个定时脚本：
 
 ```
-* */2 * * * python update_cache.py</code></pre>
+* */2 * * * python update_cache.py
 
 ```
 update_cache.py内容如下：
@@ -201,7 +201,7 @@ if __name__ == '__main__':
     sample_method1(arg1=1, arg2=2, arg3='hello', arg4='world', force_update=True)
     sample_method2(arg1=2, arg2=2, arg3='hello', arg4='world', force_update=True)
     sample_method3(arg1=3, arg2=2, arg3='hello', arg4='world', force_update=True)
-    sample_method4(arg1=4, arg2=2, arg3='hello', arg4='world', force_update=True)</code></pre>
+    sample_method4(arg1=4, arg2=2, arg3='hello', arg4='world', force_update=True)
 
 ```
 这样就实现了缓存的定时更新
@@ -233,7 +233,7 @@ def submit_warmer(warmer):
     if warmer in WARMER_DICT:
         warmer_key = CACHE_WARMER_KEY
         redis_raw_serv.lpush(warmer_key, warmer)
-    return 200, 0, "加入预热队列成功", {}</code></pre>
+    return 200, 0, "加入预热队列成功", {}
 
 ```
   * 在后台维护一个持续监控队列的进程
@@ -269,7 +269,7 @@ def warmer_server():
         except KeyError:
             pass
         print('Interval 5 seconds.')
-        time.sleep(5)</code></pre>
+        time.sleep(5)
 
 ```
 ## 总结
@@ -322,7 +322,7 @@ f param_combination_generator(kwargs):
 
     param_combination = list(itertools.product(*iter_list))
 
-    return param_combination</code></pre>
+    return param_combination
 
 ```
 尽管还需要优化，不过大体思路按照排列组合后的参数对函数逐一放入队列执行应该可以较为友善地实现。当参数排列组合特别多的时候，可能就不太适合缓存的场景，因为cache成本都是非常高昂的，可能需要优化成针对最热点的内容优先缓存的形式。
