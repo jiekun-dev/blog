@@ -20,7 +20,7 @@ archieved: true
 
 先来看一下ZSET的结构源码，Redis5.0.5版本中数据结构的定义在redis/src/server.h中：
 
-```
+```c
 typedef struct zset {
     dict *dict;
     zskiplist *zsl;
@@ -40,7 +40,7 @@ typedef struct zset {
 下面来具体聊一下SkipList数据结构。  
 在Redis源码中找到跳跃表的相关定义，就在zset的上面几行，补充一些注释：
 
-```
+```c
 /* ZSETs use a specialized version of Skiplists */
 # 跳跃表节点（ZSET版）
 typedef struct zskiplistNode {
@@ -82,7 +82,7 @@ t的结构可以由下图来表示：
 借助ZSET的各种API，来看一下skiplist在实际中是怎么使用的。  
 下面代码出现在redis/src/t_zset.c中，实现的是zset的插入成员操作：
 
-```
+```c
 # 输入一个zset的skiplist、新成员的得分和名字
 zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {    
     zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;

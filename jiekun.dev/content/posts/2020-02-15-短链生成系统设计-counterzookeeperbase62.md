@@ -139,7 +139,7 @@ int(children)
 
 ### 取号
 
-```
+```py
 import json
 import os
 import time

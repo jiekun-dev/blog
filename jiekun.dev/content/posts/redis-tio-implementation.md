@@ -89,7 +89,7 @@ Redis中存在有两种类型的事件：**时间事件**、**文件事件**。
 
 在有文件事件可处理的情况下，Redis会调用`AE_READABLE`事件的`rfileProc`方法以及`AE_WRITABLE`事件的`wfileProc`方法进行处理：
 
-```
+```c
 ...
             if (!invert && fe->mask & mask & AE_READABLE) {
                 fe->rfileProc(eventLoop,fd,fe->clientData,mask);
@@ -108,7 +108,7 @@ Redis中存在有两种类型的事件：**时间事件**、**文件事件**。
 ```
 在完成前面的处理后，Redis会继续调用`processTimeEvents()`处理时间事件。遍历整个时间事件链表，如果此时已经过了一段时间（阻塞等待或处理文件事件耗时），有时间事件发生，那么就调用对应时间事件的`timeProc`方法，将所有已经过时的时间事件处理掉：
 
-```
+```c
 ...
         if (te->when &lt;= now) {
             ...
@@ -128,7 +128,7 @@ Redis中存在有两种类型的事件：**时间事件**、**文件事件**。
 
 在收到客户端的命令请求时，Redis进行一些检查和统计后，调用`read()`方法将连接中的数据读取进`client.querybuf`消息缓冲区中：
 
-```
+```c
 void readQueryFromClient(connection *conn) {
     ...
     nread = connRead(c->conn, c->querybuf+qblen, readlen);
@@ -152,7 +152,7 @@ static int connSocketRead(connection *conn, void *buf, size_t buf_len) {
 ![](../2020/09/redis_result_to_reply-904x1024.png)
 在当前`aeProcessEvents()`方法结束后，进入**下一次的循环**，第二次循环调用I/O多路复用接口等待文件事件发生前，Redis会检查`server.clients_pending_write`是否有客户端需要进行回复，若有，遍历指向各个待回复客户端的`server.clients_pending_write`列表，逐个将客户端从中删除，并将待回复的内容通过`writeToClient(c,0)`回复出去
 
-```
+```c
 int writeToClient(client *c, int handler_installed) {
     ...
     nwritten = connWrite(c->conn,c->buf+c->sentlen,c->bufpos-c->sentlen);
@@ -190,7 +190,7 @@ static int connSocketWrite(connection *conn, const void *data, size_t data_len) 
 
 在Redis启动时，如果满足对应参数配置，会进行I/O线程初始化的操作。
 
-```
+```c
 void initThreadedIO(void) {
     server.io_threads_active = 0;
     if (server.io_threads_num == 1) return;
@@ -205,7 +205,7 @@ void initThreadedIO(void) {
 ```
 Redis会进行一些常规检查，配置数是否符合开启多线程I/O的要求。
 
-```
+```c
 ...
     for (int i = 0; i &lt; server.io_threads_num; i++) {
         io_threads_list[i] = listCreate();
@@ -214,7 +214,7 @@ Redis会进行一些常规检查，配置数是否符合开启多线程I/O的要
 ```
 创建一个长度为线程数的`io_threads_list`列表，列表的每个元素都是另一个列表L，L将会用来存放对应线程待处理的多个`client`对象。
 
-```
+```c
 ...
         if (i == 0) continue;
 ...
@@ -222,7 +222,7 @@ Redis会进行一些常规检查，配置数是否符合开启多线程I/O的要
 ```
 对于主线程，初始化操作到这里就结束了。
 
-```
+```c
 ...
         pthread_t tid;
         pthread_mutex_init(&io_threads_mutex[i],NULL);
@@ -244,7 +244,7 @@ Redis会进行一些常规检查，配置数是否符合开启多线程I/O的要
 
 多线程的读写主要在`handleClientsWithPendingReadsUsingThreads()`和`handleClientsWithPendingWritesUsingThreads()`中完成，因为两者几乎是对称的，所以这里只对读操作进行讲解，有兴趣的同学可以检查一下写操作有什么不同的地方以及为什么。
 
-```
+```c
 int handleClientsWithPendingReadsUsingThreads(void) {
     if (!server.io_threads_active || !server.io_threads_do_reads) return 0;
     int processed = listLength(server.clients_pending_read);
@@ -256,7 +256,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
 ```
 同样，Redis会进行常规检查，是否启用线程化读写并且启用线程化读（只开启前者则只有写操作是线程化），以及是否有等待读取的客户端。
 
-```
+```c
 ...
     listIter li;
     listNode *ln;
@@ -273,7 +273,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
 ```
 这里将`server.clients_pending_read`的列表转化为方便遍历的链表，然后将列表的每个节点（`*client`对象）以类似Round-Robin的方式分配个各个线程，线程执行各个client的读写顺序并不需要保证，命令抵达的先后顺序已经由`server.clients_pending_read/write`列表记录，后续也会按这个顺序执行。
 
-```
+```c
 ...
     io_threads_op = IO_THREADS_OP_READ;
 ...
@@ -281,7 +281,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
 ```
 设置状态标记，标识当前处于多线程读的状态。由于标记的存在，Redis的Threaded I/O瞬时只能处于读或写的状态，不能部分线程读，部分写。
 
-```
+```c
 ...
     for (int j = 1; j &lt; server.io_threads_num; j++) {
         int count = listLength(io_threads_list[j]);
@@ -293,7 +293,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
 为每个线程记录下各自需要处理的客户端数量。当不同线程读取到自己的pending长度不为0时，就会开始进行处理。注意`j`从1开始，意味着``的主线程的pending长度一直为0，因为主线程马上要在这个方法中同步完成自己的任务，不需要知道等待的任务数。
 
 ![](../2020/09/redis_tio_variables-945x1024.png)
-```
+```c
 ...
     listRewind(io_threads_list[0],&li);
     while((ln = listNext(&li))) {
@@ -306,7 +306,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
 ```
 主线程此时将自己要处理的client处理完。
 
-```
+```c
 ...
     while(1) {
         unsigned long pending = 0;
@@ -320,7 +320,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
 ```
 陷入循环等待，`pending`等于各个线程剩余任务数之和，当所有线程都没有任务的时候，本轮I/O处理结束。
 
-```
+```c
 ...
     while(listLength(server.clients_pending_read)) {
         ln = listFirst(server.clients_pending_read);
@@ -341,7 +341,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
 ```
 我们已经在各自线程中将`conn`中的内容读取至对应client的`client.querybuf`输入缓冲区中，所以可以遍历`server.clients_pending_read`列表，串行地进行命令执行操作，同时将`client`从列表中移除。
 
-```
+```c
 ...
     server.stat_io_reads_processed += processed;
 
@@ -355,7 +355,7 @@ int handleClientsWithPendingReadsUsingThreads(void) {
 
 前面还有每个线程具体的工作内容没有解释，它们会一直陷在`IOThreadMain`的循环中，等待执行读写的时机。
 
-```
+```c
 void *IOThreadMain(void *myid) {
     long id = (unsigned long)myid;
     char thdname[16];
@@ -368,7 +368,7 @@ void *IOThreadMain(void *myid) {
 ```
 照常执行一些初始化内容。
 
-```
+```c
 ...
     while(1) {
         for (int j = 0; j &lt; 1000000; j++) {
@@ -392,7 +392,7 @@ void *IOThreadMain(void *myid) {
 
 这里利用互斥锁，让主线程有机会加锁，使得I/O线程卡在执行`pthread_mutex_lock()`，达到让I/O线程停止工作的效果。
 
-```
+```c
 ...
         listIter li;
         listNode *ln;
@@ -412,7 +412,7 @@ void *IOThreadMain(void *myid) {
 ```
 将`io_threads_list[i]`的客户端列表转化为方便遍历的链表，逐个遍历，借助`io_threads_op`标志判断当前是要执行多线程读还是多线程写，完成对自己要处理的客户端的操作。
 
-```
+```c
 ...
         listEmpty(io_threads_list[id]);
         io_threads_pending[id] = 0;
