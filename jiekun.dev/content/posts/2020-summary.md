@@ -1,5 +1,5 @@
 ---
-title: 2020年度总结：
+title: 2020年度总结：拥抱开源、拥抱社区
 date: 2021-02-04T03:04:29+08:00
 category: Career
 comments: true
