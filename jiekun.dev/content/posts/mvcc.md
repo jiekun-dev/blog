@@ -159,7 +159,7 @@ Time-Travel的设计可以避免索引上的指针频繁更新，因为他们始
 但是因为版本数据存储的是完整tuple，因此也会有非内联数据的问题，同样，可以使用共享对象的方式进行优化。
 
 ## Delta
-最后介绍的Delta存储同样在主表上只维护master版本的数据，然后将版本数据存放在额外的“Delta”空间中。“Delta”空间在MySQL InnoDB和Oracle中指的就是用于roadback的数据段，例如InnoDB中的undo log。
+最后介绍的Delta存储同样在主表上只维护master版本的数据，然后将版本数据存放在额外的“Delta”空间中。“Delta”空间在MySQL InnoDB和Oracle中指的就是用于rollback的数据段，例如InnoDB中的undo log。
 
 在更新逻辑数据行时，DMBS同样先申请“delta”空间的位置，然后将被改动的属性的老版本数据写入其中，而不是完整的tuple行。最后DMBS在主表上原地更新master版本的数据。
 
