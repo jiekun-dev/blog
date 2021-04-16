@@ -183,13 +183,13 @@ func (svc *Service) ReplayTraffic(param *ReplayTrafficRequest) error {
 对于元素，尽可能博文内的**元素配色都进行统一**，一般而言选择**4-6种配色**可以应对大部分的情况。作图不应该五彩斑斓，而是带有一定的辨识度和风格，让读者看了配图的结构和配色后能够想起类似的配图和作者。
 
 下面这幅配图中使用了4中颜色来填充元素：
-![](../202104-blog-writting-skills/illustration-tools.png)
+![](../202104-blog-writting/illustration-tools.png)
 
 因此在后续的作图中应该尽量保持用相同的配色方案，并且同类元素使用同种颜色：
-![](../202104-blog-writting-skills/decentralized-vcs.png)
+![](../202104-blog-writting/decentralized-vcs.png)
 
 使用多种颜色去填充相对而言会是更糟的选择：
-![](../202104-blog-writting-skills/decentralized-vcs-modified.png)
+![](../202104-blog-writting/decentralized-vcs-modified.png)
 
 
 ### 圆角和阴影
@@ -198,22 +198,22 @@ func (svc *Service) ReplayTraffic(param *ReplayTrafficRequest) error {
 - 具有立体感
 
 请忽略示例图中的错误配色组合，如前一节所述，五彩斑斓的配色通常不如简洁、固定的配色适合放在博客配图中。
-![](../202104-blog-writting-skills/hotring_hash_collision.png)
+![](../202104-blog-writting/hotring_hash_collision.png)
 
 通过去除所有的圆角、移除阴影后，配图变成如下样式，整体的观感也有所下降：
-![](../202104-blog-writting-skills/hotring_hash_collision_modified.png)
+![](../202104-blog-writting/hotring_hash_collision_modified.png)
 
 ### 构图和比例
 我们经常会见到在创作时使用相同大小的元素，嵌入到博文后缺变得忽大忽小，通过在最开始便**固定好画布的宽度**可以轻松解决这个问题。通常使用宽度 1200px 的画布可以兼容大部分博客系统的版面变化，并且和以前一样，请保持相同元素在不同配图中形状、大小、配色要尽可能一致。
 
 另一个要注意的问题是，请尽量保持配图的宽度大于高度，例如使用 **1200 * 500**、**1200 * 700**，而**不要使用** 1200 * 3000 的画布。对比如下两张配图：
-![](../202104-blog-writting-skills/lcs_db_distributed_data_consistency.png)
-![](../202104-blog-writting-skills/lcs_db_distributed_data_consistency_modified.png)
+![](../202104-blog-writting/lcs_db_distributed_data_consistency.png)
+![](../202104-blog-writting/lcs_db_distributed_data_consistency_modified.png)
 
 
 # 总结
 在内容编排的小节中我们提到过，总结是服务于不看正文的读者的，因此简单归纳本文介绍的写作要点如下：
-```
+
 - 分享业务系统设计
     - 尽早计划
     - 记录关键节点
@@ -234,7 +234,7 @@ func (svc *Service) ReplayTraffic(param *ReplayTrafficRequest) error {
     - 统一背景、复用配色方案
     - 尝试圆角和阴影
     - 固定宽度横向构图
-```
+
 
 
 # 参考资料
@@ -243,7 +243,7 @@ func (svc *Service) ReplayTraffic(param *ReplayTrafficRequest) error {
 
 # 附录：写作工具箱
 
-| 分类       | 名称       | 链接                                                        | 备注               |
+|分类 　     | 名称       | 链接                                                        | 备注               |
 |-----------|------------|-------------------------------------------------------------|--------------------|
 | 配色       | Coolors    | https://coolors.co/                                         |                    |
 | 配色       | Colormind  | http://colormind.io/                                        |                    |
