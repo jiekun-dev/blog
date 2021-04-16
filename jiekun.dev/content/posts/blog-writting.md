@@ -208,6 +208,7 @@ func (svc *Service) ReplayTraffic(param *ReplayTrafficRequest) error {
 
 另一个要注意的问题是，请尽量保持配图的宽度大于高度，例如使用 **1200 * 500**、**1200 * 700**，而**不要使用** 1200 * 3000 的画布。对比如下两张配图：
 ![](../202104-blog-writting/lcs_db_distributed_data_consistency.png)
+
 ![](../202104-blog-writting/lcs_db_distributed_data_consistency_modified.png)
 
 
