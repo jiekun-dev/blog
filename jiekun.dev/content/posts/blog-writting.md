@@ -6,7 +6,7 @@ author: jiekun.zhu@shopee.com
 excerpt: 团队的技术博客是分享和总结的平台，从搭建至今共计有超过50篇文章发布。在写作过程中不难发现，除了选材以外，还存在一些简单的套路，能够快速改善读者的阅读体验。本文通过正反举例的方式为各位作者介绍在博客排版和配图上的技巧，希望通过这些套路能帮助大家更容易下笔写作和贡献更精彩的分享。
 category: Writting
 comments: true
-archieved: false
+archieved: true
 ---
 
 # 简介
@@ -145,7 +145,9 @@ func (svc *Service) ReplayTraffic(param *ReplayTrafficRequest) error {
     1. KR1：将 Kubernetes 作为主要的工作重点；
     2. KR2：成为 Kubernetes 前 50 的提交者；
 - Objective 3：阅读一定技术书籍
+
     1️⃣ Scheduling Theory, Algoritms and Systems
+
     2️⃣ 垃圾回收的算法与实现
 
 ### 段落长度
@@ -181,13 +183,13 @@ func (svc *Service) ReplayTraffic(param *ReplayTrafficRequest) error {
 对于元素，尽可能博文内的**元素配色都进行统一**，一般而言选择**4-6种配色**可以应对大部分的情况。作图不应该五彩斑斓，而是带有一定的辨识度和风格，让读者看了配图的结构和配色后能够想起类似的配图和作者。
 
 下面这幅配图中使用了4中颜色来填充元素：
-![](202104-blog-writting-skills/illustration-tools.png)
+![](../202104-blog-writting-skills/illustration-tools.png)
 
 因此在后续的作图中应该尽量保持用相同的配色方案，并且同类元素使用同种颜色：
-![](202104-blog-writting-skills/decentralized-vcs.png)
+![](../202104-blog-writting-skills/decentralized-vcs.png)
 
 使用多种颜色去填充相对而言会是更糟的选择：
-![](202104-blog-writting-skills/decentralized-vcs-modified.png)
+![](../202104-blog-writting-skills/decentralized-vcs-modified.png)
 
 
 ### 圆角和阴影
@@ -196,17 +198,17 @@ func (svc *Service) ReplayTraffic(param *ReplayTrafficRequest) error {
 - 具有立体感
 
 请忽略示例图中的错误配色组合，如前一节所述，五彩斑斓的配色通常不如简洁、固定的配色适合放在博客配图中。
-![](202104-blog-writting-skills/hotring_hash_collision.png)
+![](../202104-blog-writting-skills/hotring_hash_collision.png)
 
 通过去除所有的圆角、移除阴影后，配图变成如下样式，整体的观感也有所下降：
-![](202104-blog-writting-skills/hotring_hash_collision_modified.png)
+![](../202104-blog-writting-skills/hotring_hash_collision_modified.png)
 
 ### 构图和比例
 我们经常会见到在创作时使用相同大小的元素，嵌入到博文后缺变得忽大忽小，通过在最开始便**固定好画布的宽度**可以轻松解决这个问题。通常使用宽度 1200px 的画布可以兼容大部分博客系统的版面变化，并且和以前一样，请保持相同元素在不同配图中形状、大小、配色要尽可能一致。
 
 另一个要注意的问题是，请尽量保持配图的宽度大于高度，例如使用 **1200 * 500**、**1200 * 700**，而**不要使用** 1200 * 3000 的画布。对比如下两张配图：
-![](202104-blog-writting-skills/lcs_db_distributed_data_consistency.png)
-![](202104-blog-writting-skills/lcs_db_distributed_data_consistency_modified.png)
+![](../202104-blog-writting-skills/lcs_db_distributed_data_consistency.png)
+![](../202104-blog-writting-skills/lcs_db_distributed_data_consistency_modified.png)
 
 
 # 总结
@@ -254,9 +256,9 @@ func (svc *Service) ReplayTraffic(param *ReplayTrafficRequest) error {
 | 博客       | PingCAP    | https://pingcap.com/blog-cn/                                |                    |
 | 博客       | Meituan    | https://tech.meituan.com/                                   |                    |
 | 博客       | Netflix    | https://netflixtechblog.com/                                |                    |
-| 论文/会议    | NSDI       | [https://www.usenix.org/](https://www.usenix.org/conference/nsdi20/technical-sessions) | 网络/分布式        |
-| 论文/会议    | SOSP       | [https://dl.acm.org/](https://dl.acm.org/doi/proceedings/10.1145/3341301)          | 操作系统           |
-| 论文/会议    | OSDI       | [https://www.usenix.org/](https://www.usenix.org/conference/osdi20/technical-sessions) | 操作系统           |
-| 论文/会议    | VLDB       | [https://vldb.org/](https://vldb.org/pvldb/vol13-volume-info/)                   | 数据库             |
-| 论文/会议    | SIGMOD     | [https://sigmod2020.org/](https://sigmod2020.org/sigmod_research_list.shtml)           | 数据库             |
-| 论文/会议    | FAST       | [https://www.usenix.org/](https://www.usenix.org/conference/fast21/technical-sessions) | 存储               |
+| 论文    | NSDI       | [https://www.usenix.org/](https://www.usenix.org/conference/nsdi20/technical-sessions) | 网络/分布式        |
+| 论文    | SOSP       | [https://dl.acm.org/](https://dl.acm.org/doi/proceedings/10.1145/3341301)          | 操作系统           |
+| 论文    | OSDI       | [https://www.usenix.org/](https://www.usenix.org/conference/osdi20/technical-sessions) | 操作系统           |
+| 论文    | VLDB       | [https://vldb.org/](https://vldb.org/pvldb/vol13-volume-info/)                   | 数据库             |
+| 论文   | SIGMOD     | [https://sigmod2020.org/](https://sigmod2020.org/sigmod_research_list.shtml)           | 数据库             |
+| 论文    | FAST       | [https://www.usenix.org/](https://www.usenix.org/conference/fast21/technical-sessions) | 存储               |
