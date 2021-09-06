@@ -12,4 +12,4 @@ Hello.
 
 目前我在 **Shopee** 工作，是一名后端工程师，关注的方向是**数据库相关中间件**以及 **Golang**，另外对 **Redis** 也有少许的了解。如果您有兴趣一起来探讨技术上的问题，可以通过博客首页的邮箱联系到我。
 
-关于**内推**，您可访问我的[**内推页面**](https://app.mokahr.com/recommendation-apply/shopee/2964?recommendCode=NTACs4P&hash=%23%2Fjobs%3Fkeyword%3D)进行投递，我会为您持续跟进面试进度。同时，我也有就职字节跳动的同学可以提供相关工作机会，欢迎[**查阅**](https://job.toutiao.com/s/d68GbtB)。
+关于 **Shopee 内推**，您可访问我的[**内推页面**](https://app.mokahr.com/recommendation-apply/shopee/2964?recommendCode=NTACs4P&hash=%23%2Fjobs%3Fkeyword%3D)进行投递，我会为您持续跟进面试进度。同时，我也有就职**字节跳动**的同学可以提供相关工作机会，欢迎[**查阅**](https://job.toutiao.com/s/d68GbtB)。
