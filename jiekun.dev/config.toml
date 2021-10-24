@@ -4,6 +4,7 @@ defaultContentLanguage = "cn"
 title = "Jiekun's Blog"
 theme = "hermit"
 # enableGitInfo = true
+
 pygmentsCodefences  = true
 pygmentsUseClasses  = true
 # hasCJKLanguage = true  # If Chinese/Japanese/Korean is your main content language, enable this to make wordCount works right.
