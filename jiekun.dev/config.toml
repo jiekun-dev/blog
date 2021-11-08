@@ -90,3 +90,8 @@ googleAnalytics = "G-Q11C6RN8VS"
     name = "About"
     url = "about-me/"
     weight = 20
+
+  [[menu.main]]
+    name = "Links"
+    url = "links/"
+    weight = 30
