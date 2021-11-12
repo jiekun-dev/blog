@@ -92,6 +92,6 @@ googleAnalytics = "G-Q11C6RN8VS"
     weight = 20
 
   [[menu.main]]
-    name = "Links"
-    url = "links/"
+    name = "Friends"
+    url = "friends/"
     weight = 30
