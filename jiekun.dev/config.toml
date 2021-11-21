@@ -75,9 +75,14 @@ googleAnalytics = "G-Q11C6RN8VS"
   [[params.social]]
     name = "qq"
     url = "http://wpa.qq.com/msgrd?v=3&uin=136986560&site=qq&menu=yes"
+  
   [[params.social]]
     name = "wechat"
     url = "https://camo.githubusercontent.com/0dd9edc3b23f8b61337c708ef9882c8e25c1a0935532d8ebaed3e6ff937e70a5/68747470733a2f2f707470696d672e6d652f7838363637762e706e67"
+
+  [[params.social]]
+    name = "friends"
+    url = "friends/"
 
 [menu]
 
@@ -95,8 +100,3 @@ googleAnalytics = "G-Q11C6RN8VS"
     name = "Schedule"
     url = "https://trello.com/b/7Yru9uvH"
     weight = 30
-
-  [[menu.main]]
-    name = "Friends"
-    url = "friends/"
-    weight = 40
