@@ -92,6 +92,11 @@ googleAnalytics = "G-Q11C6RN8VS"
     weight = 20
 
   [[menu.main]]
+    name = "Schedule"
+    url = "https://trello.com/b/7Yru9uvH"
+    weight = 30
+
+  [[menu.main]]
     name = "Friends"
     url = "friends/"
-    weight = 30
+    weight = 40
