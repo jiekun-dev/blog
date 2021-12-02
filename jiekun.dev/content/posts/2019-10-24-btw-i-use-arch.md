@@ -14,6 +14,7 @@ categories:
 archieved: true
 
 ---
+![](../2019/10/001-zhujiekun-screens.jpg)
 rm -rf当然是假的啊，怎么可能失败？
 
 # ArchLinux Installation

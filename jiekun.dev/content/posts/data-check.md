@@ -16,14 +16,14 @@ draft: true
 
 ```Go
 func Check() {
-    // Fetch rows which update_time between a and b
+    // 获取上游 update_time 落在 [a, b) 的数据行
     upstreamRows := SelectFromUpstreamDB()
 
     for uniqueKey, sourceData := range upstreamRows {
-        // For each row in source, select corresponding row from downstream
+        // 为每个上游数据查找对应的下游数据
         targetData := FindFromDownstreamDB(uniqueKey)
 
-        // Compare row
+        // 对比上下游数据
         Compare(sourceData, targetData)
     }
 }
@@ -36,17 +36,17 @@ func Check() {
 同时，由于查表得到的结果只是当前的数据版本，在两次检查之间，数据可能发生了多次变更，**定时任务无法感知和观测到每个状态变更**，在数据被频繁 `UPDATE` 的场景下也存在一定的业务风险。
 
 因此，要实现更好的数据核对，我们考虑以下几点：
-1. **实时**
-2. **避免查表**
-3. **核对数据变更**，而非核对数据快照
+1. **实时**。
+2. **避免查表**。
+3. **核对数据变更**，而非核对数据快照。
 
 # 2. 实时数据核对
-实时数据核对，顾名思义，需要研发团队实现的内容包括“实时”和“核对”。在具体设计上，核对系统划分为 **CDC（Change data capture）模块**和**核对模块**。CDC 模块代替原有的查表操作，以一定的格式将数据变更输送至核对模块。核对模块则负责复杂的核对逻辑，包括数值转换、状态映射等，判定输入的数据是否相等、是否符合预期映射。
+实时数据核对，顾名思义，需要研发团队实现的内容包括“实时”和“核对”。在具体设计上，核对系统划分为 **CDC（Change data capture）模块**和**核对模块**。CDC 模块代替原有的查表操作，以一定的格式将数据变更输送至核对模块。核对模块则负责复杂的核对逻辑，如数值转换、状态映射等，判定输入的数据是否相等、是否符合预期映射。
 
 ## 2.1 CDC 方案
 在数据库领域，CDC 是一种设计模式，通过跟踪数据变更来决定要执行什么样的动作。实际上，传统的扫表获取特定 `update_time` 范围的数据也可以视为 CDC 的一种实现。在本文中，我们将 CDC 方案划分为两类：
-- 基于时间戳（Timestamps）或基于数据 Diff（Table Differencing）
-- 基于触发器（Triggers）或日志（Log-Based）
+1. 基于时间戳（Timestamps）或基于数据 Diff（Table Differencing）。
+2. 基于触发器（Triggers）或日志（Log-Based）。
 
 ### 2.1.1 Timestamps & Table Differencing
 **Timestamps** 即前文多次提到的基于 `update_time` 字段的 CDC 方案。类似的，基于 `status`、`version` 等字段的设计也可以视为 Timestamps 方案的拓展方案。除了 1.2 小节的缺点外，Timestamps 方案无法感知数据删除，只能使用状态软删除来代替，局限性较大。
@@ -56,9 +56,22 @@ func Check() {
 Timestamps 与 Table Differencing 划分在同一类是因为它们都有同一个缺陷：由数据变更以外的动作触发，如定时任务。这意味着此类方案都有一定的延迟，相比后续的（准）实时 CDC 方案而言，是个非常致命的短板。
 
 ### 2.2.2 Triggers & Log-Based
-**Triggers** 方案依赖数据库的触发器（Trigger），通过给特定的 Table 设置 DDL、DML 语句触发器
+**Triggers** 方案依赖数据库的触发器（Trigger），通过给特定的 Table 设置 DDL、DML 语句触发器，在发生变更时产生一条变更日志，可以达到获取数据变更，而非数据快照的目的。但是 Triggers 本质上是通过产生额外写操作来实现 CDC 目的，且每个表都需要设置对应的触发器，仍给系统引入了额外负担。
+
+**Log-Based** 方案通过数据源的事务日志抓取数据变更，例如在 MySQL 中存在 [binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html)，MongoDB 中存在 [oplog](https://docs.mongodb.com/manual/core/replica-set-oplog/)，通过模拟数据源的 Slave 可以轻易获取到这些日志。
+
+Log-Based 方案相比起其他方案有以下优点：
+- 降低了对数据库的影响，无额外查询和写入的负担。
+- 无需对业务项目、数据库 Schema 进行改造。
+- 低延迟。
+- 流式数据变更信息。
+
+可见， Log-Based 的门槛适中，要落地这种 CDC 方案，社区中也有非常丰富的工具链可以选用，避免重复造轮子和维护，从研发成本上而言是比较适合的。
 
 ### 2.2.3 Log-Based 实现：Canal
+Less is more，Canal 是国内用户较多的 CDC 工具，对比其他的变更抓取工具，我们选用的 Canal 的理由包括：
+- 易于搭建高可用集群。利用 ZooKeeper，Canal 在投递消息后将消费位点记录在 ZooKeeper 中，当集群中有节点宕机时，CDC 任务可以由其他节点迅速接管。相比起其他工具需要手动实现高可用，我们相信 Less is More。
+- 由于 DDL 的存在，如果仅记录当前 Schema 快照，CDC 模块是无法随意回溯、处理历史位置 binlog 的，因为历史 binlog 可能与当前 Schema 不匹配（例如不存在 binlog 对应的库表、字段数量不对齐等），会引发阻塞流程的异常。Canal 在这个问题的处理上引入了持久化的全局的时序表，在初始化时获取到满足订阅条件的 Schema，DDL 抵达时将 DDL 及时间戳也记录下来。当用户需要回溯至任意时间点时，表结构即为初始 Schema + DDL 增量。
 
 ## 2.2 数据核对
 ### 2.2.1 延迟队列
@@ -67,7 +80,46 @@ Timestamps 与 Table Differencing 划分在同一类是因为它们都有同一�
 
 # 3. 优化
 ## 3.1 Runtime 表达式执行
+在核对系统落地过程中，最初只有等值比较和状态比较的实现，但随着业务形态的变化，我们发现有非常多的场景需要更为灵活的比较规则。支持运算、映射及各种表达式是我们对外推广遇到的难点之一，并且对于服务本身，我们也希望将定制的权利交到用户手中，交付后无需再为不同的规则进行开发，这样能有效降低维护成本，节约宝贵的研发资源。
 
-## 3.2 性能
+对于 JavaScript、Python 等动态语言，在面对这种需求时大家很容易想到 `eval` 方法：
+```python
+>>> source_value = 1024  # 上游数据, 单位为 KiB
+>>> target_value = 1  # 下游数据, 单位为 MiB
+>>> result = eval('source_value == target_value * 1024')
+>>> print(result)
+True
+```
+
+由于 Go 语言的局限性，在运行时解析由用户添加的比对规则并不那么容易，我们考虑过几种不同的方案。
+
+最初我们计划**支持有限的表达式**，如加减乘除。通过简单的字符串处理，这种方案很容易实现，有兴趣的同学可以参考经典的 [Basic Calculator](https://leetcode.com/problems/basic-calculator/) 算法题。**基于词法分析的方案**可以支持更多的自定义参数，以 `govaluate` 包为例：
+```go
+func main() {
+	parameters := make(map[string]interface{})
+	parameters["source_value"] = 1024
+	parameters["target_value"] = 1
+
+	expression, _ := govaluate.NewEvaluableExpression(
+        "source_value == target_value * 1024"
+    )
+	result, _ := expression.Evaluate(parameters)
+
+	fmt.Println(result)  // true
+}
+```
+
+看起来问题似乎已经得到了解决，词法分析的实现能覆盖足够多的数据比对规则。但是我们仍希望引入方法规模的自定义支持，用户可以自定义属于他们的比对方法，而不仅仅是一段表达式。**Lua 脚本**是一个比较有趣的方案，正如用户在 Redis 中借助 Lua 实现分布式锁，核对系统的用户也能通过 Lua 实现个性化的数据核对：
+```
+Lua 脚本核对代码示例
+```
+
+在最终的优化版本中，我们同时支持词法分析和 Lua 脚本的方案，性能比较如下：
+
+```
+性能测试数据表格对比
+```
+
+## 3.2 性能优化
 
 # 4. 总结
