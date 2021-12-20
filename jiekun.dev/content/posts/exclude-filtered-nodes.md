@@ -1,6 +1,10 @@
 ---
 title: "Learn from issues: PodTopologySpread Skew 与 nodeAffinity 过滤"
 date: 2021-12-20T20:06:27+08:00
+type: post
+author: jiekun.zhu@shopee.com
+category: Kubernetes
+comments: true
 ---
 
 > 『Learn from issues』 系列通过讲解 Kubernetes 的 Issue 及 PR 中涉及的概念、代码，来帮助 Kubernetes 新人快速了解功能和代码思路。在以往的学习中，阅读大型项目的代码往往比较困难，而且如果没有使用场景，一些功能对新手而言或许会比较模糊且无法复现。本系列挑选的 Issue/PR 通常是只针对特定功能、bug 的改动，并且提供足够精简清晰的上下文来降低理解的负担。文末会附上对应的 Issue/PR 链接方便查看原内容。
