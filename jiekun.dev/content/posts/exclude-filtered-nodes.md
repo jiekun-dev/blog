@@ -65,7 +65,7 @@ spec:
 
 更多示例可以参考[官方文档](https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/)。
 
-除了 Pod Topology Spread Constraints，[Node affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity) 也可以用来控制调度，本文只介绍涉及的配置以减少需要理解的内容。以下面 yaml 为例，
+除了 Pod Topology Spread Constraints，[Node affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity) 也可以用来控制调度，本文只介绍涉及的配置以减少需要理解的内容。以下面 yaml 为例，要求 Pod 必须调度至带有 `kubernetes.io/e2e-az-name` 标签且标签值为 `e2e-az1` 或 `e2e-az2` 的 Nodes 上：
 
 ```yaml
 apiVersion: v1
