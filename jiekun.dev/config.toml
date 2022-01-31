@@ -42,7 +42,7 @@ googleAnalytics = "G-Q11C6RN8VS"
   # bgImg = ""  # Homepage background-image URL
 
   # Prefix of link to the git commit detail page. GitInfo must be enabled.
-  # gitUrl = "https://github.com/2014bduck"
+  # gitUrl = "https://github.com/jiekun"
 
   # Toggling this option needs to rebuild SCSS, requires Hugo extended version
   justifyContent = false  # Set "text-align: justify" to `.content`.
@@ -66,7 +66,7 @@ googleAnalytics = "G-Q11C6RN8VS"
 
   [[params.social]]
     name = "github"
-    url = "https://github.com/2014bduck"
+    url = "https://github.com/jiekun"
 
   [[params.social]]
     name = "email"
