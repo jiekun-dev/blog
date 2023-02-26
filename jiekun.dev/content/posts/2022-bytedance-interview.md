@@ -1,7 +1,6 @@
 ---
 title: "写在 2022 年末的字节跳动面试复盘"
 date: 2022-12-28T16:14:26+08:00
-draft: true
 archieved: true
 ---
 
