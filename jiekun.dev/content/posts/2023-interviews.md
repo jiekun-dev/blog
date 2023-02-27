@@ -1,11 +1,10 @@
 ---
 title: "写在 2023 年初的后端社招面试经历（四年经验）：字节 米哈游 富途 猿辅导"
 date: 2023-02-26T13:28:22+08:00
+type: post
 author: jiekun.zhu@shopee.com
-excerpt: 
 category: Interview
 comments: true
-archieved: false
 ---
 
 ## 目录
