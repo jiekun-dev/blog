@@ -78,7 +78,7 @@ googleAnalytics = "G-Q11C6RN8VS"
   
   [[params.social]]
     name = "wechat"
-    url = "https://camo.githubusercontent.com/0dd9edc3b23f8b61337c708ef9882c8e25c1a0935532d8ebaed3e6ff937e70a5/68747470733a2f2f707470696d672e6d652f7838363637762e706e67"
+    url = "wechat/"
 
   [[params.social]]
     name = "friends"
