@@ -11,7 +11,6 @@ rssLimit = 10  # Maximum number of items in the RSS feed.
 copyright = "This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License." # This message is only used by the RSS template.
 enableEmoji = true  # Shorthand emojis in content files - https://gohugo.io/functions/emojify/
 googleAnalytics = "G-Q11C6RN8VS"
-# disqusShortname = "yourdiscussshortname"
 
 [author]
   name = "杰坤"
