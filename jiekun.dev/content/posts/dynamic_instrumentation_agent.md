@@ -31,11 +31,11 @@ Agent 可以主要分为三个部分：
 ## 插装 Go 代码
 运行时插装在动态语言中有广泛的使用，通常称为 Monkey Patching。但是 Go 是一门强类型的静态语言，用它构建的代码由 Go 编译器变异成包含二进制机器码的程序文件：
 
-![](../202306-dynamic-instrumentation-agent/compile.webp)
+![](../202306-dynamic-instrumentation-agent/compile.jpeg)
 
 在运行时，操作系统和硬件加载并执行这个二进制程序文件：
 
-![](../202306-dynamic-instrumentation-agent/execute.webp)
+![](../202306-dynamic-instrumentation-agent/execute.jpeg)
 
 因此，运行中的 Go 程序其实就是一个运行中的二进制程序。我们通常认为，运行时插装去修改它的二进制代码是不安全、有风险的，在生产环境某些场景中甚至是不可能的。
 
