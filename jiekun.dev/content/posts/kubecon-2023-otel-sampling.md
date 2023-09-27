@@ -114,7 +114,7 @@ Trace 生成器自然是根据我们的需要生成 Span；Collector 用于**处
 
 如下图所示，服务在收到调用时，执行自己的逻辑，在执行过程中如果有任何感兴趣的情况出现（例如有 Error、走入异常分支），可以不遵循头部采样决策，上报自身的 Span，并将这个情况通过 RPC Response 返回给调用方。调用方此时未结束流程，仍有机会根据响应上报 Span。若每个服务都能接受 Response 的采样提示，并返回给自己的调用方，即可形成反向采样，或者回溯采样（Retroactive Sampling）。
 
-![](../202309-kubecon-otel/retroactive_sampling.jpg)
+![](../202309-kubecon-otel/retroactive_sampling.gif)
 
 很显然，这样的采样方式带来几个好处：
 - 相比头部采样，它授予了所有应用采样决策的权利；
