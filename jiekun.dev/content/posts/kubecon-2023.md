@@ -26,15 +26,15 @@ comments: true
 
 ![](https://live.staticflickr.com/65535/53235476845_06a90681c7_o.jpg)
 
-![](../202309-kubecon/_MG_9880.JPG)
+![](https://live.staticflickr.com/65535/53236882593_21d661b30c_o.jpg)
 
-![](../202309-kubecon/_MG_9859.JPG)
+![](https://live.staticflickr.com/65535/53236882838_e90578564c_o.jpg)
 
-![](../202309-kubecon/_MG_9902.JPG)
+![](https://live.staticflickr.com/65535/53236951309_c4e943b31f_o.jpg)
 
-![](../202309-kubecon/_MG_9904.JPG)
+![](https://live.staticflickr.com/65535/53236950864_f8fd89b392_o.jpg)
 
-![](../202309-kubecon/_MG_9927.JPG)
+![](https://live.staticflickr.com/65535/53236950874_4539883c7e_o.jpg)
 
 ![](https://live.staticflickr.com/65535/53235001851_2de69ce3c4_o.jpg)
 
