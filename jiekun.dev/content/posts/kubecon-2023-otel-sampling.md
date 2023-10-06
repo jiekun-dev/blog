@@ -1,6 +1,6 @@
 ---
 title: "KubeCon 2023 上海：OpenTelemetry 采样分享"
-date: 2023-09-26T12:35:49+08:00
+date: 2023-09-27T16:54:21+08:00
 author: jiekun.dev@gmail.com
 type: post
 category: Observability
