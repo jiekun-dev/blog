@@ -1,8 +1,0 @@
-Distributed tracing plays an important role in today's microservice architecture. However, the cost of collecting full volume Trace data is high. OpenTelemetry provides various sampling policies to reduce resource usage. Different policies require different network I/O, memory, and persistence storage space to achieve different sampling performances. These dimensions are key to describing how a sampling policy fits a specific scenario. We share our experience in evaluating the combinations of different sampling policies by analyzing the cost and sampling quality of different combinations quantitatively. We also give you a glimpse of the new sampling policy that we are implementing, and how it compares to the existing policies.
-
-分布式跟踪在当今的微服务架构中扮演着重要的角色。然而，收集完整的 Trace 数据的成本很高。OpenTelemetry 提供了各种采样策略来减少资源使用，不同的策略需要不同的网络 I/O、内存和存储空间来实现不同的采样效果，这些都分析采样策略在特定场景表现的的关键维度。我们将分享定量分析不同采样策略的成本和质量的经验，并介绍一些我们在探索的新型采样策略以及将它与现有策略的比较。
-
-> - I think giving 2-3 reasons why the cost of collecting full volume traces is high will go a long way in setting up the rest of your abstract, before you present the solution.
-> - I think if you can also mention briefly how having a variety of policies can be confusing, because how each one has different requirements, that would also help you as you build your case and solution. 
-> - In the abstract it's not exactly clear if you are covering only the Collector parts or the SDKs as well, it would be good to clarify that. 
-> - Although it might be implicit, it could be a good idea to close your abstract stating clearly what the audience will bring home from your presentation.
