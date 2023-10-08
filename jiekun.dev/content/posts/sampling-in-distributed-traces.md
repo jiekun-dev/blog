@@ -2,9 +2,10 @@
 title: "可观测性专题: 分布式追踪中的采样"
 date: 2023-04-17T19:51:13+08:00
 type: post
-author: jiekun.zhu@shopee.com
+author: jiekun.dev@gmail.com
 category: observability
 comments: true
+archieved: true
 ---
 
 ## 1. Warm-up
