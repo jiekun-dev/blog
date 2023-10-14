@@ -15,6 +15,8 @@ comments: true
 ## 1. Session 小记
 KubeCon 两天（不包含 IstioCon）一共有约 150 场分享，在开始之前需要先安排好时间和路线，我是在飞机上匆忙完成的。受限于工作领域和专业知识，我参加的分享大部分是可观测性领域的，少部分是当前比较热门的 AIGC 相关内容，再补充一些 Kubernetes 的通用知识。
 
+在记录别人的分享之前，先打个广告：我在在本次大会上分享了 **OpenTelemetry 的采样策略**，感兴趣的同学可以查看：[Video](https://www.bilibili.com/video/BV1hH4y1o79V/) | [Slides](https://docs.google.com/presentation/d/16PHf3XxZBuLjD0b07SMJmk0yfFAHB2jJpMPGgONngRE/edit?usp=sharing) | [Blog](https://jiekun.dev/posts/kubecon-2023-otel-sampling/)。
+
 ### 1.1 用 eBPF 充当网络加速器
 [Video](https://youtu.be/gPmDp4KoxPk?si=1gM5opzklwaIhpry) | [Slides](https://static.sched.com/hosted_files/kccncosschn2023/09/KubeCon23SH-CNI-agnostic%20network-performance%20accelerator%20with%20eBPF.pdf)
 
