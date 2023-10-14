@@ -137,7 +137,7 @@ CFP 修改是个漫长的过程，邮件沟通的效率也不高，最终我在 
 
 希望在下一次 KubeCon 上认识正在阅读本文的你！
 
-## 2. 可观测性 Session 小记
+## 2. Session 小记
 ### Chat and Get the PromQL
 [Video](https://www.youtube.com/watch?v=WW6vqLNwBm4) | [Slides](https://static.sched.com/hosted_files/kccncosschn2023/b8/Kubecon_35min_Text2PromQL_v3_submit.pdf)
 
@@ -172,14 +172,101 @@ CFP 修改是个漫长的过程，邮件沟通的效率也不高，最终我在 
 
 ![](../202309-kubecon/chat_promql_2.png)
 
-### 
+### Forget Kubectl and Talk to Your Clusters
+[Video](https://youtu.be/_Wm6pD57JDQ?si=KIWHMwpIXCFdxU6a) | [Slides](https://static.sched.com/hosted_files/kccncosschn2023/bc/ForgetKubectlAndTalkToYourCluster_Kubecon_2023_EN_Qian_Ding_0928.pdf)
 
-### eBPF 相关
+这是一场很有意思的 LLM 应用分享，除了前面提到的 PromQL，你一定想知道 LLM 还可以帮你做什么，来自蚂蚁金服的答案是：管理 Kubernetes 集群。
 
-### 
+我们直接从分享的中间部分开始回顾，或许很多企业都有设计过 IM 机器人帮助执行 `kubectl` 或者其他命令，因为从接收到告警消息，打开你的 Terminal 或者浏览器，经过无数步骤，到最终登入服务器执行命令行——太麻烦了，远不如在 IM 工具上发消息方便。
 
-## 3. 其他 Session 小记
-// todo 2023-10-30
+做这个机器人其实很简单，它甚至可以是一个只提供 Input 接口的 Server，在 LLM 火爆之前就已经是没有门槛的事情。但当你把这个机器人做出来，会发现：用的人不多——命令和参数太难记了！老鸟早就把一套命令行玩得行云流水不屑于用，小白用这机器人还要翻半天文档，效率还是很低。
+
+所以，大家又会想做一个训练好的机器人，接收自然语言输入，转为机器语言去执行。
+
+![](../202309-kubecon/forget_kubectl_1.png)
+
+有了这么个原型，开始尝试训练模型来输出一些 Shell Script 和 `kubectl xxx`，又会发现：有点危险——这俩写起来随心所欲的东西，靠谱吗？安全吗？怎样**验证**他们靠谱安全？
+
+我们知道自然语言一直无法直接被机器使用，是因为它也很随心所欲——**不结构化**。Shell Script 和 `kubectl` 存在的问题很类似，那么能不能改为输出一些更加结构化的东西呢？
+
+受 [DB-GPT](https://github.com/eosphoros-ai/DB-GPT) 影响可以联想到，有一种更成熟和容易审计的语言：**SQL**。如果**在 LLM 和 Cluster 之间实现一层 Cache**，这层 Cache 可以使用 SQL 作为查询语言，LLM 就可以输出结构化的 SQL 直接使用，Cache 起到保护 Cluster 操作的作用。
+
+这种设计其实还有很多细节没有在分享上讨论，包括：对需要 `kubectl` 操作资源的情况，例如重启，是怎么处理的？Cache Layer 如果没有命中结果，是否要再去找 Kubernetes 要信息，后面这个步骤怎么保证安全、没有注入风险？不过对于 LLM 的结构化输出的想法还是有借鉴的价值的，因为想把它用在实际运维工作中，确实需要对安全性、可靠性、可审计性有严格的把控能力。
+
+另一个有趣的用途是关于 Kubernets 资源的 Label Extraction。我们知道有很多东西是由 Label 和对应规则代表的，例如，我们为了确认某个 Pod 会不会在接下来的热更新中存活，需要去查看它的 YAML，看一下里面是否有特定的 Label：
+```yaml
+...
+metadata:
+   name: nginx
+   labels:
+      app: nginx
+      custom-key-foo: bar
+      another-custom-key/xyz: true  # Here
+```
+
+所以如果你训练出一个能帮你找特定 Label 的 LLM 机器人，你可能会有以下问答：
+- Q：App `nginx` 的 `another-custom-key/xyz` 是 `true` 吗？
+- A：是的。
+
+这应该很简单，因为这只是一个 Key-Value 查找的任务。不过更好的做法是用这些 Label 的含义作为 Prompt 去训练它，这里可能就涉及到前面的 Chain-of-Thought Prompt。个人觉得这个应用也比较有价值，更好的问答形式应该是：
+- Q：App `nginx` 会不会在接下来的热更新中存活？
+- A：会的。
+
+最后，把所有东西放在一起，就有了如下的结构图：
+
+![](../202309-kubecon/forget_kubectl_2.png)
+
+### 用 eBPF 充当网络加速器
+[Video](https://youtu.be/gPmDp4KoxPk?si=1gM5opzklwaIhpry) | [Slides](https://static.sched.com/hosted_files/kccncosschn2023/09/KubeCon23SH-CNI-agnostic%20network-performance%20accelerator%20with%20eBPF.pdf)
+
+在 Kubernetes 部署的大背景下，由于每个 Pod 都有自己的网络协议栈，因此数据包从一个 Pod 发送到另一个 Pod 时会**多次**经过完整的网络协议栈。这会带来一些耗时上的影响，而当 **Service Mesh 存在时**，数据包又要额外地经过 Sidecar，所以这种开销将会成倍地上涨。
+
+![](../202309-kubecon/ebpf_accelerator_1.png)
+
+为了减少这种开销，我们可能会思考如何将同机的数据传输更快速地送往目的地。在开发中，有很多问题我们都可以通过**加缓存**来优化，这种手段暴力但很有效。如果有一种手段可以把 Socket 缓存，**使得数据包能绕过一些网络协议栈直接抵达目的地**，数据传输性能可能会得到提升。
+
+借助 eBPF，可以通过 `BPF_PROG_TYPE_SOCK_OPS` 将所有建立连接的 **Socket** 捕获并置入 map 中；当有 TCP 事件产生时，可以通过 `BPF_PROG_TYPE_SK_MSG` 感知并实现 **Socket 数据的重定向**。
+
+接下来要解决的问题就是，如何通过 Socket 的信息将多个 Socket 两两配对。先举个简单的例子，
+如果我捕获了两个 Socket，这两个 Socket 的信息中 `src_ip` / `src_port` / `dest_ip` / `dest_port` 四元组正好是交叉匹配的，那很容易将其关联起来，未来的数据包就可以从 `IP:PORT` -> `IP:PORT` 的访问（会经过网络协议栈）转换为 Socket -> Socket 的访问。
+
+而在 Service Mesh 中情况会稍微复杂一些，因为：应用服务发出的数据包 dest_ip / dest_port 虽然是目标应用的，但是它会被 Envoy 代理拦截。这样的数据包应该先被重定向到 Envoy 的 Socket，再从 Envoy 的 Socket 重定向到目标应用的 Socket。
+
+![](../202309-kubecon/ebpf_accelerator_2.png)
+
+这样的加速器在 Kubernetes 集群规模不大时会有良好的效果，因为 **Node 数量少才会出现大量的 Node 内通信**。而若 Node 中存在大量外部流量，网络间的延迟会大大压缩 eBPF 加速带来的优势，使得整体优化效果趋于平庸。
+
+从性能测试报告中可以看到，这种优化方案极大地降低了 TCP 延迟，但是在包大小小于 512 Bytes 时会降低整体的吞吐量（优化前后 Ratio < 1），潜在原因是：加速器在绕过网络协议栈的同时也绕过了相关的优化，如对小包的攒批发送。
+
+![](../202309-kubecon/ebpf_accelerator_3.png)
+
+### Kubernetes Autoscaling with Cluster Autoscaler
+[Video](https://youtu.be/FxD7ELbH_Gg?si=JfjYTusk90R00nRD) | [Slides](https://static.sched.com/hosted_files/kccncosschn2023/d0/How%20We%20Scale%20up%20to%202k%20Nodes%20for%20Batch%20Jobs%20Using%20Cluster%20Autoscaler%20v0922%20%E4%B8%AD%E6%96%87%E7%89%88.pdf)
+
+这场分享是关于 Kubernetes 中的 Worker Node 弹性扩缩容工具 [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) （后文简称 CA）的。在利用 Kubernetes 托管批量作业时，因为这些作业常常是定时的，他们的特点是：只在运行时需要大量的机器资源。为了降低成本，通常有两个方向对批量作业进行优化：
+1. 分散不同作业的运行时间，使得机器负载在一定周期内都保持均匀；
+2. 在作业运行时视资源需求量进行扩容，运行后进行缩容。
+
+CA 是针对后者的解决方案之一，当 Cluster 中存在大量的 Pending Pod 时，CA 就会自动触发扩容，引入新的节点让 Pod 调度上去；同样，CA 也会在资源使用率下降时将 Pod 调度到其他节点上去，并触发缩容。
+
+![](../202309-kubecon/ca_1.png)
+![](../202309-kubecon/ca_2.png)
+
+但是在扩缩容的过程中常常会有很多问题导致其失败。从流程上看，用户需要（由 CA 自动完成）：
+- 启用新的节点；
+- 安装 Kubernetes 和相关组件；
+- 加入现有集群
+- 承接 Pending Pod 的调度并真正发挥其价值。
+
+在节点启用后、Pod 健康运行前，任何一个阶段出现问题都会导致节点运行的费用白白浪费掉，也是非常影响用户体验的事情。常见问题和解决方案在下文详细讨论。
+
+在大规模的批量任务运行时，会在短期内出现大量的待调度 Pod，因此 CA 会根据算法和策略引入大量节点，这时集群中的中心化组件，不管是某些 Coordinator 服务还是像 etcd 这类的存储中间件，会承受往常数十倍的压力。在不增加资源投入（例如升级中心化组件配置）的前提下，这类问题通用的解决办法就是一招鲜：**限速限量**、**分批**。中心化组件的可承受压力通常都是可以预估的，这些数据可以反馈给 CA 控制节点启动数量、加入现有集群的队列长度等等。
+
+第二个问题是当大量节点加入后，新 Pod 的启动不可避免地需要拉取超大体积的镜像，同样会引入**网络**、**磁盘写入**上的瓶颈。万金油的方案自然是：**缓存**、**预热**。基于批量作业运行的背景，可以推测大量 Pod 会使用相同的镜像，因此这些镜像可以先构建到操作系统镜像，在节点启动完成时镜像就已经准备好了，可以直接使用。从分享者展示的数据中可以了解到，这帮助他们将扩容时间从 22 分钟缩短至 4 分钟，写入流量峰值从 14 GiB/s 下降至 6 GiB/s，效果非常显著。
+
+第三个问题是社区中已经解决的，但是也算是大规模扩容中的一点经验。在 Pending Pod 数量、节点池和预估节点数量都非常多时，想要计算他们之间的调度条件、关系就会变得更困难、耗时更长。这个问题可以推广多个相互关联的组件同时进行扩容或快速增长的场景，我们想要努力避免笛卡尔积型的计算，方法依然是前面的一招鲜：**限速限量**、**分批**。这个思路在数据库 JOIN 查询时也有体现：[Nested loop join](https://en.wikipedia.org/wiki/Nested_loop_join)。
+
+从上面的讨论可以看出，这些问题的解法相信许多开发者也在日常开发中有用到过，区别只是在它们被用在广告、物流、金融业务，还是这些基础设施的编排、调度上。计算机领域想通的东西很多，而且许多问题都不需要非常高深、复杂的解决方案就能得到不错的优化效果。
 
 ## 4. 更多图片
 查看活动照片：[KubeCon + CloudNativeCon + Open Source Summit China 2023](https://www.flickr.com/photos/143247548@N03/albums/72177720311405294)
