@@ -16,6 +16,8 @@ Slides: [Google Slides](https://docs.google.com/presentation/d/16PHf3XxZBuLjD0b0
 
 ![](../202309-kubecon-otel/photo_1.jpg)
 
+{{< bilibili "//player.bilibili.com/player.html?bvid=BV1hH4y1o79V&page=1&autoplay=0" >}}
+
 ## 1. 可观测性之旅
 云原生时代，微服务的使用越来越广泛，大家都将原有的单体服务拆分成小块。趣丸，一家主打兴趣社交和电子竞技的科技公司，亦是如此。在企业内，大部分的项目都运行在 Kubernetes 之上，搭配 Istio。对应用服务的观察，数据来源于服务内 SDK 上报、Istio 以及其他部署在节点上的 Agent。聚焦在分布式追踪这方面，我们每日产生超过百亿的 Span。通用的基础设施能提供非常多的监控指标，但仍有一些不起眼的角落缺乏足够的关注。为了覆盖这些场景，我们探索了 eBPF 的使用，尝试为各种没有 Istio 支持，或者出于各种原因缺乏埋点的应用提供请求级别的可观测性支持。
 
