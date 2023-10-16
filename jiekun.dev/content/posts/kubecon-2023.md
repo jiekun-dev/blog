@@ -15,7 +15,7 @@ comments: true
 ## 1. Session 小记
 KubeCon 两天（不包含 IstioCon）一共有约 150 场分享，在开始之前需要先安排好时间和路线，我是在飞机上匆忙完成的。受限于工作领域和专业知识，我参加的分享大部分是可观测性领域的，少部分是当前比较热门的 AIGC 相关内容，再补充一些 Kubernetes 的通用知识。
 
-在记录别人的分享之前，先打个广告：我在在本次大会上分享了 **OpenTelemetry 的采样策略**，感兴趣的同学可以查看：[Video](https://www.bilibili.com/video/BV1hH4y1o79V/) | [Slides](https://docs.google.com/presentation/d/16PHf3XxZBuLjD0b07SMJmk0yfFAHB2jJpMPGgONngRE/edit?usp=sharing) | [Blog](https://jiekun.dev/posts/kubecon-2023-otel-sampling/)。
+在记录别人的分享之前，先打个广告：我在本次大会上分享了 **OpenTelemetry 的采样策略**，感兴趣的同学可以查看：[Video](https://www.bilibili.com/video/BV1hH4y1o79V/) | [Slides](https://docs.google.com/presentation/d/16PHf3XxZBuLjD0b07SMJmk0yfFAHB2jJpMPGgONngRE/edit?usp=sharing) | [Blog](https://jiekun.dev/posts/kubecon-2023-otel-sampling/)。
 
 ### 1.1 用 eBPF 充当网络加速器
 [Video](https://youtu.be/gPmDp4KoxPk?si=1gM5opzklwaIhpry) | [Slides](https://static.sched.com/hosted_files/kccncosschn2023/09/KubeCon23SH-CNI-agnostic%20network-performance%20accelerator%20with%20eBPF.pdf)
@@ -237,7 +237,8 @@ CFP 修改是个漫长的过程，邮件沟通的效率也不高，最终我在 
 
 在艰难完成翻译后，录制英文演讲视频时我又遇到了新的麻烦。因为对发音、语调总是不满意，在多次尝试后，我不得不寻找 AI 代讲，最终的 Dry Run 视频可以在这里找到：[dryun](https://www.youtube.com/watch?v=TIMDgOVlWP4)。
 
-{{< youtube TIMDgOVlWP4 >}}
+{{< bilibili "//player.bilibili.com/player.html?bvid=BV1794y1t78S&page=1&autoplay=0" >}}
+
 
 回到准备过程本身，最重要的事情是让演练的听众、专家提出建议并调整演讲内容。通常，领域的专家不一定是非常专业的演讲者，或者说未必有很丰富的演讲经验，如果他们在表达专业意见上有阻碍，可以参考 CNCF 提供的[演讲者指南](https://drive.google.com/file/d/1dcXenOObdl2d7h1RBUqHnauTIuA2B2oq/view?pli=1)，**主动询问**以下方面他们的想法：
 1. 我的演讲表达足够清晰吗，你是否清晰了解我想分享的主题和内容？
