@@ -39,11 +39,11 @@ CNCF 主办的 Observability Day 在 11 月 6 日与北美 KubeCon + CloudNative
 - 出现了 293 次：http_code: 200 / sql_count: 10 / cache_count: 10
 - 出现了 7 次：http_code: 200 / sql_count: 5 / cache_count: 5
 
-依照不同 “组合” 的出现总次数，可以对其赋予不同的采集概率，例如出现次数最多的组合后续继续出现的话，仅采样 0.1%；第二多的组合则采样 10%，而出现次数最少得组合采样 100%，以此体现 Dynamic。
+依照不同 “组合” 的出现总次数，可以对其赋予不同的采集概率，例如出现次数最多的组合后续继续出现的话，仅采样 0.1%；第二多的组合则采样 10%，而出现次数最少的组合采样 100%，以此体现 Dynamic。
 
 Dynamic Sampling 是发生在尾部采样阶段的，它的理念，或者说与传统尾部采样策略的差异在于：传统策略依照错误、耗时、数量等等因素决定，其**决定权本质上是控制在 Collector 的**；而 Dynamic Sampling 在 Collector 侧配置的是字段名，这些字段应用服务需要按实际情况，也就是**下放了决策权给应用**。当然，读者也可以认为它是[尾部采样](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor)中的 `string_attribute` 的小变种，很多时候维护者也使用了 Attribute 中的内容来决定是否采样，只是这些逻辑并不为应用服务所知，现在只是让大家知道和填写而已。
 
-有趣的是，2022 年初曾经有一个 issue 提出了几乎相同的想法：[#17874 New Component proposal: DeDuplicator processor / sampler](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/17874)，只是当时原作者没有带来后续的实现。
+有趣的是，2023 年初曾经有一个 issue 提出了几乎相同的想法：[#17874 New Component proposal: DeDuplicator processor / sampler](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/17874)，只是当时原作者没有带来后续的实现。
 
 ## Monitoring and Metadata - Google
 [Video](https://www.bilibili.com/video/BV1xC4y177sE/?share_source=copy_web&vd_source=6a34d69131ebaa81c8f8b005ccfbc86d) | [Slides](https://static.sched.com/hosted_files/colocatedeventsna2023/e0/kubecon%20talk%20ridwanmsharif%40.pptx)
