@@ -7,7 +7,7 @@ category: Observability
 comments: true
 ---
 
-![](../202311-kubecon-na/banner.png)
+![](../202311-kubecon-na/kubecon_co_event.png)
 
 # 前言
 CNCF 主办的 Observability Day 在 11 月 6 日与北美 KubeCon + CloudNativeCon 同期举行。作为可观测性领域的新人，虽然因为时间关系没能到现场参加，但是主办方在活动当天就上传了录像，堪称神速，所以有机会第一时间回看了这些分享，并且记录了少许工作相关的内容。
