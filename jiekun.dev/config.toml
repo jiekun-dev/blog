@@ -69,7 +69,7 @@ googleAnalytics = "G-Q11C6RN8VS"
 
   [[params.social]]
     name = "email"
-    url = "mailto:jiekun.dev@gmail.com"
+    url = "mailto:blog@jiekun.dev"
 
   [[params.social]]
     name = "qq"
