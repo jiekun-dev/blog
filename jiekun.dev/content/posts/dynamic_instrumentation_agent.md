@@ -3,7 +3,7 @@ title: "技术内幕: 构建 Go 语言的动态插装 Agent"
 date: 2023-06-04T13:58:25+08:00
 type: post
 author: jiekun.zhu@shopee.com
-category: observability
+category: Observability
 comments: true
 ---
 
