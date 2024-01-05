@@ -2,7 +2,7 @@
 title: "可观测性专题: 分布式追踪中的采样"
 date: 2023-04-17T19:51:13+08:00
 type: post
-author: jiekun.dev@gmail.com
+author: blog@jiekun.dev
 category: observability
 comments: true
 archieved: true

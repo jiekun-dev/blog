@@ -2,6 +2,7 @@
 title: "2023 年初的猿辅导面试复盘"
 date: 2023-02-06T12:45:58+08:00
 archieved: true
+author: blog@jiekun.dev
 ---
 
 ## 面试

@@ -1,6 +1,6 @@
 ---
 title: Python数据类型——String
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2019-05-18T14:23:16+00:00
 excerpt: Python"字符"的"串"

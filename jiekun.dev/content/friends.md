@@ -1,6 +1,7 @@
 +++
 title = "Friends"
 date = "2021-11-08"
+author = "blog@jiekun.dev"
 +++
 
 ### [Jayice](https://jayice.cn)

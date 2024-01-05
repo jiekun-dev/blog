@@ -1,6 +1,6 @@
 ---
 title: 基于Redis的缓存装饰器及缓存预热设计
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2019-09-08T05:27:22+00:00
 excerpt: 实现一个缓存装饰器，基于传入函数的参数控制缓存是否生效，并实现缓存的分批预热

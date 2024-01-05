@@ -1,6 +1,6 @@
 ---
 title: 短链生成系统设计——Counter+ZooKeeper+Base62
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2020-02-15T05:02:40+00:00
 excerpt: 解决分布式的短链ID生成问题，系统设计方向的第一次设计尝试。附带号段生成和取号的简单实现，因为取号会有并发读写的问题，顺便试用了一下ZooKeeper的锁。

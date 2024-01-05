@@ -1,6 +1,6 @@
 ---
 title: 'Redis有序集合的实现&跳跃表源码学习'
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2019-08-31T04:49:01+00:00
 excerpt: 了解Redis使用的zset实现，为什么zset的成员查找为O(1)，skiplist的数据结构和示例API源码

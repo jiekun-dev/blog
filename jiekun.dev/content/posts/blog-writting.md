@@ -2,7 +2,7 @@
 title: 技术博客写作指北——素材、排版和配图
 type: post
 date: 2021-04-01T21:00:00+08:00
-author: jiekun.zhu@shopee.com
+author: blog@jiekun.dev
 excerpt: 团队的技术博客是分享和总结的平台，从搭建至今共计有超过50篇文章发布。在写作过程中不难发现，除了选材以外，还存在一些简单的套路，能够快速改善读者的阅读体验。本文通过正反举例的方式为各位作者介绍在博客排版和配图上的技巧，希望通过这些套路能帮助大家更容易下笔写作和贡献更精彩的分享。
 category: Writting
 comments: true

@@ -1,6 +1,6 @@
 ---
 title: BTW, I use Arch
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2019-10-24T03:19:30+00:00
 excerpt: |

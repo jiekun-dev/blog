@@ -1,6 +1,6 @@
 ---
 title: Redis分布式锁的实现——RedLock
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2019-09-21T10:36:07+00:00
 excerpt: '基于单实例Redis使用SETNX的简易分布式锁实现 & 基于Redis集群的分布式锁RedLock实现'

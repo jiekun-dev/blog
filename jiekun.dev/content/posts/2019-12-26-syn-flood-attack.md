@@ -1,6 +1,6 @@
 ---
 title: SYN Flood Attack
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2019-12-26T14:03:53+00:00
 excerpt: SYN Flood攻击本博客实践

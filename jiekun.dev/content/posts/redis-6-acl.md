@@ -1,6 +1,6 @@
 ---
 title: Redis 6.0 ACL基于Bitmap实现
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2020-03-14T14:00:46+00:00
 excerpt: Redis 6.0中使用Bitmap存储命令权限，List存储键匹配Pattern来实现ACL功能，并在执行命令、事务和Lua过程中判断权限。

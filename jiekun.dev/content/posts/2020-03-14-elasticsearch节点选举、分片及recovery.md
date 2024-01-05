@@ -1,6 +1,6 @@
 ---
 title: Elasticsearch节点选举、分片及Recovery
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2020-03-14T07:58:10+00:00
 excerpt: Elasticsearch通过Bully算法选举临时Master、正式Master；Allocation模块负责分片选举，Master分发Primary Terms和维护in-sync列表；副分片的两阶段Recovery流程，通过_version保证恢复过程中的数据一致性

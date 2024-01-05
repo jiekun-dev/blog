@@ -2,6 +2,7 @@
 title: 2021 年度总结：期望与选择
 date: 2022-01-16T14:28:15+08:00
 comments: true
+author: blog@jiekun.dev
 ---
 
 ## Goodbye 2021

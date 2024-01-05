@@ -1,7 +1,7 @@
 ---
 title: "KubeCon 2023 上海：参会“小”记"
 date: 2023-10-05T16:32:23+08:00
-author: jiekun.dev@gmail.com
+author: blog@jiekun.dev
 type: post
 category: Observability
 comments: true

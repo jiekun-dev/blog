@@ -2,7 +2,7 @@
 title: Paper Reading：HotRing——哈希冲突中热点数据高效读取方案
 type: post
 date: 2021-03-13T16:39:07+08:00
-author: jiekun.zhu@shopee.com
+author: blog@jiekun.dev
 excerpt: 
 category: Algorithm
 comments: true

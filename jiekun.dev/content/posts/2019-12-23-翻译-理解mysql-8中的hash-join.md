@@ -1,6 +1,6 @@
 ---
 title: '[翻译] 理解MySQL 8中的HASH JOIN'
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2019-12-23T12:18:11+00:00
 excerpt: MySQL 8的Hash Join功能，借助内存哈希临时表大幅度提高非索引列Join效率

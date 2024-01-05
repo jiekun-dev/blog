@@ -1,6 +1,6 @@
 ---
 title: Elasticsearch倒排索引原理 数据写入与查询过程
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2019-07-30T09:20:18+00:00
 excerpt: 'Elasticsearch的倒排索引原理 & 基于Lucene索引的分片文档写入、Refresh、Flush和持久化实现'

@@ -1,6 +1,6 @@
 ---
 title: 理解AMQP协议和RabbitMQ的性能和可靠平衡
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2019-09-26T14:09:28+00:00
 excerpt: 快速了解AMQP协议的基本知识，同时协议（以及RabbitMQ自行扩展的规范）中的各个设置可能会对MQ的性能和可靠性产生影响，这些内容也从发布者和消费者的角度进行了介绍，以满足不同性能、可靠性要求的业务。深刻认识到专业的MQ与自建的Redis队列的差别，对于真正的MQ场景而言确实应该抛弃Redis这种简易的实现方案。

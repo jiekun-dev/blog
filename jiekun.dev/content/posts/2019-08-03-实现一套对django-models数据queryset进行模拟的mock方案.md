@@ -1,6 +1,6 @@
 ---
 title: 实现Django Models的数据mock
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2019-08-03T02:46:19+00:00
 excerpt: 开发中定义好业务需要的字段后往往因为数据清洗时间较长，拖慢了测试的间奏。于是尝试实现一套代替获取真实QuerySet的Mock方案，减少开发中对数据源的依赖，提高测试效率，这样真实数据入库后只需要针对少量异常情况调整即可完成测试。

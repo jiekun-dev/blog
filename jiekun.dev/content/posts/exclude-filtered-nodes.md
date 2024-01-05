@@ -2,7 +2,7 @@
 title: "Learn from issues: PodTopologySpread Skew 与 nodeAffinity 过滤"
 date: 2021-12-20T20:06:27+08:00
 type: post
-author: jiekun.zhu@shopee.com
+author: blog@jiekun.dev
 category: Kubernetes
 comments: true
 ---

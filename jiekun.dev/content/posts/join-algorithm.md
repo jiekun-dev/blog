@@ -1,6 +1,6 @@
 ---
 title: 我的Join查询是如何得出结果的？
-author: 小黄鸭
+author: blog@jiekun.dev
 type: post
 date: 2020-08-08T08:54:53+00:00
 excerpt: Join查询的几种基础算法

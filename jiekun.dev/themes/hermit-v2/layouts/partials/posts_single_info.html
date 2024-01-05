@@ -9,7 +9,7 @@
 {{- with .Params.categories }}
 <p>{{- partial "svg.html" (dict "context" . "name" "posts_single_categories") -}}{{- range . -}}<span class="category"><a href="{{ "categories/" | absLangURL }}{{ . | urlize }}">{{.}}</a></span>{{- end }}</p>
 {{- end }}
-<p>{{- partial "svg.html" (dict "context" . "name" "posts_single_wordcount") }}{{ i18n "wordCount" . -}} {{- partial "readTime.html" . -}}</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 {{ .WordCount }} 字, 约 {{ .ReadingTime }} 分钟。</p>
 <p>{{- partial "svg.html" (dict "context" . "name" "posts_single_date") }}{{ dateFormat .Site.Params.dateformNumTime .Date.Local -}}
     {{- if and (not (eq .Page.Params.ShowLastmod nil)) (.Page.Params.ShowLastmod) -}}
     {{- if and .GitInfo .Site.Params.gitUrl -}}
@@ -21,3 +21,4 @@
     {{- end -}}
     {{- end -}}
 </p>
+            <div><img src="/qr_code.png" width="40%"></div>

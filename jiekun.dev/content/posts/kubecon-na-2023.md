@@ -1,7 +1,7 @@
 ---
 title: "KubeCon 2023 北美：可观测日小记"
 date: 2023-11-25T12:30:00+08:00
-author: jiekun.dev@gmail.com
+author: blog@jiekun.dev
 type: post
 category: Observability
 comments: true

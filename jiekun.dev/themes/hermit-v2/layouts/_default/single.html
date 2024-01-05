@@ -54,7 +54,7 @@
 			{{ .TableOfContents }}
 		</aside>
 		{{- end }}
-		<div class="post-nav thin">
+		<!-- <div class="post-nav thin">
 			{{- with .NextInSection }}
 			<a class="next-post" href="{{ .Permalink }}">
 				<span class="post-nav-label">{{- partial "svg.html" (dict "context" . "name" "next") -}}&nbsp;{{ i18n "newer" }}</span><br><span>{{ .Title }}</span>
@@ -65,7 +65,7 @@
 				<span class="post-nav-label">{{ i18n "older" }}&nbsp;{{- partial "svg.html" (dict "context" . "name" "previous") -}}</span><br><span>{{ .Title }}</span>
 			</a>
 			{{- end }}
-		</div>
+		</div> -->
 		<div id="comments" class="thin">
 		{{- partial "comments.html" . -}}
 		</div>
