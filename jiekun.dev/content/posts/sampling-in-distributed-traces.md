@@ -5,6 +5,7 @@ type: post
 author: blog@jiekun.dev
 category: observability
 comments: true
+toc: true
 archieved: true
 ---
 

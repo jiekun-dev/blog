@@ -100,6 +100,8 @@ if (header !== null) {
   listen('#img-btn', "click", showImg);
   listen('.bg-img', "click", hideImg);
 
+  document.getElementById('toc').classList.toggle('show-toc');
+
   document.querySelectorAll('.post-year').forEach((ele)=> {
     ele.addEventListener('click', () => {
       window.location.hash = '#' + ele.id;

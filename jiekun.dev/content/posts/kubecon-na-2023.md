@@ -5,15 +5,17 @@ author: blog@jiekun.dev
 type: post
 category: Observability
 comments: true
+toc: true
+toc: true
 ---
 
 ![](../202311-kubecon-na/kubecon_co_event.png)
 
-# 前言
+## 前言
 CNCF 主办的 Observability Day 在 11 月 6 日与北美 KubeCon + CloudNativeCon 同期举行。作为可观测性领域的新人，虽然因为时间关系没能到现场参加，但是主办方在活动当天就上传了录像，堪称神速，所以有机会第一时间回看了这些分享，并且记录了少许工作相关的内容。
 
-# Session 小记
-## Dynamic Sampling in Practice - Honeycomb
+## Session 小记
+### Dynamic Sampling in Practice - Honeycomb
 [Video](https://www.bilibili.com/video/BV1hu4y187WE/?share_source=copy_web&vd_source=6a34d69131ebaa81c8f8b005ccfbc86d) | [Slides](https://static.sched.com/hosted_files/colocatedeventsna2023/52/DynamicSampling_2023Nov06.pdf)
 
 关于分布式追踪的采样方案，我在过往的 [博客](https://jiekun.dev/otel) 中已经简单介绍过了。Honeycomb 是一家可观测性方向的服务提供商，因此他们产品的视角也是可观测性平台的视角。Kent Quirk 在这场分享中提出的问题是：
@@ -45,7 +47,7 @@ Dynamic Sampling 是发生在尾部采样阶段的，它的理念，或者说与
 
 有趣的是，2023 年初曾经有一个 issue 提出了几乎相同的想法：[#17874 New Component proposal: DeDuplicator processor / sampler](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/17874)，只是当时原作者没有带来后续的实现。
 
-## Monitoring and Metadata - Google
+### Monitoring and Metadata - Google
 [Video](https://www.bilibili.com/video/BV1xC4y177sE/?share_source=copy_web&vd_source=6a34d69131ebaa81c8f8b005ccfbc86d) | [Slides](https://static.sched.com/hosted_files/colocatedeventsna2023/e0/kubecon%20talk%20ridwanmsharif%40.pptx)
 
 这场分享的小标题是：**Exploring approaches to attaching metadata to logs, metrics and traces**。刚好最近也在和 Metrics 打交道，所以想看看能不能从中学到一些。
@@ -104,7 +106,7 @@ promql-proxy:
 
 静态配置只能用于事故后补救、拦截，阻止同样问题再次发生。那要防范于未然，我们计划将其与指标维度监测打通，在指标采集过程中也会感知高基数问题，并且动态地加入 PromQL Proxy 的拦截范围。
 
-## Project Updates
+### Project Updates
 [Video](https://www.bilibili.com/video/BV1t94y1V7HJ/?share_source=copy_web&vd_source=6a34d69131ebaa81c8f8b005ccfbc86d) | Slides
 
 这个 Session 其实挺有趣而且介绍了很多新功能，但是考虑到信息集中对于当下缺少时间的人们非常重要，TL;DR：
@@ -119,7 +121,7 @@ promql-proxy:
    - OTLP 到达 1.0 版本，意味着它将变得更稳定、变更会更少，这对协议来说是非常重要的事情；
 - Fluentd & Fluent Bit：受限于对日志领域了解，没办法对具体内容逐一分享，感兴趣的读者可以翻阅录像。但是整体听下来的感受就是，它们也在像 OpenTelemetry 一样打造工具，例如 Processor、Pipeline 的设计结构如出一辙。或许这也是高度模块化、插件化的项目中比较值得推广的实践。
 
-# 总结
+## 总结
 除了上面提到的 Session，可观测性领域在 2023 年其实还有很多代表性的亮点，特别是 eBPF。本次 KubeCon + CloudNativeCon Observability Day 稍微缺少了相关的内容，或许是因为演讲者都投稿到隔壁 [CiliumCon](https://colocatedeventsna2023.sched.com/overview/type/CiliumCon) 去了。
 
 另外，也看到很多 Session 都在着重讲解成本问题，例如 FinOps、Prometheus 在过去一年怎样把内存减半等等。或许这也会是明年的一个工作方向，帮公司节约更多成本，或者在相近的成本下保持数据增长及组件健康 —— 就从 PromQL Proxy 开始吧。

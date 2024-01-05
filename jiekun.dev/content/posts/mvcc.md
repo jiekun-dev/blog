@@ -6,6 +6,7 @@ author: blog@jiekun.dev
 excerpt: 很多开发者都熟悉InnoDB中的MVCC（Multi-Version Concurrency Control）。在应用层面，通过维护多版本的数据，可以提高并行事务数，且不影响各事务的可串行性。本次Paper Reading的论文出自2017年VLDB：《An Empirical Evaluation of In-Memory Multi-Version Concurrency Control》，该论文梳理了MVCC主流的不同实现方式，并在末尾给出了不同实现在OLTP场景下的测试对比。本文主要关注论文描述MVCC的几个实现关键：并发控制协议、版本数据存储方式、垃圾清理机制和索引管理，对比其他DBMS的MVCC实现与InnoDB有何不同之处、优劣和适用场景。
 category: Paper Reading
 comments: true
+toc: true
 archieved: false
 
 ---

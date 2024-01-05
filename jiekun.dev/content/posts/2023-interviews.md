@@ -5,6 +5,7 @@ type: post
 author: blog@jiekun.dev
 category: Interview
 comments: true
+toc: true
 ---
 
 ## 目录
