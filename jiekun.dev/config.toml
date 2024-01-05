@@ -106,3 +106,12 @@ scrollToTop = true
     name = "Resume"
     url = "https://cv.jiekun.dev"
     weight = 30
+
+[related]
+    threshold = 0 
+    includeNewer = true
+    toLower = false
+
+    [[related.indices]]
+        name = "category"
+        weight = 100

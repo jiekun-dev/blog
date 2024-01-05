@@ -1,6 +1,6 @@
 +++
 title = "Find me on WeChat"
-date = "2023-02-28"
+date = "1700-01-01"
 archieved = "archieved"
 author= "blog@jiekun.dev"
 +++
