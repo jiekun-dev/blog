@@ -109,12 +109,8 @@ toc: true
 
 {{< figure src="https://jiekun.dev/posts/202401-2023-summary/kubecon.jpg" caption="我在 KubeCon China" class="left" >}}
 
-
-我有足够的理由相信，我当下做出的是过去 5 年来最棒的选择，2024 年尽最大的努力把握住来之不易的机会。
-
 {{< figure src="https://jiekun.dev/posts/202401-2023-summary/kcd.jpg" caption="我在 KCD" class="right" >}}
 
-https://www.flickr.com/photos/199271434@N02/53435730182/in/album-72177720313459663/
-
+我有足够的理由相信，我当下做出的是过去 5 年来最棒的选择，2024 年尽最大的努力把握住来之不易的机会。
 
 **Do what I love and love what I do**.
