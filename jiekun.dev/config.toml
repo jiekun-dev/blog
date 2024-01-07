@@ -27,6 +27,9 @@ scrollToTop = true
   tag = "tags"
   # Categories are disabled by default.
 
+[markup.goldmark.renderer]
+  unsafe = true
+
 [params]
   dateform        = "Jan 2, 2006"
   dateformShort   = "Jan 2"

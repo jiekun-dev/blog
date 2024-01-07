@@ -105,11 +105,13 @@ toc: true
 
 ## 5. 新的开始
 
-2023 年的下半年是梦幻的，我在 9 月和 12 月分别站上了 KubeCon 、Kubernetes Community Days 的讲台，而这仅仅是我在新的赛道的起点。
+2023 年的下半年是梦幻的，我不仅来到了期盼已久的赛道工作，还在 9 月站上了 KubeCon + CloudNativeCon + Open Source Summit China 2023 的讲台。
 
-{{< figure src="https://jiekun.dev/posts/202401-2023-summary/kubecon.jpg" caption="我在 KubeCon China" class="left" >}}
+曾经，在公司内分享是我的一个目标，我既遗憾在 Shopee 3 年依然没能完成它，也感慨来到新公司寥寥几天就跨过它实现了更大的目标，或许这就是不同环境对我的影响吧。这其中也有 CNCF 的 Diversity 理念、对新人的眷顾，感谢所有帮过我的人。
 
-{{< figure src="https://jiekun.dev/posts/202401-2023-summary/kcd.jpg" caption="我在 KCD" class="right" >}}
+而当事情迈出第一步后，第二步也会紧随而来。12 月，我又回到了 Shopee，但是这一次是以分享者的角色回来参加 Kubernetes Community Days 的。
+
+{{< figure src="https://jiekun.dev/posts/202401-2023-summary/talks.jpg" caption="我在外部分享" class="jpg" >}}
 
 我有足够的理由相信，我当下做出的是过去 5 年来最棒的选择，2024 年尽最大的努力把握住来之不易的机会。
 
