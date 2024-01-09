@@ -85,9 +85,9 @@ scrollToTop = true
   #  name = "qq"
   #  url = "http://wpa.qq.com/msgrd?v=3&uin=136986560&site=qq&menu=yes"
   
-  #[[params.socialLinks]]
-  #  name = "wechat"
-  #  url = "wechat/"
+  [[params.socialLinks]]
+    name = "wechat"
+    url = "https://jiekun.dev/wechat/"
 
   #[[params.socialLinks]]
   #  name = "friends"
