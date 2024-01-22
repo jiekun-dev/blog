@@ -7,7 +7,7 @@ category: Career
 comments: true
 toc: true
 ---
-{{< video-js "https://jiekun.dev/posts/202401-vod/output.m3u8" >}}
+<!-- {{< video-js "https://jiekun.dev/posts/202401-vod/output.m3u8" >}}
 
 <link
 			href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.10.2/video-js.min.css"
@@ -25,7 +25,7 @@ toc: true
 <script>
 	const vid = document.getElementById('vid1');
 	const player = videojs(vid);
-</script>
+</script> -->
 
 
 ## 1. 反思
