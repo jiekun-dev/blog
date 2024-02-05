@@ -7,26 +7,6 @@ category: Career
 comments: true
 toc: true
 ---
-<!-- {{< video-js "https://jiekun.dev/posts/202401-vod/output.m3u8" >}}
-
-<link
-			href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.10.2/video-js.min.css"
-			rel="stylesheet"
-		/>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.10.2/video.min.js"></script>
-
-<video-js id="vid1" controls preload="auto">
-	<source
-		src="https://jiekun.dev/posts/202401-vod/output.m3u8"
-		type="application/x-mpegURL"
-	/>
-</video-js>
-
-<script>
-	const vid = document.getElementById('vid1');
-	const player = videojs(vid);
-</script> -->
-
 
 ## 1. 反思
 时间拨回 2023 年 1 月，我正在等待公司通知晋升结果和年终奖。如大家所知，2022 年互联网行情动荡，Big Tech 先后裁员，Shopee 也不例外，干净利落裁了 2 轮。在这样的背景下，晋升和绩效能给我的安全感并不多 —— 准确地说是不如往年、不达期望。我开始重新思考开发者所谓的护城河在哪里，什么是我能做而其他人（或者说大部分人）不能的。

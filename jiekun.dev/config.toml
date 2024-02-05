@@ -67,8 +67,8 @@ scrollToTop = true
   customCSS = ["assets/custom.css"]
 
   [params.video_js]
-      css_url = 'https://unpkg.com/video.js/dist/video-js.min.css'
-      js_url = 'https://unpkg.com/video.js/dist/video.min.js'
+    css_url = 'https://unpkg.com/video.js/dist/video-js.min.css'
+    js_url = 'https://unpkg.com/video.js/dist/video.min.js'
   
   # Social Icons
   # Check https://github.com/Track3/hermit#social-icons for more info.
