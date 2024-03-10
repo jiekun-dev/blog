@@ -83,6 +83,6 @@ Linux Foundation 为参加活动的人提供 [Visa 邀请函](https://events.lin
 - （待更新）[KubeCon 欧洲 2024: 云原生在浪漫之都 | 舞台之上](/404.html)
 - （待更新）[KubeCon 欧洲 2024: 云原生在浪漫之都 | 终章: 探索](/404.html)
 
-![](../202403-kubecon-eu/slides.png)
+[![](../202403-kubecon-eu/slides.png)](https://sched.co/1YFfe)
 
 如开篇与家人的对话，考虑到欧洲行的机会难得，后续工作安排上也没有更多的时间外出，我将带上少量设备来记录这次旅程。期望能在 Paris Expo Porte de Versailles 见到你！
