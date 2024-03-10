@@ -6,7 +6,6 @@ type: post
 category: Observability
 comments: true
 toc: true
-toc: true
 ---
 
 ![](../202311-kubecon-na/kubecon_co_event.png)
