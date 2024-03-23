@@ -80,7 +80,7 @@ Linux Foundation 为参加活动的人提供 [Visa 邀请函](https://events.lin
 ## 启航
 
 这篇博客是「KubeCon 欧洲 2024: 云原生在浪漫之都」系列的第一章，即活动前的准备工作。接下来还会更新另外两章，分别对应我的分享内容及会场见闻。
-- （待更新）[KubeCon 欧洲 2024: 云原生在浪漫之都 | 舞台之上](/404.html)
+- （已更新）[KubeCon 欧洲 2024: 云原生在浪漫之都 | 舞台之上](https://jiekun.dev/posts/kubecon-eu-2024-ii/)
 - （待更新）[KubeCon 欧洲 2024: 云原生在浪漫之都 | 终章: 探索](/404.html)
 
 [![](../202403-kubecon-eu/slides.png)](https://sched.co/1YFfe)
