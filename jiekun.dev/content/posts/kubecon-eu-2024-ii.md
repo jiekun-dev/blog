@@ -16,7 +16,7 @@ toc: true
 
 ## Session Review
 
-[Video](https://www.bilibili.com/video/BV1hH4y1o79V/) | [Slides](https://docs.google.com/presentation/d/16PHf3XxZBuLjD0b07SMJmk0yfFAHB2jJpMPGgONngRE/edit?usp=sharing) | [Blog](https://jiekun.dev/posts/kubecon-eu-2024-ii/)
+[Video]() | [Slides](https://docs.google.com/presentation/d/1KHC2eZWOac6P8Vv8u6_u6MesBcAx7Ci_k1t9zLrCCIU/edit?usp=sharing) | [Blog](https://jiekun.dev/posts/kubecon-eu-2024-ii/)
 
 {{< figure src="https://jiekun.dev/posts/202403-kubecon-eu/observability_day.jpg" caption="Observability Day 现场" class="jpg" loading="lazy" >}}
 
