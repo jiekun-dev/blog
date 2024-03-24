@@ -11,7 +11,8 @@ toc: true
 ![](../202403-kubecon-eu/kceu24_banner.png)
 
 {{<admonition type=note title="Medium">}}
-This blog post is also available in **English**: [KubeCon Europe 2024: Cloud Native In La Ville-Lumière | In The Spotlight](https://medium.com/@jiekun/kubecon-europe-2024-cloud-native-in-la-ville-lumi%C3%A8re-in-the-spotlight-355a259311ac)
+This blog post is also available in **English**: 
+- [KubeCon Europe 2024: Cloud Native In La Ville-Lumière | In The Spotlight](https://medium.com/@jiekun/kubecon-europe-2024-cloud-native-in-la-ville-lumi%C3%A8re-in-the-spotlight-355a259311ac)
 {{< /admonition >}}
 
 现在是法国巴黎时间周六凌晨，KubeCon + CloudNativeCon Europe 2024 —— 至今 CNCF 主办的规模最大的活动 —— 刚刚结束，我在 Observability Day 上分享了关联可观测性三大支柱众多方案的其中之一：基于 Span 创造 Metric 和 Log。
