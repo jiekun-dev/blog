@@ -10,7 +10,7 @@ toc: true
 
 ![](../202403-kubecon-eu/kceu24_banner.png)
 
-现在是法国巴黎时间周六凌晨，KubeCon CloudNativeCon Europe 2024 —— 至今 CNCF 主办的规模最大的活动 —— 刚刚结束，我在 Observability Day 上分享了关联可观测性三大支柱众多方案的其中之一：基于 Span 创造 Metric 和 Log。
+现在是法国巴黎时间周六凌晨，KubeCon + CloudNativeCon Europe 2024 —— 至今 CNCF 主办的规模最大的活动 —— 刚刚结束，我在 Observability Day 上分享了关联可观测性三大支柱众多方案的其中之一：基于 Span 创造 Metric 和 Log。
 
 我分享的内容其实思路很简单，但是我们故事背后，实际使用 Span Metrics Connector 却不像介绍的那么容易。
 
@@ -112,3 +112,17 @@ Signals 转换真的那么简单好用吗？也未必，在 Observability Day �
 不过长远来看，成长需要有更多的沉淀，所以这大概是未来很长一段时间内的最后一次外部分享。但是让我开心的是，我已经看到了一点点技术分享带来的影响，影响身边的人，让他们变得乐于分享、向往分享，并且开始尝试提交他们的 CFP。
 
 感谢 KubeCon 提供的舞台。晚安，巴黎。
+
+![](../202403-kubecon-eu/badge.jpg)
+
+![](../202403-kubecon-eu/kubecon_3.jpg)
+
+![](../202403-kubecon-eu/kubecon_4.jpg)
+
+![](../202403-kubecon-eu/kubecon_1.jpg)
+
+![](../202403-kubecon-eu/kubecon_5.jpg)
+
+![](../202403-kubecon-eu/kubecon_2.jpg)
+
+
