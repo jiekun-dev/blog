@@ -113,6 +113,8 @@ Signals 转换真的那么简单好用吗？也未必，在 Observability Day �
 
 {{< figure src="https://jiekun.dev/posts/202403-kubecon-eu/speaking.jpg" caption="Speaking" class="jpg" loading="lazy" >}}
 
+{{< figure src="https://jiekun.dev/posts/202403-kubecon-eu/kubecon_01.jpg" caption="Speaking (by CNCF photographer)" class="jpg" loading="lazy" >}}
+
 
 不过长远来看，成长需要有更多的沉淀，所以这大概是未来很长一段时间内的最后一次外部分享。但是让我开心的是，我已经看到了一点点技术分享带来的影响，影响身边的人，让他们变得乐于分享、向往分享，并且开始尝试提交他们的 CFP。
 
@@ -127,6 +129,12 @@ Signals 转换真的那么简单好用吗？也未必，在 Observability Day �
 ![](../202403-kubecon-eu/kubecon_1.jpg)
 
 ![](../202403-kubecon-eu/kubecon_5.jpg)
+
+![](../202403-kubecon-eu/kubecon_02.jpg)
+
+![](../202403-kubecon-eu/kubecon_03.jpg)
+
+![](../202403-kubecon-eu/kubecon_04.jpg)
 
 ![](../202403-kubecon-eu/kubecon_2.jpg)
 
