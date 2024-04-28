@@ -8,6 +8,7 @@ category:
  - Go
 comments: true
 toc: true
+draft: true
 ---
 
 {{<admonition type=note title="Medium">}}
