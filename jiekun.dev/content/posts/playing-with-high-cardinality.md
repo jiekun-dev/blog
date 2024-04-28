@@ -90,4 +90,4 @@ toc: true
 ## 总结
 从许多分享中可以观察到，指标查询的优化通常采用降低维度 + 增加查询代理的思路，减少每次查询涉及的数据量，又无需用户感知背后的数据源差异。
 
-另外，Prometheus 和 Thanos 的短板在处理海量数据量时持续被放大，所以许多技术方案在选型时都倾向于性能更好、资源使用效率更优秀的 VictoriaMetrics。最近我司也在尝试用 VictoriaMetrics 替换 Prometheus 和 Thanos，在测试环境中这为我们节约了 50% 的成本。考虑到块存储的价格，如果未来 VictoriaMetrics 将降采样功能下放到社区版本会为它赢得更多的使用者。
+另外，Prometheus 和 Thanos 的短板在处理海量数据量时持续被放大，所以许多技术方案在选型时都倾向于性能更好、资源使用效率更优秀的 VictoriaMetrics。最近我司也在尝试用 VictoriaMetrics 替换 Prometheus 和 Thanos，在测试环境中这为我们节约了 50% 的成本。考虑到块存储的价格，如果未来 VictoriaMetrics 能将降采样功能下放到社区版本，它可能会收获更多的使用者。
