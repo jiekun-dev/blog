@@ -25,6 +25,8 @@ toc: true
 
 如果想在 2024 年打造一套可观测性体系，OpenTelemetry 或许是个不错的选择。OpenTelemetry 诞生的愿景是解决可观测性数据标准化的问题，减少用户需要了解的 API，摆脱对单一 Vendor 的依赖。
 
+![](../202404-huya/standardization.jpg)
+
 虎牙在指标标准化上的实践，或许也是很多企业尝试过的：
 1. 确定以 OpenTelemetry 作为指导标准；
 2. 指标 SDK 基于 OpenTelemetry SDK 进行封装；
@@ -35,11 +37,13 @@ toc: true
 
 ## 高基数问题
 
-标准化之后，就是如何优化指标查询的用户体验，虎牙给出的方案是查询代理 + 预聚合。
+数据标准化之后，就是如何优化指标查询的用户体验，虎牙给出的方案是预聚合 + 查询代理。
 
 因为指标 Label 中经常存在一些不可枚举的字段（尽管我们总是跟开发强调不要这样做），例如 `ip`、`user_id`、`email`、`uuid`，它们会使得时序数据更加多而分散（每种 Label Value 的组合就是一条 Time Series，不同 Time Series 分散在不同位置存储）。当查询时，需要将这些数据重新会聚到一起，因此 Label Value 的基数越高，查询的成本就越大。
 
 预聚合是针对高基数指标查询的优化，如果已知一个 Label 在查询时不会用作筛选条件，那么提前将其聚合好并存储起来，可以在查询时减少需要获取的明细数据量，提升查询效率。
+
+![](../202404-huya/pre_aggregation.jpg)
 
 虎牙为预聚合指标提供了独立的存储，如图所示，OpenTelemetry Collector 将标准化的指标导出给 vmagent，vmagent 将原始数据 remote write 到 VMCluster（明细集群），并且按照规则对部分指标进行预聚合，remote write 到 VMCluster（预聚合集群）。又由于查询代理的存在，它可以分析用户的查询的粒度，以决定使用明细数据还是预聚合数据，在用户无感知的情况下提供更快的响应。
 
@@ -51,11 +55,11 @@ toc: true
 
 现在，问题变成如何识别高基数指标。在 VictoriaMetrics 中，有一项 [Cardinality Explorer](https://docs.victoriametrics.com/#cardinality-explorer) 的功能，它从 IndexDB （即 VictoriaMetrics 的倒排索引）中查询指标数量以提供结果，这比起扫描完整的数据更轻量。但是这需要等数据写入了 IndexDB 之后才能进行查询，是否有办法在指标采集时实时计数呢？
 
-我们可以先从用 HashSet 计数器开始，初始化一个全局的 `map[string]*HashSet`，每当收到一个 Sample 时，通过 `map[Sample.__name__]` 获取 HashSet，再将 Label Key + Value 的组合，例如 `name=zhu,ip=192.168.0.1`，放入 HashSet，这样 HashSet 中的元素个数就是这个 Metric 对应拥有的 Time Series 个数。
+我们可以先从用 HashSet 计数器开始，初始化一个全局的 `map[string]*HashSet`，每当收到一个 Sample 时，通过 `map[Sample.__name__]` 获取 HashSet，再将 Label Key + Value 的组合，例如 `name=zhu,ip=192.168.0.1`，放入 HashSet，这样 HashSet 中的元素个数就是这个 Metric 对应的 Time Series 个数。
 
-当 Label Key + Value 组合很多时，HashSet 毫无疑问需要浪费海量的内存。为了进一步优化，我们想到在这个场景中，其实并不需要完全精确的指标基数值，因此很容易联想到用于计数的概率型的数据结构 [HyperLogLog](https://en.wikipedia.org/wiki/HyperLogLog)。借助 [Redis](https://redis.io/docs/latest/develop/data-types/probabilistic/hyperloglogs/) 的例子演示 HyperLogLog 的效果：
+当 Label Key + Value 组合很多时，HashSet 毫无疑问需要浪费海量的内存。为了进一步优化，我们想到在这个场景中，其实并不需要完全精确的指标基数值，因此很容易联想到用于计数的概率型的数据结构 [HyperLogLog](https://en.wikipedia.org/wiki/HyperLogLog)。借助 [Redis](https://redis.io/docs/latest/develop/data-types/probabilistic/hyperloglogs/) 演示 HyperLogLog 的效果：
 ```bash
-> PFADD istio_request_duration_milliseconds_bucket label1_value1_label2_valeu1 label1_value2_label2_valee1 label1_value1_label2_valee2 label1_value2_label2_valee2
+> PFADD istio_request_duration_milliseconds_bucket k1_v1_k2_v1 k1_v2_k2_v1 k1_v1_k2_v2 k1_v2_k2_v2
 (integer) 1
 > PFCOUNT istio_request_duration_milliseconds_bucket
 (integer) 4
@@ -76,8 +80,14 @@ toc: true
 
 这时候降采样（Downsampling）能发挥更大的作用。降采样本质上也是预聚合的一种，它将原始的数据按照 5m，1h 等时间跨度进行聚合。如果上文的例子使用的是 1h 粒度的数据，那么只需要聚合 432 万个数据点，进一步提升查询效率。
 
+![](../202404-huya/aggregation.gif)
+
+
 如果我们将指标的基数想象为分辨率，高基数的指标具有超高的分辨率，那么预聚合和降采样都是通过降低分辨率来让查询更加高效，区别在于预聚合降低了纵向分辨率，而降采样降低了横向分辨率。预聚合通常需要额外的存储空间，因为它们需要和明细的数据同时使用，而降采样虽然也产生了新的数据，但是通常只针对历史数据进行，因此可以认为降采样（在删除明细数据后）会节约磁盘空间。
 
-降采样在开源项目 [Thanos](https://thanos.io/v0.8/components/compact/#downsampling-resolution-and-retention) 中已经实现，VictoriaMetrics 在[企业版](https://docs.victoriametrics.com/#downsampling)中也提供了 Downsampling 的功能，而 [Cortex](https://cortexmetrics.io/docs/roadmap/#downsampling) 似乎还在规划中。
+降采样在开源项目 [Thanos](https://thanos.io/v0.8/components/compact/#downsampling-resolution-and-retention) 中已经实现，VictoriaMetrics 在[企业版](https://docs.victoriametrics.com/#downsampling)中也提供该功能，而 [Cortex](https://cortexmetrics.io/docs/roadmap/#downsampling) 似乎还在规划中。
 
-## 总结 
+## 总结
+从许多分享中可以观察到，指标查询的优化通常采用降低维度 + 增加查询代理的思路，减少每次查询涉及的数据量，又无需用户感知背后的数据源差异。
+
+另外，Prometheus 和 Thanos 的短板在处理海量数据量时持续被放大，所以许多技术方案在选型时都倾向于性能更好、资源使用效率更优秀的 VictoriaMetrics。最近我司也在尝试用 VictoriaMetrics 替换 Prometheus 和 Thanos，在测试环境中这为我们节约了 50% 的成本。考虑到块存储的价格，如果未来 VictoriaMetrics 将降采样功能下放到社区版本会为它赢得更多的使用者。
