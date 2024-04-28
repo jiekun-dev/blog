@@ -9,6 +9,12 @@ comments: true
 toc: true
 ---
 
+{{<admonition type=note title="Medium">}}
+This blog post is also available in **English**: 
+- [Rethinking Huya’s Journey: Leveraging OpenTelemetry and VictoriaMetrics for Monitoring](https://medium.com/@jiekun/exploring-huyas-journey-leveraging-opentelemetry-and-victoriametrics-for-monitoring-1a87ba2f6e64)
+{{< /admonition >}}
+
+
 上周在深圳参加了 GOPS 大会，来自虎牙的同学分享了他们在监控指标标准化和管理方面的实践，核心要点在于：
 - 用 OpenTelemetry 完成指标的标准化；
 - 依靠 VictoriaMetrics 预聚合和存储指标，提供高性能的查询。
