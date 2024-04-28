@@ -7,6 +7,7 @@ type: post
 category: Observability
 comments: true
 toc: true
+draft: true
 ---
 
 ![](../202403-kubecon-eu/kceu24_banner.png)
