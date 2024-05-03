@@ -109,7 +109,7 @@ vmagent 支持 Prometheus 使用的 Snappy 压缩算法，也支持 zstd 压缩�
 
 ## Further Reading
 你可以在以下位置找到关键的代码：
-- Presistente Queue Folder Path Generation: https://bit.ly/3y2FxEx
-- Data Compression Before Writing to FastQueue: https://bit.ly/4dlUeCN
-- FastQueue Fast Path & Slow Path: https://bit.ly/4aYkD7X
+- Presistente queue folder path generation: https://bit.ly/3y2FxEx
+- Data compression before writing to FastQueue: https://bit.ly/4dlUeCN
+- FastQueue fast path & slow path: https://bit.ly/4aYkD7X
 - Remote-Write worker: https://bit.ly/3JLrfL6
