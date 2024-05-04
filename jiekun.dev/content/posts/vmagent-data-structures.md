@@ -1,5 +1,5 @@
 ---
-title: "Victoriametrics 中的持久化数据结构 (Part 1): vmagent"
+title: "VictoriaMetrics 中的持久化数据结构 (Part 1): vmagent"
 date: 2024-05-03T11:33:36+08:00
 author: blog@jiekun.dev
 type: post
@@ -11,7 +11,7 @@ toc: true
 
 {{<admonition type=note title="Medium">}}
 This blog post is also available in **English**: 
-- [Persistent Data Structures in Victoriametrics (Part 1): vmagent]()
+- [Persistent Data Structures in VictoriaMetrics (Part 1): vmagent]()
 {{< /admonition >}}
 
 {{<admonition type=info title="Series Introduction">}}
