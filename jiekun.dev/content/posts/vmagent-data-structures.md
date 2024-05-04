@@ -11,7 +11,7 @@ toc: true
 
 {{<admonition type=note title="Medium">}}
 This blog post is also available in **English**: 
-- [Persistent Data Structures in Victoriametrics (Part 1): vmagent]()
+- [Persistent Data Structures in Victoriametrics (Part 1): vmagent](https://medium.com/@jiekun/persistent-data-structures-in-victoriametrics-part-1-vmagent-2e9c7681a6f0)
 {{< /admonition >}}
 
 {{<admonition type=info title="Series Introduction">}}
