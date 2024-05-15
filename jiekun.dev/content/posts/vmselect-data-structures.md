@@ -11,7 +11,7 @@ toc: true
 
 {{<admonition type=note title="Medium">}}
 This blog post is also available in **English**: 
-- [Persistent Data Structures in VictoriaMetrics (Part 1): vmselect]()
+- [Persistent Data Structures in VictoriaMetrics (Part 2): vmselect]()
 {{< /admonition >}}
 
 {{<admonition type=info title="Series Introduction">}}
