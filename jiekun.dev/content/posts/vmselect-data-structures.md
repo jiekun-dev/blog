@@ -11,7 +11,7 @@ toc: true
 
 {{<admonition type=note title="Medium">}}
 This blog post is also available in **English**: 
-- [Persistent Data Structures in VictoriaMetrics (Part 2): vmselect]()
+- [Persistent Data Structures in VictoriaMetrics (Part 2): vmselect](https://medium.com/@jiekun/persistent-data-structures-in-victoriametrics-part-2-vmselect-9e3de39a4d20)
 {{< /admonition >}}
 
 {{<admonition type=info title="Series Introduction">}}
@@ -45,7 +45,7 @@ VictoriaMetrics 是一个开源的高性能时序数据库，作为 Prometheus �
 3. 冷数据中被查询到的内容可以回到热数据中。
 
 ## FastCache
-如果 vmselect 需要退出，RollUpCacheResult 中的**热数据**会被持久化到磁盘中。代表热数据的 Key-Value 数据结构名叫 **FastCache**，本节介绍它的持久化。
+如果 vmselect 需要退出，RollupCacheResult 中的**热数据**会被持久化到磁盘中。代表热数据的 Key-Value 数据结构名叫 **FastCache**，本节介绍它的持久化。
 
 FastCache 由多个 Bucket 组成，每个 Bucket 由一个 Ring Buffer 和一个 Hash Index 组成。Ring Buffer 负责存储 Key-Value Pairs，而 Hash Index 则记录了 Key 对应的数据在 Ring Buffer 中的位置，作为索引。
 
