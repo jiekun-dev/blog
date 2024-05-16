@@ -31,11 +31,11 @@ VictoriaMetrics 是一个开源的高性能时序数据库，作为 Prometheus �
 ## Rollup Result Cache
 在一次时序数据库的查询中，通常会涉及许多时间序列和大量数据点，这些数据点必须先聚合才能展示。**Rollup** 通常指的是一个按照时间维度聚合好的时间序列，形成一个 Rollup 除了数据点，还需要 **Interval** 和 **Aggregation 方法**，例如 `sum`、`max`。
 
-在 `vmselect` 中，Rollup Result 会被缓存到 RollupResultCache 中。以查询时间范围 \[a, b\] 的 PromQL 为例，如果在 \[a+5, b+5\] 的时间范围上再次查询相同的 PromQL：
+在 vmselect 中，Rollup Result 会被缓存到 RollupResultCache 中。以查询时间范围 \[a, b\] 的 PromQL 为例，如果在 \[a+5, b+5\] 的时间范围上再次查询相同的 PromQL：
 1. RollupResultCache 可以用于填充部分时间范围（\[a+5, b\]）上的结果；
-2. 时间不重叠的部分（\[b+1, b+5\]）继续向 `vmstorage` 查询。
+2. 时间不重叠的部分（\[b+1, b+5\]）继续向 vmstorage 查询。
 
-`vmselect` 会收集、聚合多个 `vmstorage` 返回的结果，并将结果与 RollupResultCache 进行合并，最终形成新的 Rollup Result 返回，并更新 RollupResultCache。
+vmselect 会收集、聚合多个 vmstorage 返回的结果，并将结果与 RollupResultCache 进行合并，最终形成新的 Rollup Result 返回，并更新 RollupResultCache。
 
 ![](../202405-vm-series/rollup_result_cache.png)
 
