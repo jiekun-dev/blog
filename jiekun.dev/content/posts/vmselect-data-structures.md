@@ -66,7 +66,8 @@ FastCache 由多个 Bucket 组成，每个 Bucket 由一个 Ring Buffer 和一�
 └── metadata.bin
 ```
 
-## tmpBlocksFile
+{{<admonition type=Tip title="加餐">}}
+
 在（非缓存的）数据查询的过程中，由于需要向多个 vmstorage 节点获取大量数据并合并，这些数据会以 tmpBlocksFile 的结构存放在磁盘。tmpBlocksFile 拥有一个根据内存大小设置的 Buffer `[]byte`，以及指向临时文件的 `*os.File`。获取到的数据首先写入 Buffer 中，并不断地持久化到临时文件。
 
 ```
@@ -76,6 +77,8 @@ FastCache 由多个 Bucket 组成，每个 Bucket 由一个 Ring Buffer 和一�
 ```
 
 这些临时文件在收集完后将会被并发地读取、合并成向 vmstorange 查询的 Rollup Result，最终与 RollupResultCache 的数据再次合并形成返回给用户的 Rollup Result。
+
+{{< /admonition >}}
 
 ## Further Reading
 你可以在以下位置找到关键的代码：
