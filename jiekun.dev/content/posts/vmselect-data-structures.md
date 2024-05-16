@@ -76,7 +76,7 @@ FastCache 由多个 Bucket 组成，每个 Bucket 由一个 Ring Buffer 和一�
    └──2400906475
 ```
 
-这些临时文件在收集完后将会被并发地读取、合并成向 vmstorange 查询的 Rollup Result，最终与 RollupResultCache 的数据再次合并形成返回给用户的 Rollup Result。
+这些临时文件在收集完后将会被并发地读取、合并成向 vmstorage 查询的 Rollup Result，最终与 RollupResultCache 的数据再次合并形成返回给用户的 Rollup Result。
 
 {{< /admonition >}}
 
