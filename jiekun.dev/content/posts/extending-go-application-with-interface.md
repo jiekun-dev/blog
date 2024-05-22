@@ -1,6 +1,6 @@
 ---
 title: "用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例"
-date: 2024-04-22T23:16:21+08:00
+date: 2024-05-21T23:16:21+08:00
 author: blog@jiekun.dev
 type: post
 category: 
