@@ -143,7 +143,153 @@ func (rc *RedisRollupResultCacheClient) UpdateStats(fcs *fastcache.Stats) { retu
 可以看到第二次查询时耗时从 4.384 秒降低到了 1.706 秒，并且 Redis 中也出现了一些 Item。很好，看起来一切都是正常的。
 
 ### 整理代码
+前文的修改是为了快速实现核心功能，而很多旁路功能还要进行完善：
+- 用户配置、Flags、初始化逻辑、优雅退出逻辑；
+- Rollup Result Cache 监控指标。
 
-## 测试
+我们先来为新的 Cache 设计对应参数。参考 Thanos 的参数命名，我们为 vmselect 提供两个新的参数：
+```go
+    cacheType      = flag.String("cacheType", "in-memory", "Cache type for rollup result. Available options: in-memory(default), redis.")
+    cacheRedisAddr = flag.String("cacheRedisAddr", "", "Address for redis cache. It's only available when `cacheType` is set to `redis`. Usage: -cacheRedisAddr=127.0.0.1:6379")
+    cacheRedisTTL  = flag.Duration("cacheRedisTTL", time.Minute, "TTL for redis cache items. It's only available when `cacheType` is set to `redis`. Usage: -cacheRedisTTL=1m (default)")
+
+```
+
+同样地，在 `InitRollupResultCache` 和 `StopRollupResultCache` 方法中，接收这些参数，并且 switch-case 处理：
+```go
+func InitRollupResultCache(cacheType, cachePath, cacheRedisAddr string, cacheRedisTTL time.Duration) {
+    var c rollupResultCacheClient
+
+    switch cacheType {
+    case "in-memory":
+        // 将原有的初始化代码移到这里
+        ... 
+    case "redis":
+        c = rediscache.NewRedisClient(cacheRedisAddr, cacheRedisTTL) // NewRedisClient 也修改为传入地址参数
+    }
+
+    rollupResultCacheV = &rollupResultCache{
+        c: c,
+    }
+}
+
+func StopRollupResultCache(cacheType string) {
+    switch cacheType {
+    case "in-memory":
+        // 将原有的初始化代码移到这里
+        ...
+    case "redis":
+        // 与 in-memory Cache 不同, Redis 的 Stop 方法实际上不进行任何操作.
+        rollupResultCacheV.c.Stop()
+        rollupResultCacheV.c = nil
+    }
+}
+```
+
+现在代码看起来整洁多了。
+
+那么接下来处理缓存相关的指标。Rollup Result Cache 原有的监控指标主要由 `fastcache.Stats` 提供，包括 Item 数量、体积、缓存命中率等。对于 Redis 实例，通常认为使用者会有额外的监控，因此不需要提供资源使用情况的指标，仅需要记录缓存命中率。
+
+首先我们给 `RedisRollupResultCacheClient` 添加统计字段，并且在 `Get` 方法中记录它们：
+```go
+type RedisRollupResultCacheClient struct {
+    c   redis.UniversalClient
+    ttl time.Duration
+
+    // 统计字段
+    calls  uint64
+    misses uint64
+}
+
+func (rc *RedisRollupResultCacheClient) Get(dst, key []byte) []byte {
+    rc.calls++  // 记录调用次数
+    
+    ...
+    if errors.Is(err, redis.Nil) {
+        rc.misses++ // 如果没有读取到结果，记录未命中次数
+    } else if err != nil {
+        ...
+    }
+
+    ...
+}
+
+func (rc *RedisRollupResultCacheClient) GetCalls() uint64  { return rc.calls }
+func (rc *RedisRollupResultCacheClient) GetMisses() uint64 { return rc.misses }
+```
+
+最后参考指标暴露的方法，在 `InitRollupResultCache` 中修改：
+```go
+func InitRollupResultCache(cacheType, cachePath, cacheRedisAddr string, cacheRedisTTL time.Duration) {
+    ...
+
+    switch cacheType {
+    case "in-memory":
+        ...
+    case "redis":
+        ...
+        metrics.GetOrCreateGauge(`vm_cache_requests_total{type="promql/rollupResult"}`, func() float64 {
+            return float64(redisClient.GetCalls())
+        })
+        metrics.GetOrCreateGauge(`vm_cache_misses_total{type="promql/rollupResult"}`, func() float64 {
+            return float64(redisClient.GetMisses())
+        })
+        ...
+    }
+
+    ...
+}
+```
 
 ## 效果对比
+现在让我们来看看最终效果，用户需要怎样使用不同的缓存。
+
+In-memory 缓存依然与原来的使用方式一致：
+```bash
+# 使用内存缓存, 退出时缓存数据不持久化
+./vmselect -storageNode=127.0.0.1:8401
+
+# 使用内存缓存, 指定退出时缓存数据的持久化路径
+./vmselect -storageNode=127.0.0.1:8401 -cacheDataPath=/my/tmp/dir
+
+# (新) 使用内存缓存, 指定退出时缓存数据的持久化路径
+./vmselect -storageNode=127.0.0.1:8401 -cacheType=in-memory -cacheDataPath=/my/tmp/dir
+```
+
+Redis 缓存与参数使用：
+```bash
+# (新) 使用外部缓存
+./vmselect -storageNode=127.0.0.1:8401 -cacheType=redis -cacheRedisAddr=127.0.0.1:6379
+
+# (新) 使用外部缓存, 指定 Item 的过期时间
+./vmselect -storageNode=127.0.0.1:8401 -cacheType=redis -cacheRedisAddr=127.0.0.1:6379 -cacheRedisTTL=5m
+```
+
+在进行一些查询后，可以从 vmselect 暴露的指标观察缓存使用情况：
+```bash
+# http://127.0.0.1:8481/metrics
+vm_cache_misses_total{type="promql/rollupResult"} 2
+vm_cache_requests_total{type="promql/rollupResult"} 2
+```
+
+## 总结
+这篇博客以最近为公司内的 VictoriaMetrics 开发缓存功能的实践为基础，介绍了 Go Interface 在抽象、扩展上的基础用法。你可以通过以下链接查看完整代码与改动部分：
+- [feature/vmselect-ext-cache](https://github.com/jiekun/VictoriaMetrics/tree/feature/vmselect-ext-cache) 分支；
+- [diff](https://github.com/jiekun/VictoriaMetrics/compare/cluster...feature/vmselect-ext-cache) 代码。
+
+{{<admonition type=tip title="什么时候能合并？">}}
+这个功能是否可以合并到 VictoriaMetrics 呢？暂时还不行。
+
+首先，代码中有几个错误——既有特意留下的，也有出于时间原因没有深入完善的。如果读者有兴趣的话可以尝试通过 Code Review 找出来。以下是对应的提示：
+- 在记录缓存命中率时，我们使用到了 `uint64` 进行自增，这种数据类型是线程安全的吗？
+- `rollupResultCacheClient` 中 `Save`、`UpdateStats` 方法是所有 Cache 都需要的吗？
+- `InitRollupResultCache` 需要接收许多参数，如果未来有更多类型的 Cache，或者 Redis Cache 需要更多控制参数，应该怎样设计得更优雅？
+
+其次，当前的代码分支中缺少了 Pull Request 必须具备的内容：
+- 文档；
+- 单元测试。
+
+最后，如[第一章](#victoriametrics-的缓存问题)所说，上游还在针对以何种方式提供更好的缓存进行讨论。
+{{< /admonition >}}
+
+VictoriaMetrics 的社区非常活跃，对 Issue 的答复和处理也比较及时，希望这篇博客可以鼓励更多的 [Gopher](https://go.dev/blog/gopher) 探索和参与到 VictoriaMetrics 社区中。
