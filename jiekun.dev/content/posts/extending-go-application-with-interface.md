@@ -40,10 +40,10 @@ vmselect 处于负载均衡之后，每个 vmselect 的节点都是平等的，�
 ![](../202405-extending-go-application/rollup_result_cache_usage.png)
 
 非常棒，看起来只有几个方法被使用到了，他们分别是：`Get`、`Set`、`GetBig`、`SetBig`、`Stop`、`UpdateStats`、`Save`。我的扩展的思路是：
-1. 设计一个包含这些方法的 Interface，叫 `CacheClient`；
-2. 将原有对 `*workingsetcache.Cache` 实例的调用修改为对 `CacheClient` Interface 的调用；
-3. 为 `CacheClient` Interface 提供新的实现；
-4. 启动时按照配置选择 `CacheClient` 使用哪种实现。
+1. 设计一个包含这些方法的 Interface，叫 `rollupResultCacheClient`；
+2. 将原有对 `*workingsetcache.Cache` 实例的调用修改为对 `rollupResultCacheClient` Interface 的调用；
+3. 为 `rollupResultCacheClient` Interface 提供新的实现；
+4. 启动时按照配置选择 `rollupResultCacheClient` 使用哪种实现。
 
 ## 开发
 ### 定义 Interface
@@ -266,11 +266,7 @@ Redis 缓存与参数使用：
 ```
 
 在进行一些查询后，可以从 vmselect 暴露的指标观察缓存使用情况：
-```bash
-# http://127.0.0.1:8481/metrics
-vm_cache_misses_total{type="promql/rollupResult"} 2
-vm_cache_requests_total{type="promql/rollupResult"} 2
-```
+![](../202405-extending-go-application/metrics.png)
 
 ## 总结
 这篇博客以最近为公司内的 VictoriaMetrics 开发缓存功能的实践为基础，介绍了 Go Interface 在抽象、扩展上的基础用法。你可以通过以下链接查看完整代码与改动部分：
