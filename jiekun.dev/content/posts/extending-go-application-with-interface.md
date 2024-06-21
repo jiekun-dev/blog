@@ -12,7 +12,7 @@ toc: true
 
 {{<admonition type=note title="Medium">}}
 This blog post is also available in **English**: 
-- [Extending Go Application with Interface: Implementing Redis Caching for VictoriaMetrics]()
+- [Extending Go Application with Interface: Implementing Redis Caching for VictoriaMetrics](https://medium.com/p/4fe4a3fbe7b3)
 {{< /admonition >}}
 
 
