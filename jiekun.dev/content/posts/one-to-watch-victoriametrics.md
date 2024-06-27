@@ -1,5 +1,5 @@
 ---
-title: "聚焦 VictoriaMetrics：一家乌克兰初创企业的故事"
+title: "[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事"
 date: 2024-06-23T15:32:11+08:00
 author: blog@jiekun.dev
 type: post
@@ -7,14 +7,15 @@ category:
  - Observability
 comments: true
 toc: true
+image: https://jiekun.dev/posts/202406-one-to-watch-victoriametrics/cover.jpg
 ---
+
+![](../202406-one-to-watch-victoriametrics/cover.jpg)
 
 {{<admonition type=note title="Medium">}}
 This blog post is originally posted by **The Stack** on: 
 - [One to Watch: VictoriaMetrics - The story of a startup from Ukraine](https://www.thestack.technology/one-to-watch-victoriametrics-the-story-of-a-startup-from-ukraine/)
 {{< /admonition >}}
-
-![](../202406-one-to-watch-victoriametrics/cover.jpg)
 
 这是一个初创公司追寻成功的故事，虽然不管从哪个方面看，这个故事都耳熟能详：
 - [x] 一群聪明人有一个填补市场空白的创意；
