@@ -1,6 +1,6 @@
 ---
-title: "Question From Community: High Churn Rate Without New Time Series?"
-date: 2024-05-03T11:33:36+08:00
+title: "社区报障案例：没有新的 Time Series，为什么 Churn Rate 升高？"
+date: 2024-08-03T14:59:00+08:00
 author: blog@jiekun.dev
 type: post
 category: 
@@ -11,7 +11,7 @@ toc: true
 
 {{<admonition type=note title="Medium">}}
 This blog post is also available in **English**: 
-- [Persistent Data Structures in VictoriaMetrics (Part 1): vmagent](https://medium.com/@jiekun/persistent-data-structures-in-victoriametrics-part-1-vmagent-2e9c7681a6f0)
+- [Question From Community: High Churn Rate Without New Time Series?]()
 {{< /admonition >}}
 
 上周，我在 [Slack](https://victoriametrics.slack.com/archives/CGZF1H6L9/p1722389004202069) 看到一位用户求助：
