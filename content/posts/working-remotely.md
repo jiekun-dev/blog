@@ -6,7 +6,7 @@ type: post
 category: Life
 comments: true
 toc: true
-draft: false
+draft: true
 ---
 
 现在是凌晨 05 点 47 分，正常来说失眠几乎不发生在我身上。既然睡不着，又恰逢英雄联盟在更新维护，就抽点时间来聊聊远程办公的感受吧。
