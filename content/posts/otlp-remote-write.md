@@ -14,7 +14,7 @@ This blog post is also available in **English**:
 - [OpenTelemetry, Prometheus, and More: Which Is Better for Metrics Collection and Propagation?]()
 {{< /admonition >}}
 
-## Prometheus 和 Remote Write
+## Prometheus and Remote Write
 
 Prometheus 是云原生指标监控领域的事实标准。它的工作模式很简单：应用提供 `/metrics` HTTP API，以文本格式暴露指标数据；Prometheus 访问这些 API，将数据采集，然后提供查询 API 进行展示。
 
@@ -30,13 +30,13 @@ Prometheus 是云原生指标监控领域的事实标准。它的工作模式很
 
 ![]()
 
-## OpenTelemetry 和 OTLP
+## OpenTelemetry and OTLP
 
 2019 年，OpenTelemetry 诞生，它提供了统一、开源的可观测性标准，避免用户因依赖特定供应商或者协议而难以更换、迁移到新的技术服务上。
 
 OpenTelemetry 定义了一系列的概念，例如 Signal，即一类 Telemetry，包括 Tracing Signal、Metric Signal、Log Signal 等。而在不同组件间传输这些 Telemetry 数据需要遵循的协议就是 OpenTelemetry 协议（OpenTelemetry Protocol，OTLP）。
 
-## Prometheus 和 OpenTelemetry
+## Prometheus and OpenTelemetry
 
 那么当谈及 Metrics 时，似乎很容易将 OpenTelemetry 与 Prometheus 进行类比：
 
@@ -59,7 +59,7 @@ OpenTelemetry 定义了一系列的概念，例如 Signal，即一类 Telemetry�
 
 ## Benchmark
 
-### 环境搭建
+### Setup
 
 我们分别运行 [Prometheus](https://github.com/prometheus/prometheus)（Agent Mode）、[OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) 和 [vmagent](https://github.com/VictoriaMetrics/VictoriaMetrics/tree/master) 抓取 1000 个分散在 3 个 Region 的 [Node exporter](https://github.com/prometheus/node_exporter)，并将数据以不同协议发送给 Receiver。这个 Receiver 会对数据进行 Decompress 和 Unmarshal，并且记录一些统计信息，但没有实际的数据持久化操作。
 
@@ -79,14 +79,44 @@ OpenTelemetry 定义了一系列的概念，例如 Signal，即一类 Telemetry�
 
 ### Benchmark #1
 
-Benchmark #1 主要了解不同组件的资源使用情况，为后续测试提供参考基准。在运行了数天后，我们得到了如下的监控数据：
+Benchmark #1 主要了解不同组件的资源使用情况，为后续测试提供参考基准。在运行了数天后，我们得到了一些监控数据。
 
-![](../202412-otlp-remote-write/benchmark-1-cpu.png)
+![](../202412-otlp-remote-write/benchmark-1-resource.png)
 
-![](../202412-otlp-remote-write/benchmark-1-mem.png)
+看起来从 Prometheus 2.x 升级到 Prometheus 3.x 并不会给你额外的节约 CPU 和内存资源。它是测试组件中使用内存最多的，这可能与 WAL 的存在有关。OpenTelemetry Collector 如果用作数据采集的 Agent，看起来 CPU 开销有点太高了，同时在没有 WAL 的情况下，内存的使用量也处在较高的水平。
 
-![](../202412-otlp-remote-write/benchmark-1-in.png)
+![](../202412-otlp-remote-write/benchmark-1-traffic.png)
 
-![](../202412-otlp-remote-write/benchmark-1-out.png)
+网络流量的情况反映的是不同协议的数据传输效率。由于采集的是相同的目标，In-Traffic 是几乎一致的。而 Out-Traffic 告诉我们，Prometheus 3.x 使用的 Remote Write 2.0 相比 Remote Write 1.0 能节约 26% 的带宽，而 OpenTelemetry Collector 使用的 OTLP 似乎在这方面不太占优势。vmagent 使用的是 Remote Write 1.0，但是压缩算法从 Prometheus 规范中指定的 [Snappy](https://github.com/google/snappy) 变成了 [zstd](https://github.com/valyala/gozstd)，这为它节约了大量的带宽。
 
 ![](../202412-otlp-remote-write/benchmark-1-disk.png)
+
+在磁盘使用量方面，因为 Benchmark #1 并没有关注 Remote Storage 不可用时的情况，所以 OpenTelemetry Collector 和 vmagent 几乎都没有使用额外的存储空间。Prometheus 由于 WAL 的存在，尽管处于 Agent Mode，WAL 仍然需要正常写入以提供 Remote Write 支持。这些 WAL 数据每隔 2 小时清理，因此在磁盘用量的监控上图线呈现锯齿状。
+
+在简单总结之后，我们发现了一些值得继续探讨的问题：
+1. 为什么 OpenTelemetry Collector 的 CPU 使用率远高于其它 Agent？
+2. vmagent 仅修改了 Remote Write 1.0 的压缩算法就能使带宽用量降低这么多，那 OTLP 和 Remote Write 2.0 使用 zstd 压缩算法有用吗？
+
+### Profiling OpenTelemetry Collector
+我们使用到的 OpenTelemetry Collector 配置非常简洁：
+
+```yaml
+service:
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      processors: [batch]
+      exporters: [otlp]
+```
+
+所以问题无非出在 Prometheus Receiver 或 OTLP Exporter 上。通过增加 `extensions: [pprof]`，我们收集了它的 [profile](../202412-otlp-remote-write/otel-profile.prof)。从中可以看出，OpenTelemetry Collector 在 Scrape 操作花费的时间较多，所以基本可以确定是 Prometheus Receiver 带来的开销。
+
+![](../202412-otlp-remote-write/otel-profile.jpg)
+
+考虑到抓取 Prometheus 文本格式的指标并不算是 OpenTelemetry Collector 的“本职工作”，这些性能上的瑕疵似乎可以理解。对它进行优化会是个很有趣的过程，但这不是本文讨论的重点，所以我们暂时只分析到这里。未来如果各类基础设施（例如 Node Exporter）可以提供 OTLP 支持或许能使这个问题得到改善。
+
+### zstd: Silver Bullet?
+
+### Benchmark #2
+
+## Conclusion
