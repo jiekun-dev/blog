@@ -61,3 +61,32 @@ OpenTelemetry 定义了一系列的概念，例如 Signal，即一类 Telemetry�
 
 ### 环境搭建
 
+我们分别运行 [Prometheus](https://github.com/prometheus/prometheus)（Agent Mode）、[OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) 和 [vmagent](https://github.com/VictoriaMetrics/VictoriaMetrics/tree/master) 抓取 1000 个分散在 3 个 Region 的 [Node exporter](https://github.com/prometheus/node_exporter)，并将数据以不同协议发送给 Receiver。这个 Receiver 会对数据进行 Decompress 和 Unmarshal，并且记录一些统计信息，但没有实际的数据持久化操作。
+
+相关组件的信息如下：
+|                         | Version  | Machine Type  | vCPUs   | Memory (GB) | Standard persistent disk      |
+|-------------------------|----------|---------------|---------|-------------|-------------------------------|
+| Prometheus              | 2.53.3   | e2-highcpu-2  | 2       | 2           | Standard persistent disk(HDD) |
+| Prometheus              | 3.0.1    | e2-highcpu-2  | 2       | 2           | Standard persistent disk(HDD) |
+| OpenTelemetry Collector | v0.115.0 | e2-highcpu-2  | 2       | 2           | Standard persistent disk(HDD) |
+| vmagent                 | v1.108.0 | e2-highcpu-2  | 2       | 2           | Standard persistent disk(HDD) |
+| Node exporter           | 1.8.2    | e2-micro      | 2(0.25) | 1           | Standard persistent disk(HDD) |
+| No-op Receiver          | N/A      | n2d-highcpu-4 | 4       | 4           | Balanced persistent disk(SSD) |
+
+整体的 Benchmark 架构如下：
+
+![]()
+
+### Benchmark #1
+
+Benchmark #1 主要了解不同组件的资源使用情况，为后续测试提供参考基准。在运行了数天后，我们得到了如下的监控数据：
+
+![](../202412-otlp-remote-write/benchmark-1-cpu.png)
+
+![](../202412-otlp-remote-write/benchmark-1-mem.png)
+
+![](../202412-otlp-remote-write/benchmark-1-in.png)
+
+![](../202412-otlp-remote-write/benchmark-1-out.png)
+
+![](../202412-otlp-remote-write/benchmark-1-disk.png)
