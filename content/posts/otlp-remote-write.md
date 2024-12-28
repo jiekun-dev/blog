@@ -28,7 +28,7 @@ Prometheus 是云原生指标监控领域的事实标准。它的工作模式很
 
 有了这些功能，面对大量应用时，监控架构可能是如下图这样：
 
-![]()
+![](../202412-otlp-remote-write/metrics_monitoring.png)
 
 ## OpenTelemetry and OTLP
 
@@ -75,7 +75,7 @@ OpenTelemetry 定义了一系列的概念，例如 Signal，即一类 Telemetry�
 
 整体的 Benchmark 架构如下：
 
-![]()
+![](../202412-otlp-remote-write/benchmark_setup.png)
 
 ### Benchmark #1
 
@@ -113,7 +113,7 @@ service:
 
 ![](../202412-otlp-remote-write/otel-profile.jpg)
 
-考虑到抓取 Prometheus 文本格式的指标并不算是 OpenTelemetry Collector 的“本职工作”，这些性能上的瑕疵似乎可以理解。对它进行优化会是个很有趣的过程，但这不是本文讨论的重点，所以我们暂时只分析到这里。未来如果各类基础设施（例如 Node Exporter）可以提供 OTLP 支持或许能使这个问题得到改善。
+考虑到抓取 Prometheus 文本格式的指标并不算是 OpenTelemetry Collector 的“本职工作”，这些性能上的瑕疵似乎可以理解。对它进行优化会是个很有趣的过程，但这不是本文讨论的重点，所以我们暂时只分析到这里。未来如果各类基础设施（例如 Node exporter）可以提供 OTLP 支持或许能使这个问题得到改善。
 
 ### zstd: Silver Bullet?
 
