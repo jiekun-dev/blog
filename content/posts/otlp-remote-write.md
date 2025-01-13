@@ -135,9 +135,11 @@ service:
 
 借助 zstd，Remote Write 2.0 的带宽使用降低了 30%。压缩算法的变更影响最大的是 CPU 使用率，但是在测试的负载下，CPU 使用率仅上升了 4%，并不明显。因此，有理由认为 zstd 对于关注带宽使用的用户（例如多云商部署，需要跨 Available Zone 传输数据）有不错的使用价值。
 
-### Result Full
+### Result (Full)
 
 ![](../202412-otlp-remote-write/benchmark-full.png)
+
+现在，你还可以在 [snapshots.raintank.io](https://snapshots.raintank.io/dashboard/snapshot/HS3eUWxbt8sjwyOByd6WclWElEAyUUMv?orgId=0) 上查看这份监控数据 Snapshot。
 
 ## Conclusion
 
