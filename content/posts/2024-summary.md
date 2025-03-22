@@ -79,7 +79,7 @@ Before the official transparency report comes out, I have some numbers about the
 
 For the observability track of KubeCon Europe 2025, there are **185 submissions** in total. 17 of them have been accepted, resulting in a **9.1% acceptance rate**.
 
-For Observability Day Europe 2025, we have received **284 submissions**. 22 of them (7.7%) have been accepted, along with 5 sponsor keynotes, project updates, and opening and closing remarks sessions.
+For Observability Day Europe 2025, we have received **284 submissions**. 22 of them (**7.7%**) have been accepted, along with 5 sponsor keynotes, project updates, and opening and closing remarks sessions.
 
 Reviewing proposals is fun only if you don't have to rate and comment. It took me a total of **11 hours** (and earned me a free all-access pass to the conference).
 
