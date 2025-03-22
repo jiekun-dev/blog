@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="TCP补充笔记">
+<meta itemprop="description" content="春节假期期间补充学习的内容，查缺补漏，先从TCP开始。 选择确认的重传（SACK） TCP头部包含一个可选的选项变量，如图所示： 其中可以用来填充"><meta itemprop="datePublished" content="2020-01-21T05:50:32+00:00" />
+<meta itemprop="dateModified" content="2020-01-21T05:50:32+00:00" />
+<meta itemprop="wordCount" content="2947">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="TCP补充笔记" />
+<meta property="og:description" content="春节假期期间补充学习的内容，查缺补漏，先从TCP开始。 选择确认的重传（SACK） TCP头部包含一个可选的选项变量，如图所示： 其中可以用来填充" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2020-01-21-tcp%E8%A1%A5%E5%85%85%E7%AC%94%E8%AE%B0/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-01-21T05:50:32+00:00" />
+<meta property="article:modified_time" content="2020-01-21T05:50:32+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="TCP补充笔记"/>
+<meta name="twitter:description" content="春节假期期间补充学习的内容，查缺补漏，先从TCP开始。 选择确认的重传（SACK） TCP头部包含一个可选的选项变量，如图所示： 其中可以用来填充"/>
+<title>TCP补充笔记</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2f2020-01-21-tcp%25E8%25A1%25A5%25E5%2585%2585%25E7%25AC%2594%25E8%25AE%25B0%2f&amp;text=TCP%e8%a1%a5%e5%85%85%e7%ac%94%e8%ae%b0" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2f2020-01-21-tcp%25E8%25A1%25A5%25E5%2585%2585%25E7%25AC%2594%25E8%25AE%25B0%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=TCP%e8%a1%a5%e5%85%85%e7%ac%94%e8%ae%b0&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2f2020-01-21-tcp%25E8%25A1%25A5%25E5%2585%2585%25E7%25AC%2594%25E8%25AE%25B0%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2f2020-01-21-tcp%25E8%25A1%25A5%25E5%2585%2585%25E7%25AC%2594%25E8%25AE%25B0%2f&amp;source=https://jiekun.dev&amp;title=TCP%e8%a1%a5%e5%85%85%e7%ac%94%e8%ae%b0&amp;summary=TCP%e8%a1%a5%e5%85%85%e7%ac%94%e8%ae%b0%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;TCP补充笔记&#34;,&#34;https://jiekun.dev/posts/2020-01-21-tcp%E8%A1%A5%E5%85%85%E7%AC%94%E8%AE%B0/&#34;,&#34;TCP补充笔记, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Jan 21, 2020</span></div>
+				<h1>TCP补充笔记</h1>
+			</header>
+			<div class="content">
+				<p>春节假期期间补充学习的内容，查缺补漏，先从TCP开始。</p>
+<h2 id="选择确认的重传sack">选择确认的重传（SACK）<a href="#选择确认的重传sack" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>TCP头部包含一个可选的选项变量，如图所示：</p>
+<p><img src="../2020/01/tcp_option.jpg" alt="">
+其中可以用来填充以下内容：</p>
+<p><img src="../2020/01/tcp_option_list.jpg" alt="">
+在数据传输过程中，因为TCP抵达的顺序是不予保证的，因此接收方必然会有收到乱序数据的情况。</p>
+<p>在没有SACK的情况下，接收方在缺失数据时，会一直进行ACK并附带期望的SEQ，发送方在重复（duptrash常量，默认3次）收到同一个序列号时会断定有包在传输过程中丢失，然后进行重传。</p>
+<p>如果TCP发送方能够了解接收方当前的空洞，它就能在报文段丢失或者接收方遗漏的时候更好地进行重传工作，且减少不必要的重传。在丢包严重的情况下，SACK可以在一个RTT内填补多个空缺。</p>
+<p>ACK号与接收端缓存中的其他数据之间的间隔称为“空缺”，序列号高于“空缺”的数据称为“失序数据”。一个ACK可以包含三四个告知失序数据的SACK信息，每个SACK信息包含32位序列号，代表接收端存储的失序数据的<strong>起始至最后一个序列号</strong>。</p>
+<h3 id="sack接收端">SACK接收端<a href="#sack接收端" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>第一个SACK块内包含的时最近接收到的报文段的序列号范围，其余SACK块包含的内容也按照接收的先后顺序依次排列。也就是说，最新一个块中包含的内容除了包含最近接收的序列号信息，还需要重复之前SACK块。这样可以为防止SACK丢失提供一些备份，若SACK不会丢失，每个SACK中包含一个SACK块即可实现SACK全部功能。</p>
+<h3 id="sack发送端">SACK发送端<a href="#sack发送端" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>合理利用接收到的SACK块进行丢失重传，称为选择性重传。一种方法是当接收到相应序列号范围的ACK时，则在其重传缓存中标记该报文段的选择重传成功。</p>
+<p>当发送端收到SACK时，可以选择发送新数据或重传旧数据。通过SACK提供的序列号范围可以推断需要重传的空缺数据。最常用、最简单的方法是使发送端首先填补接收端的空缺，然后继续发送新数据。</p>
+<p>SACK发送端不能在收到一个SACK后立即清空其重传缓存中的数据，因为接收端告诉发送端一段SACK范围，其后可能会“食言”。只有当ACK号大于缓存序列号时才能将缓存清除。</p>
+<h2 id="普通的重传timer-based和fast-retransmit">普通的重传（Timer-based和Fast Retransmit）<a href="#普通的重传timer-based和fast-retransmit" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h3 id="基于计时器的重传">基于计时器的重传<a href="#基于计时器的重传" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>基于计时器的重传需要RTT的测量值，而这个测量值的确定算法较为复杂，后文再详细描述。</p>
+<p>当TCP发送端拿到RTT测量值，就可以设置RTO。</p>
+<p>发送单记录需要被计时的报文段序列号，如果收到了报文的ACK，那么计时器取消；若在设定的RTO内没有收到ACK，将会触发超时重传。发送端会降低当前数据的发送率来对此快速响应：</p>
+<ul>
+<li>基于拥塞控制机制，减小发送窗口（cwnd）大小</li>
+<li>每一个重传报文被再次重传时，增大RTO的退避因子：RTO=γRTO，其中γ初始为1，随着重传加倍增长：2、4、8等。一旦接收到ACK则重置为1。</li>
+</ul>
+<p>下面再来说一下RTT的测量，RTT即round-trip time，TCP接收端在收到数据后会返回确认信息，因此可以在这个信息中携带一个字节的数据来测量传输该确认信息所需的时间。每个测量结果称为RTT样本。TCP需要根据一段时间内的样本建立好估计值，再根据估计值设置RTO。</p>
+<p>经典方法采用如下公式计算得到平滑的RTT估计值（SRTT）：</p>
+<pre tabindex="0"><code>SRTT ← α(SRTT) + (1 − α) RTTs
+
+</code></pre><p>基于现存值和新的RTTs得到更新结果，常量α为平滑因子。</p>
+<p>标准方法采用如下算式，其中M代表RTT测量值（前面称RTTs）：</p>
+<pre tabindex="0"><code>tt ← (1 - g)(srtt) + (g)M
+rttvar ← (1 - h)(rttvar) + (h)(|M - srtt|)
+RTO = srtt + 4(rttvar)
+
+</code></pre><h3 id="快速重传">快速重传<a href="#快速重传" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>快速重传机制基于接收端的反馈信息来引发重传，更加及时有效修复丢包情况。当接收到失序报文段时，TCP需要立即生成确认信息（重复ACK）。重复ACK到达发送端表明先前发送的某个分组已经丢失，当然也可能仅是失序到达。通常我们无法区分，TCP等待一定数目（duptresh）的重复ACK后，就决定数据是否丢失并触发快速重传。</p>
+<h2 id="nagle算法与延时ack">Nagle算法与延时ACK<a href="#nagle算法与延时ack" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h3 id="nagle">Nagle<a href="#nagle" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>假设有如下场景：每次TCP的数据部分非常小，TCP头部和IP头部体积固定为40字节，那么这些小包因为有效的应用数据占比甚微，就会造成很高的网络传输代价。</p>
+<p>John Nagle提出了一种算法，当一个TCP连接中有在传数据，则长度小于SMSS的报文段都不能发送，直到所有在传数据收到ACK。并且，在ACK后，TCP需要收集这些小的数据，将其整合到一个报文段中发送。</p>
+<p><img src="../2020/01/tcp_nagle.jpg" alt="">
+在Nagle开启下，传输的包数量更少，但是长度更大，同时传输时延也更长。</p>
+<h3 id="延时确认">延时确认<a href="#延时确认" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>TCP并不是对每个到来的数据包都返回ACK，通常会积累一段时间发送TCP，减少ACK传输数目。对于批量数据传输通常为2:1的比例。</p>
+<h3 id="结合">结合<a href="#结合" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>如果直接将Nagle和延时ACK结合，接收端会尝试等待，看是否有更多的ACK可以捎带进行应答，而发送端因为Nagle的存在，在没有接收到ACK前不能进行发送，就会产生死锁。死锁在延时ACK计时器超时后就会解除，但是在死锁期间传输连接处于空闲状态，性能会变差。</p>
+<p>某些情况下，例如ssh传输，就可以禁用Nagle算法。</p>
+<h2 id="拥塞控制">拥塞控制<a href="#拥塞控制" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>反映网络传输能力的变量称为拥塞窗口（congestion window），记作cwnd，通告窗口（advertisement window）记为awnd，实际发送端可用的窗口为：</p>
+<pre tabindex="0"><code>W = min(cwnd, awnd)
+
+</code></pre><p>因此还没有收到ACK回复的数据量（称为在外数据值）不能多于W。</p>
+<p>然而cwnd、awnd等值需要动态调节，因此并不能准确获取。W值不能过大或过小，我们希望有一个最佳窗口大小。</p>
+<h3 id="获得cwnd">获得cwnd<a href="#获得cwnd" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>获得最佳值的方法是以越来越快的速度发送数据，直到出现数据丢失或网络阻塞。一般可以以awnd启动或者慢速启动，因为直接以awnd启动会影响其他连接性能，所以通常避免过快启动。</p>
+<h3 id="慢启动">慢启动<a href="#慢启动" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>一个新的TCP连接建立或者检测到重传超时导致的丢包时，需要执行慢启动。慢启动的目的是让TCP使用拥塞避免探寻更多带宽前得到cwnd值，以及帮助TCP建立ACK时钟。</p>
+<p>TCP在SYN后开始慢启动，称为初始窗口（Initial Window，IW）。初始值设为一个SMSS值或稍大。假设没有出现丢包，第一个数据段的ACK到达，慢启动算法会以min(N, SMSS)来增加cwnd值。N是指在传输数据中通过这一ACK确认的字节数（不包括ACK号小于之前收到ACK号的数据）。</p>
+<p>那么在接收到1个数据段的ACK后，cwnd就会变为2，发送2个数据段。在接收到对应的新ACK后，cwnd就会变为4，以此类推。</p>
+<p><img src="../2020/01/tcp_slow_start.jpg" alt="">
+然而因为ACK并不是每一次都会累积发送端一次发送的包进行ACK，例如，发送端在cwnd变为4后，发送了4个包，而接收端在接收前两个包后进行ACK（长度为2），接收到后两个包后进行ACK（长度也为2），那么此时min(N, SMSS)因为N为2个MSS，并非发出去的4个MSS，所以cwnd = cwnd + 2，而不是 cwnd = cwnd * 2的指数增长。具体见下图的两种增长曲线：</p>
+<h3 id="拥塞避免">拥塞避免<a href="#拥塞避免" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>通过慢启动，cwnd会快速增长，帮助建立一个慢启动阈值。一旦确定慢启动阈值，TCP会进入拥塞避免阶段，cwnd每次增长值近似于成功传输的数据段大小。更准确说，每接收一个新的ACK，cwnd会做一下更新：</p>
+<pre tabindex="0"><code>nd(t+1) = cwnd(t) + SMSS * SMSS/cwnd(t)
+
+</code></pre><p>通常认为，拥塞避免阶段窗口随时间线性增长，慢启动阶段呈指数增长。</p>
+<p>当cwnd &lt; ssthresh，使用慢启动算法；反之使用拥塞避免。</p>
+<p>慢启动阈值在重传时按照下式改变：</p>
+<pre tabindex="0"><code>thresh = max(flight size/2, 2*SMSS)
+</code></pre>
+			</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg><span class="category"><a href="https://jiekun.dev/categories/cs%E5%9F%BA%E7%A1%80">CS基础</a></span></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 2947 字, 约 6 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-01-21 13:50 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		
+		<div id="comments" class="thin"></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

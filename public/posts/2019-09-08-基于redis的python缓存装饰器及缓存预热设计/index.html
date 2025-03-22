@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="基于Redis的缓存装饰器及缓存预热设计">
+<meta itemprop="description" content="业务背景 业务上使用的是类似MVC的架构，具体而言通过view层控制接口，logic层控制业务逻辑，models模型映射数据库。在logic层"><meta itemprop="datePublished" content="2019-09-08T05:27:22+00:00" />
+<meta itemprop="dateModified" content="2019-09-08T05:27:22+00:00" />
+<meta itemprop="wordCount" content="3998">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="基于Redis的缓存装饰器及缓存预热设计" />
+<meta property="og:description" content="业务背景 业务上使用的是类似MVC的架构，具体而言通过view层控制接口，logic层控制业务逻辑，models模型映射数据库。在logic层" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2019-09-08-%E5%9F%BA%E4%BA%8Eredis%E7%9A%84python%E7%BC%93%E5%AD%98%E8%A3%85%E9%A5%B0%E5%99%A8%E5%8F%8A%E7%BC%93%E5%AD%98%E9%A2%84%E7%83%AD%E8%AE%BE%E8%AE%A1/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2019-09-08T05:27:22+00:00" />
+<meta property="article:modified_time" content="2019-09-08T05:27:22+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="基于Redis的缓存装饰器及缓存预热设计"/>
+<meta name="twitter:description" content="业务背景 业务上使用的是类似MVC的架构，具体而言通过view层控制接口，logic层控制业务逻辑，models模型映射数据库。在logic层"/>
+<title>基于Redis的缓存装饰器及缓存预热设计</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2f2019-09-08-%25E5%259F%25BA%25E4%25BA%258Eredis%25E7%259A%2584python%25E7%25BC%2593%25E5%25AD%2598%25E8%25A3%2585%25E9%25A5%25B0%25E5%2599%25A8%25E5%258F%258A%25E7%25BC%2593%25E5%25AD%2598%25E9%25A2%2584%25E7%2583%25AD%25E8%25AE%25BE%25E8%25AE%25A1%2f&amp;text=%e5%9f%ba%e4%ba%8eRedis%e7%9a%84%e7%bc%93%e5%ad%98%e8%a3%85%e9%a5%b0%e5%99%a8%e5%8f%8a%e7%bc%93%e5%ad%98%e9%a2%84%e7%83%ad%e8%ae%be%e8%ae%a1" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2f2019-09-08-%25E5%259F%25BA%25E4%25BA%258Eredis%25E7%259A%2584python%25E7%25BC%2593%25E5%25AD%2598%25E8%25A3%2585%25E9%25A5%25B0%25E5%2599%25A8%25E5%258F%258A%25E7%25BC%2593%25E5%25AD%2598%25E9%25A2%2584%25E7%2583%25AD%25E8%25AE%25BE%25E8%25AE%25A1%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=%e5%9f%ba%e4%ba%8eRedis%e7%9a%84%e7%bc%93%e5%ad%98%e8%a3%85%e9%a5%b0%e5%99%a8%e5%8f%8a%e7%bc%93%e5%ad%98%e9%a2%84%e7%83%ad%e8%ae%be%e8%ae%a1&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2f2019-09-08-%25E5%259F%25BA%25E4%25BA%258Eredis%25E7%259A%2584python%25E7%25BC%2593%25E5%25AD%2598%25E8%25A3%2585%25E9%25A5%25B0%25E5%2599%25A8%25E5%258F%258A%25E7%25BC%2593%25E5%25AD%2598%25E9%25A2%2584%25E7%2583%25AD%25E8%25AE%25BE%25E8%25AE%25A1%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2f2019-09-08-%25E5%259F%25BA%25E4%25BA%258Eredis%25E7%259A%2584python%25E7%25BC%2593%25E5%25AD%2598%25E8%25A3%2585%25E9%25A5%25B0%25E5%2599%25A8%25E5%258F%258A%25E7%25BC%2593%25E5%25AD%2598%25E9%25A2%2584%25E7%2583%25AD%25E8%25AE%25BE%25E8%25AE%25A1%2f&amp;source=https://jiekun.dev&amp;title=%e5%9f%ba%e4%ba%8eRedis%e7%9a%84%e7%bc%93%e5%ad%98%e8%a3%85%e9%a5%b0%e5%99%a8%e5%8f%8a%e7%bc%93%e5%ad%98%e9%a2%84%e7%83%ad%e8%ae%be%e8%ae%a1&amp;summary=%e5%9f%ba%e4%ba%8eRedis%e7%9a%84%e7%bc%93%e5%ad%98%e8%a3%85%e9%a5%b0%e5%99%a8%e5%8f%8a%e7%bc%93%e5%ad%98%e9%a2%84%e7%83%ad%e8%ae%be%e8%ae%a1%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;基于Redis的缓存装饰器及缓存预热设计&#34;,&#34;https://jiekun.dev/posts/2019-09-08-%E5%9F%BA%E4%BA%8Eredis%E7%9A%84python%E7%BC%93%E5%AD%98%E8%A3%85%E9%A5%B0%E5%99%A8%E5%8F%8A%E7%BC%93%E5%AD%98%E9%A2%84%E7%83%AD%E8%AE%BE%E8%AE%A1/&#34;,&#34;基于Redis的缓存装饰器及缓存预热设计, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Sep 8, 2019</span></div>
+				<h1>基于Redis的缓存装饰器及缓存预热设计</h1>
+			</header>
+			<div class="content">
+				<h2 id="业务背景">业务背景<a href="#业务背景" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>业务上使用的是类似MVC的架构，具体而言通过view层控制接口，logic层控制业务逻辑，models模型映射数据库。在logic层，使用了Redis缓存装饰器对满足参数要求的方法执行结果进行缓存，降低复杂逻辑页面、数据量大页面的请求执行耗时。</p>
+<p>对于这种使用场景，当缓存失效时，因为缓存使用的位置都是复杂逻辑，再次生成缓存需要数据库层面执行，如果这一步是由用户触发（也就是cache失效后第一位用户请求的时候生成缓存），那对这位用户来说请求时间就会很长甚至504超时。因此，有必要设计缓存的自动预热以及手动预热，前者是为了避免由用户触发生成缓存的长时间等待，后者是为了特殊时候（如数据更新后，缓存还没到期）手动更新缓存。</p>
+<h2 id="原有的缓存装饰器">原有的缓存装饰器<a href="#原有的缓存装饰器" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<pre tabindex="0"><code>f redis_cache(ttl=None, cache_name=None, **kwargs):
+    &quot;&quot;&quot;
+    Redis缓存装饰器 用于Logics层函数执行结果缓存
+    全局配置: config/localsettings.py REDIS_ON = True
+    使用示例和说明：
+
+    @redis_cache(ttl=3600, cache_name=&quot;&quot;, arg1=1, arg2=20)
+    def sample_method(arg1, arg2, arg3, arg4, arg5)
+
+    ttl: 缓存失效3600秒
+    cache_name: 函数功能名
+    kwargs：参数中对应满足kwargs时进行缓存，示例中当函数参数包含args=1，args2=20时缓存
+    缓存规则：logic_cache:function_name:参数作为键名进行缓存，示例：
+    logic_cache:sample_method:arg1:1:arg2:20:arg3:rank:arg4:people:arg5:food
+
+    :param ttl: 过期时间
+    :param cache_name: 函数功能名 用于清理缓存时显示 方便非技术同时使用
+    :param kwargs: 命中何种参数时进行缓存 示例 **{'arg1': 1, 'arg2': 20}
+    :return: 返回函数执行结果 / 缓存结果
+    &quot;&quot;&quot;
+    def decorator(func):
+        cache_serv = cache
+
+        @wraps(func)
+        def returned_wrapper(*args, **innerkwargs):
+            try:
+                func_name = func.func_name
+                default_kwargs = kwargs
+                is_cache_target = cache_target_judger(default_kwargs, innerkwargs)
+                # Cache Target
+                if REDIS_ON and is_cache_target:
+                    colon = ':'
+                    redis_key_prefix_list = ['logic_cache', func_name]
+                    for each in innerkwargs:
+                        redis_key_prefix_list.append(each + ':' + str(innerkwargs[each]))
+                    redis_key_str = colon.join(redis_key_prefix_list)
+
+                    result = cache_serv.get(redis_key_str)
+                    # Cache Exist:
+                    if result is not None:
+                        print(func_name + ': This is Cache')
+                        return result
+                    # Cache Not Exist / Force Update
+                    else:
+                        cache_data = func(*args, **innerkwargs)
+                        cache = cache_serv.set(redis_key_str, cache_data, ttl)
+                        if cache_name is not None:
+                            redis_key_name_prefix_list = ['cache_name', func_name]
+                            redis_key_name_str = ':'.join(redis_key_name_prefix_list)
+                            cache = cache_serv.set(redis_key_name_str, cache_name, ttl)
+                        print(func_name + ': Add to Cache now')
+                        return cache_data
+                # SQL/ES Target
+                else:
+                    direct_run_data = func(*args, **innerkwargs)
+                    print(func_name + ': Not Cache Target')
+                    return direct_run_data
+            except Exception as e:
+                logging.error(&quot;Redis decorator error: {}&quot;.format(e))
+                direct_run_data = func(*args, **innerkwargs)
+                print('Error Happened')
+                return direct_run_data
+
+        return returned_wrapper
+
+    return decorator
+
+
+def cache_target_judger(default_kwargs, innerkwargs):
+    &quot;&quot;&quot;
+    缓存判断 返回Bool值
+    判断是否为缓存目标
+    :param default_kwargs:
+    :param innerkwargs:
+    :return:
+    &quot;&quot;&quot;
+    return all(item in innerkwargs.iteritems() for item in default_kwargs.iteritems())
+
+</code></pre><p>先来说明一下原有缓存的逻辑，其实实现非常简单：</p>
+<p>对于如下使用：</p>
+<pre tabindex="0"><code>@redis_cache(ttl=3600, cache_name='示例功能', arg1=1, arg2=20)
+def sample_method(arg1, arg2, arg3, arg4):
+        pass
+
+sample_method(arg1=1, arg2=20, arg3='hello', arg4='world')
+
+</code></pre><h4 id="判定缓存目标">判定缓存目标<a href="#判定缓存目标" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>在调用sample_method时，传入参数<code>arg1=1, arg2=20, arg3='hello', arg4='world'</code>，也就是<code>returned_wrapper(*args, **innerkwargs)</code>中的innerkwargs，代表方法的参数（字典形式）。<br>
+在使用装饰器的时候，装饰器参数ttl, cache_name, 后面的都是kwargs，代表装饰器的参数（字典形式）。</p>
+<p>现在将kwargs和innerkwargs比较，如果kwargs是innerkwargs的子集，也就是说innerkwargs满足kwargs的约束，说明这是一个要缓存的目标。以示例说明，redis_cache中kwargs是:<code>{'arg1': 1, 'arg2': 20}</code>，sample_method被捕获到的innerkwargs是<code>{'arg1':1, 'arg2': 20, 'arg3':  'hello', 'arg4': 'world'}</code>。因为满足了kwargs要求的arg1=1和arg2=20，因此这个sample_method的请求是需要被缓存的。</p>
+<p>如果在这一步中判断不是要被缓存的那说明Redis中必然不存在这个缓存，则直接执行方法获返回结果即可。</p>
+<h4 id="生成缓存键">生成缓存键<a href="#生成缓存键" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>显然，每个不同的函数调用的参数都不一样，我们需要使用当前调用的全部参数作为Redis键名以避免重复。<br>
+设计键名为：</p>
+<pre tabindex="0"><code>前缀 + 方法名 + 方法参数键值对
+
+</code></pre><p>不使用hash是因为前期缺少cache_name注释的情况下无法通过redis键名（如果是hash）判断出这个缓存对应的功能。<br>
+这里也会有小问题，如果方法名一样的方法在不同位置有出现的话也可能让键名重复。</p>
+<h4 id="获取生成缓存">获取/生成缓存<a href="#获取生成缓存" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>有了缓存的键名之后，就可以到Redis中查看这个键是否存在，因此尝试取出这个键：<br>
+<code>result = cache_serv.get(redis_key_str)</code></p>
+<ul>
+<li>如果result不存在，说明缓存不存在，对本次调用需要执行方法，并将结果set进Redis中，并返回执行结果。</li>
+<li>如果result存在，说明缓存存在，对本次调用可以返回缓存结果。</li>
+</ul>
+<h4 id="小结">小结<a href="#小结" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>通过上述的方法，已经可以实现一个缓存的装饰器，并且控制方法参数级别的缓存判定。</p>
+<h2 id="缓存系统改造">缓存系统改造<a href="#缓存系统改造" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h4 id="允许更新缓存">允许更新缓存<a href="#允许更新缓存" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>旧方案的缓存生命周期是从第一次触发生成时刻至缓存过期时刻。对于这种对方法的缓存，要达到预热（更新）的效果，其实只要在判定上作小调整：<br>
+在生成了缓存键名之后，原思路是看是否有result，有则取缓存，无则生成缓存。这里只需要改造成：</p>
+<ul>
+<li>当需要无视规则强制生成缓存的时候，执行函数并生成缓存。</li>
+</ul>
+<p>这个改动非常简单，在调用方法时，传入一个force_update参数：</p>
+<pre tabindex="0"><code>@redis_cache(ttl=3600, cache_name='示例功能', arg1=1, arg2=20)
+def sample_method(arg1, arg2, arg3, arg4):
+        pass
+
+sample_method(arg1=1, arg2=20, arg3='hello', arg4='world', force_update=True)
+
+</code></pre><ul>
+<li>这个force_update要在装饰器执行func之前处理，因为<code>sampe_method</code>的定义中没有这个参数，因此当执行func的时候传的参数必须仍然只有前面几个。因此装饰器中加上：</li>
+</ul>
+<pre tabindex="0"><code>force_update = innerkwargs.pop('force_update', False)
+
+</code></pre><ul>
+<li>正常调用不会包含这个方法，但是仍然会经过装饰器，因此默认False</li>
+<li>使用pop方法保证这个参数不会进入实际执行方法的过程中</li>
+</ul>
+<p>有了force_update标志之后，对是否需要执行方法并写入缓存的判定就要修改一下：</p>
+<ul>
+<li>从<code>if result is not None:</code>改为<code>if result is not None and not force_update:</code></li>
+</ul>
+<p>这样当有force_update的时候也会继续执行方法和写缓存的操作。</p>
+<h4 id="缓存定时预热">缓存定时预热<a href="#缓存定时预热" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>既然需要实现定时更新，那只要定时执行一下sample_method，并且加上force_update参数强制使它更新就行。</p>
+<p>因此是否可以做一个定时脚本：</p>
+<pre tabindex="0"><code>* */2 * * * python update_cache.py
+
+</code></pre><p>update_cache.py内容如下：</p>
+<pre tabindex="0"><code>if __name__ == '__main__':
+    sample_method1(arg1=1, arg2=2, arg3='hello', arg4='world', force_update=True)
+    sample_method2(arg1=2, arg2=2, arg3='hello', arg4='world', force_update=True)
+    sample_method3(arg1=3, arg2=2, arg3='hello', arg4='world', force_update=True)
+    sample_method4(arg1=4, arg2=2, arg3='hello', arg4='world', force_update=True)
+
+</code></pre><p>这样就实现了缓存的定时更新</p>
+<h4 id="缓存手动预热">缓存手动预热<a href="#缓存手动预热" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>思路：手动预热只需要将crontab定时改为（支持）手动触发即可，具体可以设计成一个调用接口。</p>
+<p>抱歉，如果是这样设计，这套缓存系统就会面临类似缓存穿透的问题。</p>
+<p>缓存穿透，故名思意就是请求不经过缓存，直接打在数据库上执行，在特定期间如果有大量的请求经数据库执行会给数据库造成很大压力。在我们的业务中，使用缓存的地方都是原来较为缓慢的查询，如果让大量请求同时执行SQL的话对MySQL负载时比较高的。</p>
+<p>设想如果手动预热做成接口，意味着这个接口对应的sample_method的执行是不经过缓存层的而是直接在数据库执行，如果这个接口同一时间有多人调用的话，就会在SQL同时执行多个复杂查询，影响性能。</p>
+<p>因此，为了让缓存手动预热对数据库更加友好，这里需要将预热改造成队列形式。对于这种的业务，不需要保证可靠性，也没有性能要求，因此无需使用MQ，直接借助Redis的LIST类型和lpush+rpop可以做一个非常简单的队列。</p>
+<ul>
+<li>在手动预热请求的logic层：</li>
+</ul>
+<pre tabindex="0"><code># 要使用集合常量来避免不合法的传参
+WARMER_DICT = {
+    'sample_method_collection'
+}
+
+def submit_warmer(warmer):
+    &quot;&quot;&quot;
+    :return:
+    &quot;&quot;&quot;
+    if warmer in WARMER_DICT:
+        warmer_key = CACHE_WARMER_KEY
+        redis_raw_serv.lpush(warmer_key, warmer)
+    return 200, 0, &quot;加入预热队列成功&quot;, {}
+
+</code></pre><ul>
+<li>在后台维护一个持续监控队列的进程</li>
+</ul>
+<pre tabindex="0"><code># 同样使用字典来避免不合法的队列元素
+CACHE_FUNC = {
+    'sample_method_collection': sample_method_collection
+}
+
+
+def sample_method_collection():
+    sample_method1(arg1=1, arg2=2, arg3='hello', arg4='world', force_update=True)
+    sample_method2(arg1=2, arg2=2, arg3='hello', arg4='world', force_update=True)
+    sample_method3(arg1=3, arg2=2, arg3='hello', arg4='world', force_update=True)
+    sample_method4(arg1=4, arg2=2, arg3='hello', arg4='world', force_update=True)
+
+def warmer_server():
+    &quot;&quot;&quot;
+    缓存更新后台进程
+    不断读取redis中的LIST队列，如有则rpop出任务执行
+    :return:
+    &quot;&quot;&quot;
+    while True:
+        cache_warmer_key = CACHE_WARMER_KEY
+        try:
+            func_name = redis_raw_serv.rpop(cache_warmer_key)
+            if func_name not in CACHE_FUNC:
+                raise KeyError
+            print('Found warmer job %s at %s.' % (func_name, datetime.datetime.now().strftime('%m-%d %H:%M:%S')))
+            # 执行一个方法来触发对应（或多个）带force_update参数的方法
+            CACHE_FUNC[func_name]()
+        except KeyError:
+            pass
+        print('Interval 5 seconds.')
+        time.sleep(5)
+
+</code></pre><h2 id="总结">总结<a href="#总结" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>新完善的这套缓存方案实现了：</p>
+<ul>
+<li>方法参数粒度的缓存控制</li>
+<li>缓存的自动、手动预热</li>
+</ul>
+<p>基于这些改造：</p>
+<ul>
+<li>通过缓存的自动预热，避免了缓存雪崩的问题；</li>
+<li>通过缓存手动预热（实际上自动预热也同样）使用队列，避免预热过程中给数据库带来过高负载。</li>
+</ul>
+<p>Python的装饰器可以应用于MVC的各层，实现接口（View）层面的缓存同样可以使用（粗粒度的控制），但是因为Django中view层的参数为request对象，在使用中需要再进行改造，对request进行解析获取具体参数。</p>
+<p>对于方法重名问题，实际上也可以将Redis键改造成<code>前缀:模块名:view层方法名:logic层方法名:参数字典</code>的形式，抽象来说只要能在<code>前缀</code>和<code>参数字典</code>之间能够定位到准确的使用装饰器的位置即可。</p>
+<h2 id="持续优化">持续优化<a href="#持续优化" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h4 id="更简便的缓存预热目标生成">更简便的缓存预热目标生成<a href="#更简便的缓存预热目标生成" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>目前对于需要预热的目标方法，都是在crontab脚本中显式执行的，这样每当需要添加一个定期预热的目标方法，都要在脚本内添加代码。<br>
+优化方案：额外维护一个动态的预热的目标队列，队列是由第一次生成缓存的时候判断这个方法后续是否需要自动预热，若需要，则加入预热队列中并定期执行，执行的时候又加入下一次预热队列中。这样只需要在缓存装饰器的使用中声明<code>redis_cache(ttl=3600, cache_name='示例', auto_update=True, args1=1, args2=20)</code>即可。</p>
+<h4 id="预热参数组合">预热参数组合<a href="#预热参数组合" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>在其他业务有使用到，举例如args1可以为1或2或3， args2可以为20或30，这时候对于方法的缓存预热，需要对参数组合（1，20），（2，20），（3，20）和（1，30），（2，30），（3，30）共计6种。<br>
+优化方案：这时候可能需要将面向业务层的缓存装饰器和面向预热的缓存装饰器分离开，因为业务层只对特定一次请求负责，也就是说用户只可能传6种请求的1种，服务只需要将这1种的结果，不管是缓存，还是生成缓存，处理好并返回即可； 对面向预热的装饰器，需要实现支持列表传参，生成参数组合，并逐一执行，调用示例：<br>
+<code>redis_cache(ttl=3600, cache_name='示例', args1=[1, 2], args2=[20, 30])</code><br>
+在其他业务中，也有实现过组合参数的方法，如：</p>
+<pre tabindex="0"><code>f param_combination_generator(kwargs):
+    &quot;&quot;&quot;
+    参数排列组合生成器
+    根据dict生成各个key名对应多个可能值的组合情况
+    如{'key1':['value1', 'value2'], 'key2':['value3', 'value4']}可以有4种组合
+    :param kwargs:
+    :return: 返回组合list, 如[((page_num, 1)(sort_type, like_count)), ((page_num, 2)(sort_type, like_count))]
+    &quot;&quot;&quot;
+    pre_dict = {}
+    for k, v in kwargs.iteritems():
+        pre_dict[k] = []
+        for each_value in v:
+            pre_dict[k].append((k, each_value))
+    iter_list = []
+    for each in pre_dict.values():
+        iter_list.append(each)
+
+    param_combination = list(itertools.product(*iter_list))
+
+    return param_combination
+
+</code></pre><p>尽管还需要优化，不过大体思路按照排列组合后的参数对函数逐一放入队列执行应该可以较为友善地实现。当参数排列组合特别多的时候，可能就不太适合缓存的场景，因为cache成本都是非常高昂的，可能需要优化成针对最热点的内容优先缓存的形式。</p>
+
+			</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg><span class="category"><a href="https://jiekun.dev/categories/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/%E4%B8%AD%E9%97%B4%E4%BB%B6">消息队列/中间件</a></span></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 3998 字, 约 8 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2019-09-08 13:27 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		
+		<div id="comments" class="thin"></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

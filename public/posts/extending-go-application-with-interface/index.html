@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例">
+<meta itemprop="description" content="Medium This blog post is also available in English: Extending Go Application with Interface: Implementing Redis Caching for VictoriaMetrics VictoriaMetrics 的缓存问题 VictoriaMetrics 是一个 Metrics 监控的解决方案，它由几个关键组件构成： vmagent 负责数据采集，并发往 vminsert； vminsert"><meta itemprop="datePublished" content="2024-05-21T23:16:21+08:00" />
+<meta itemprop="dateModified" content="2024-05-21T23:16:21+08:00" />
+<meta itemprop="wordCount" content="2808">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例" />
+<meta property="og:description" content="Medium This blog post is also available in English: Extending Go Application with Interface: Implementing Redis Caching for VictoriaMetrics VictoriaMetrics 的缓存问题 VictoriaMetrics 是一个 Metrics 监控的解决方案，它由几个关键组件构成： vmagent 负责数据采集，并发往 vminsert； vminsert" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/extending-go-application-with-interface/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2024-05-21T23:16:21+08:00" />
+<meta property="article:modified_time" content="2024-05-21T23:16:21+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例"/>
+<meta name="twitter:description" content="Medium This blog post is also available in English: Extending Go Application with Interface: Implementing Redis Caching for VictoriaMetrics VictoriaMetrics 的缓存问题 VictoriaMetrics 是一个 Metrics 监控的解决方案，它由几个关键组件构成： vmagent 负责数据采集，并发往 vminsert； vminsert"/>
+<title>用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fextending-go-application-with-interface%2f&amp;text=%e7%94%a8%20Interface%20%e6%89%a9%e5%b1%95%20Go%20%e5%ba%94%e7%94%a8%ef%bc%9a%e4%bb%a5%20VictoriaMetrics%20%e5%ae%9e%e7%8e%b0%20Redis%20%e7%bc%93%e5%ad%98%e4%b8%ba%e4%be%8b" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2fextending-go-application-with-interface%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=%e7%94%a8%20Interface%20%e6%89%a9%e5%b1%95%20Go%20%e5%ba%94%e7%94%a8%ef%bc%9a%e4%bb%a5%20VictoriaMetrics%20%e5%ae%9e%e7%8e%b0%20Redis%20%e7%bc%93%e5%ad%98%e4%b8%ba%e4%be%8b&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2fextending-go-application-with-interface%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fextending-go-application-with-interface%2f&amp;source=https://jiekun.dev&amp;title=%e7%94%a8%20Interface%20%e6%89%a9%e5%b1%95%20Go%20%e5%ba%94%e7%94%a8%ef%bc%9a%e4%bb%a5%20VictoriaMetrics%20%e5%ae%9e%e7%8e%b0%20Redis%20%e7%bc%93%e5%ad%98%e4%b8%ba%e4%be%8b&amp;summary=%e7%94%a8%20Interface%20%e6%89%a9%e5%b1%95%20Go%20%e5%ba%94%e7%94%a8%ef%bc%9a%e4%bb%a5%20VictoriaMetrics%20%e5%ae%9e%e7%8e%b0%20Redis%20%e7%bc%93%e5%ad%98%e4%b8%ba%e4%be%8b%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例&#34;,&#34;https://jiekun.dev/posts/extending-go-application-with-interface/&#34;,&#34;用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>May 21, 2024</span></div>
+				<h1>用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例</h1>
+			</header>
+			<div class="content">
+				
+    <aside class="admonition note">
+        <div class="admonition-title">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></div><b>Medium</b>
+        </div>
+        <div class="admonition-content"><p>This blog post is also available in <strong>English</strong>:</p>
+<ul>
+<li><a href="https://medium.com/p/4fe4a3fbe7b3">Extending Go Application with Interface: Implementing Redis Caching for VictoriaMetrics</a></li>
+</ul>
+</div>
+    </aside>
+<h2 id="victoriametrics-的缓存问题">VictoriaMetrics 的缓存问题<a href="#victoriametrics-的缓存问题" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>VictoriaMetrics 是一个 Metrics 监控的解决方案，它由几个关键组件构成：</p>
+<ul>
+<li>vmagent 负责数据采集，并发往 vminsert；</li>
+<li>vminsert 负责解码数据，并根据一致性哈希发往不同 vmstorage 节点；</li>
+<li>vmstorage 负责将数据写入磁盘，并提供查询功能；</li>
+<li>vmselect 负责向多个 vmstorage 节点查询数据，并聚合它们的返回结果提供给用户。</li>
+</ul>
+<p>vmselect 处于负载均衡之后，每个 vmselect 的节点都是平等的，相同的查询请求可能会被不同的 vmselect 处理。vmselect 中存在一些缓存机制，在这种场景下，每个 vmselect 节点的缓存都有可能保存相同的内容，因此内存资源使用并不是最优的。</p>
+<p>我曾经在 Issue <a href="https://github.com/VictoriaMetrics/VictoriaMetrics/issues/5056">#5056</a> 与 @<a href="https://github.com/hagen1778">hagen1778</a>（VictoriaMetrics 的 Maintainer）聊过，大家给出了不同的方案：</p>
+<ul>
+<li>在 LoadBalancer 实现定制化的负载均衡策略，使得不同的查询语句由不同的 vmselect 节点负责；</li>
+<li>让多个 vmselect 节点共享相同的外部缓存（例如 Redis、Memcached）；</li>
+<li>既然 vmselect 节点互相知道对方的存在，那就让 vmselect 转发请求，从相邻的 vmselect 节点获取缓存（这和 Redis 中的 <code>ASK</code> 和 <code>MOVED</code> 有点像）。</li>
+</ul>
+<p>尽管上游尚未对解决方案达成一致，我们还是基于优化资源使用的目的为内部的 vmselect 实现了 Redis 缓存支持。我想在这里分享一下完整实现的过程，以及 Go 语言中的 Interface 是怎样减少改动量的。</p>
+<h2 id="观察">观察<a href="#观察" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>在上一篇<a href="https://jiekun.dev/posts/vmselect-data-structures/">博客</a>，我介绍过 vmselect 中的 Rollup Result Cache，对于一个在时间范围 [a, b] 上的查询，vmselect 将其结果（Rollup Result）缓存，如果未来相同查询需要获取重叠的时间范围数据，例如 [a+5, b+5] 中 [a+5, b] 是与之前缓存重叠的，那么这部分数据就无需再次查询。</p>
+<p>我们的目标是将 Rollup Result Cache 从进程内缓存变为外部缓存（Redis），所以观察 Rollup Result Cache 的调用情况：</p>
+<p><img src="../202405-extending-go-application/rollup_result_cache_usage.png" alt=""></p>
+<p>非常棒，看起来只有几个方法被使用到了，他们分别是：<code>Get</code>、<code>Set</code>、<code>GetBig</code>、<code>SetBig</code>、<code>Stop</code>、<code>UpdateStats</code>、<code>Save</code>。我的扩展的思路是：</p>
+<ol>
+<li>设计一个包含这些方法的 Interface，叫 <code>rollupResultCacheClient</code>；</li>
+<li>将原有对 <code>*workingsetcache.Cache</code> 实例的调用修改为对 <code>rollupResultCacheClient</code> Interface 的调用；</li>
+<li>为 <code>rollupResultCacheClient</code> Interface 提供新的实现；</li>
+<li>启动时按照配置选择 <code>rollupResultCacheClient</code> 使用哪种实现。</li>
+</ol>
+<h2 id="开发">开发<a href="#开发" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h3 id="定义-interface">定义 Interface<a href="#定义-interface" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>定义 Interface 非常简单，只需要将使用到的方法签名收集起来：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">rollupResultCacheClient</span> <span class="kd">interface</span> <span class="p">{</span>
+    <span class="nf">Get</span><span class="p">(</span><span class="nx">dst</span><span class="p">,</span> <span class="nx">key</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span>
+    <span class="nf">Set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">value</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span>
+    <span class="nf">GetBig</span><span class="p">(</span><span class="nx">dst</span><span class="p">,</span> <span class="nx">key</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span>
+    <span class="nf">SetBig</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">value</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span>
+    <span class="nf">Save</span><span class="p">(</span><span class="nx">filePath</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span>
+    <span class="nf">Stop</span><span class="p">()</span>
+    <span class="nf">UpdateStats</span><span class="p">(</span><span class="nx">fcs</span> <span class="o">*</span><span class="nx">fastcache</span><span class="p">.</span><span class="nx">Stats</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div><p>我们可以看到其中一些方法可能不是每种扩展实现都需要的，例如 <code>Save</code>、<code>Stop</code>，这没关系，我们先将它保留。</p>
+<p>有了 Interface，原有对 <code>*workingsetcache.Cache</code> 的使用就可以变成对 Interface 的使用了：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">rollupResultCache</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="c1">//c *workingsetcache.Cache
+</span><span class="c1"></span>    <span class="nx">c</span> <span class="nx">rollupResultCacheClient</span>
+<span class="p">}</span>
+</code></pre></div><p>如果担心改动有问题，我们可以在这时编译运行 vmselect，看看是否一切正常。</p>
+<h3 id="添加-redis-的实现">添加 Redis 的实现<a href="#添加-redis-的实现" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>接下来按照接口的定义，实现对应的 Redis 调用方法。</p>
+<p>首先初始化 Redis Client：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">RedisRollupResultCacheClient</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">c</span> <span class="nx">redis</span><span class="p">.</span><span class="nx">UniversalClient</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">NewRedisClient</span><span class="p">()</span> <span class="o">*</span><span class="nx">RedisRollupResultCacheClient</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">RedisRollupResultCacheClient</span><span class="p">{</span>
+        <span class="nx">c</span><span class="p">:</span> <span class="nx">redis</span><span class="p">.</span><span class="nf">NewUniversalClient</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">redis</span><span class="p">.</span><span class="nx">UniversalOptions</span><span class="p">{</span>
+            <span class="nx">Addrs</span><span class="p">:</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;127.0.0.1:6379&#34;</span><span class="p">},</span>
+        <span class="p">}),</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>我们可以观察到，<code>Get/Set</code> 和 <code>GetBig/SetBig</code> 显然是在做相同的动作，只是 <code>GetBig/SetBig</code> 是针对更大（超过 64KiB）的对象。所以我们先屏蔽一定的复杂度，在 Redis 实现中只实现简单的 <code>Get/Set</code>，让 <code>GetBig/SetBig</code> 调用 <code>Get/Set</code> 即可。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// Get 使用 Redis GetEX 查询缓存, 如果命中, TTL 会被重置到 1 分钟
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">rc</span> <span class="o">*</span><span class="nx">RedisRollupResultCacheClient</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">dst</span><span class="p">,</span> <span class="nx">key</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span> <span class="p">{</span>
+    <span class="nx">dst</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">rc</span><span class="p">.</span><span class="nx">c</span><span class="p">.</span><span class="nf">GetEx</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">TODO</span><span class="p">(),</span> <span class="nb">string</span><span class="p">(</span><span class="nx">key</span><span class="p">),</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Minute</span><span class="p">).</span><span class="nf">Bytes</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="p">!</span><span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">redis</span><span class="p">.</span><span class="nx">Nil</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;get rollup result cache from redis failed: %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">dst</span>
+<span class="p">}</span>
+
+<span class="c1">// Set 使用 Redis Set 创建/覆盖缓存, 并设置 1 分钟 TTL 时间
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">rc</span> <span class="o">*</span><span class="nx">RedisRollupResultCacheClient</span><span class="p">)</span> <span class="nf">Set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">value</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">rc</span><span class="p">.</span><span class="nx">c</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">TODO</span><span class="p">(),</span> <span class="nb">string</span><span class="p">(</span><span class="nx">key</span><span class="p">),</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Minute</span><span class="p">).</span><span class="nf">Err</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;set rollup result cache to redis failed: %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">rc</span> <span class="o">*</span><span class="nx">RedisRollupResultCacheClient</span><span class="p">)</span> <span class="nf">GetBig</span><span class="p">(</span><span class="nx">dst</span><span class="p">,</span> <span class="nx">key</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">rc</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">dst</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">rc</span> <span class="o">*</span><span class="nx">RedisRollupResultCacheClient</span><span class="p">)</span> <span class="nf">SetBig</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">value</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">rc</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// 下面的方法先不关注
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">rc</span> <span class="o">*</span><span class="nx">RedisRollupResultCacheClient</span><span class="p">)</span> <span class="nf">Save</span><span class="p">(</span><span class="nx">filePath</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span> <span class="k">return</span> <span class="kc">nil</span> <span class="p">}</span>
+<span class="kd">func</span> <span class="p">(</span><span class="nx">rc</span> <span class="o">*</span><span class="nx">RedisRollupResultCacheClient</span><span class="p">)</span> <span class="nf">Stop</span><span class="p">()</span> <span class="p">{}</span>
+<span class="kd">func</span> <span class="p">(</span><span class="nx">rc</span> <span class="o">*</span><span class="nx">RedisRollupResultCacheClient</span><span class="p">)</span> <span class="nf">UpdateStats</span><span class="p">(</span><span class="nx">fcs</span> <span class="o">*</span><span class="nx">fastcache</span><span class="p">.</span><span class="nx">Stats</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="p">}</span>
+</code></pre></div><p>可以注意到，这些实现非常的粗糙，例如使用硬编码的 Redis 地址、<code>Set</code> 超时时间等。没关系，这些都会在后续进行整理。</p>
+<p>现在，我们需要验证一下这些简易的实现是否可行。修改初始化内存缓存的代码，让它直接变成使用 Redis Client：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">    <span class="nx">rollupResultCacheV</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">rollupResultCache</span><span class="p">{</span>
+        <span class="c1">// c: c,
+</span><span class="c1"></span>        <span class="nx">c</span><span class="p">:</span> <span class="nx">rediscache</span><span class="p">.</span><span class="nf">NewRedisClient</span><span class="p">(),</span>
+    <span class="p">}</span>
+</code></pre></div><p>然后编译运行 vmselect，看看是否一切功能都完好：</p>
+<ul>
+<li>运行：<code>go run ./app/vmselect/ --storageNode=10.**.**.***:8401</code>；</li>
+<li>访问 <code>http://127.0.0.1:8481/select/0/vmui</code>，打开 Trace query 并尝试重复查询一个语句；</li>
+<li>访问 Redis 查看是否有缓存。</li>
+</ul>
+<p><img src="../202405-extending-go-application/trace_query.png" alt=""></p>
+<p>可以看到第二次查询时耗时从 4.384 秒降低到了 1.706 秒，并且 Redis 中也出现了一些 Item。很好，看起来一切都是正常的。</p>
+<h3 id="整理代码">整理代码<a href="#整理代码" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>前文的修改是为了快速实现核心功能，而很多旁路功能还要进行完善：</p>
+<ul>
+<li>用户配置、Flags、初始化逻辑、优雅退出逻辑；</li>
+<li>Rollup Result Cache 监控指标。</li>
+</ul>
+<p>我们先来为新的 Cache 设计对应参数。参考 Thanos 的参数命名，我们为 vmselect 提供两个新的参数：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go">    <span class="nx">cacheType</span>      <span class="p">=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;cacheType&#34;</span><span class="p">,</span> <span class="s">&#34;in-memory&#34;</span><span class="p">,</span> <span class="s">&#34;Cache type for rollup result. Available options: in-memory(default), redis.&#34;</span><span class="p">)</span>
+    <span class="nx">cacheRedisAddr</span> <span class="p">=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;cacheRedisAddr&#34;</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="s">&#34;Address for redis cache. It&#39;s only available when `cacheType` is set to `redis`. Usage: -cacheRedisAddr=127.0.0.1:6379&#34;</span><span class="p">)</span>
+    <span class="nx">cacheRedisTTL</span>  <span class="p">=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Duration</span><span class="p">(</span><span class="s">&#34;cacheRedisTTL&#34;</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Minute</span><span class="p">,</span> <span class="s">&#34;TTL for redis cache items. It&#39;s only available when `cacheType` is set to `redis`. Usage: -cacheRedisTTL=1m (default)&#34;</span><span class="p">)</span>
+
+</code></pre></div><p>同样地，在 <code>InitRollupResultCache</code> 和 <code>StopRollupResultCache</code> 方法中，接收这些参数，并且 switch-case 处理：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">InitRollupResultCache</span><span class="p">(</span><span class="nx">cacheType</span><span class="p">,</span> <span class="nx">cachePath</span><span class="p">,</span> <span class="nx">cacheRedisAddr</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">cacheRedisTTL</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">c</span> <span class="nx">rollupResultCacheClient</span>
+
+    <span class="k">switch</span> <span class="nx">cacheType</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="s">&#34;in-memory&#34;</span><span class="p">:</span>
+        <span class="c1">// 将原有的初始化代码移到这里
+</span><span class="c1"></span>        <span class="o">...</span> 
+    <span class="k">case</span> <span class="s">&#34;redis&#34;</span><span class="p">:</span>
+        <span class="nx">c</span> <span class="p">=</span> <span class="nx">rediscache</span><span class="p">.</span><span class="nf">NewRedisClient</span><span class="p">(</span><span class="nx">cacheRedisAddr</span><span class="p">,</span> <span class="nx">cacheRedisTTL</span><span class="p">)</span> <span class="c1">// NewRedisClient 也修改为传入地址参数
+</span><span class="c1"></span>    <span class="p">}</span>
+
+    <span class="nx">rollupResultCacheV</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">rollupResultCache</span><span class="p">{</span>
+        <span class="nx">c</span><span class="p">:</span> <span class="nx">c</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">StopRollupResultCache</span><span class="p">(</span><span class="nx">cacheType</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">switch</span> <span class="nx">cacheType</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="s">&#34;in-memory&#34;</span><span class="p">:</span>
+        <span class="c1">// 将原有的初始化代码移到这里
+</span><span class="c1"></span>        <span class="o">...</span>
+    <span class="k">case</span> <span class="s">&#34;redis&#34;</span><span class="p">:</span>
+        <span class="c1">// 与 in-memory Cache 不同, Redis 的 Stop 方法实际上不进行任何操作.
+</span><span class="c1"></span>        <span class="nx">rollupResultCacheV</span><span class="p">.</span><span class="nx">c</span><span class="p">.</span><span class="nf">Stop</span><span class="p">()</span>
+        <span class="nx">rollupResultCacheV</span><span class="p">.</span><span class="nx">c</span> <span class="p">=</span> <span class="kc">nil</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>现在代码看起来整洁多了。</p>
+<p>那么接下来处理缓存相关的指标。Rollup Result Cache 原有的监控指标主要由 <code>fastcache.Stats</code> 提供，包括 Item 数量、体积、缓存命中率等。对于 Redis 实例，通常认为使用者会有额外的监控，因此不需要提供资源使用情况的指标，仅需要记录缓存命中率。</p>
+<p>首先我们给 <code>RedisRollupResultCacheClient</code> 添加统计字段，并且在 <code>Get</code> 方法中记录它们：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">RedisRollupResultCacheClient</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">c</span>   <span class="nx">redis</span><span class="p">.</span><span class="nx">UniversalClient</span>
+    <span class="nx">ttl</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span>
+
+    <span class="c1">// 统计字段
+</span><span class="c1"></span>    <span class="nx">calls</span>  <span class="kt">uint64</span>
+    <span class="nx">misses</span> <span class="kt">uint64</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">rc</span> <span class="o">*</span><span class="nx">RedisRollupResultCacheClient</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">dst</span><span class="p">,</span> <span class="nx">key</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span> <span class="p">{</span>
+    <span class="nx">rc</span><span class="p">.</span><span class="nx">calls</span><span class="o">++</span>  <span class="c1">// 记录调用次数
+</span><span class="c1"></span>    
+    <span class="o">...</span>
+    <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">redis</span><span class="p">.</span><span class="nx">Nil</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">rc</span><span class="p">.</span><span class="nx">misses</span><span class="o">++</span> <span class="c1">// 如果没有读取到结果，记录未命中次数
+</span><span class="c1"></span>    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+
+    <span class="o">...</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">rc</span> <span class="o">*</span><span class="nx">RedisRollupResultCacheClient</span><span class="p">)</span> <span class="nf">GetCalls</span><span class="p">()</span> <span class="kt">uint64</span>  <span class="p">{</span> <span class="k">return</span> <span class="nx">rc</span><span class="p">.</span><span class="nx">calls</span> <span class="p">}</span>
+<span class="kd">func</span> <span class="p">(</span><span class="nx">rc</span> <span class="o">*</span><span class="nx">RedisRollupResultCacheClient</span><span class="p">)</span> <span class="nf">GetMisses</span><span class="p">()</span> <span class="kt">uint64</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">rc</span><span class="p">.</span><span class="nx">misses</span> <span class="p">}</span>
+</code></pre></div><p>最后参考指标暴露的方法，在 <code>InitRollupResultCache</code> 中修改：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">InitRollupResultCache</span><span class="p">(</span><span class="nx">cacheType</span><span class="p">,</span> <span class="nx">cachePath</span><span class="p">,</span> <span class="nx">cacheRedisAddr</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">cacheRedisTTL</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">...</span>
+
+    <span class="k">switch</span> <span class="nx">cacheType</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="s">&#34;in-memory&#34;</span><span class="p">:</span>
+        <span class="o">...</span>
+    <span class="k">case</span> <span class="s">&#34;redis&#34;</span><span class="p">:</span>
+        <span class="o">...</span>
+        <span class="nx">metrics</span><span class="p">.</span><span class="nf">GetOrCreateGauge</span><span class="p">(</span><span class="s">`vm_cache_requests_total{type=&#34;promql/rollupResult&#34;}`</span><span class="p">,</span> <span class="kd">func</span><span class="p">()</span> <span class="kt">float64</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nb">float64</span><span class="p">(</span><span class="nx">redisClient</span><span class="p">.</span><span class="nf">GetCalls</span><span class="p">())</span>
+        <span class="p">})</span>
+        <span class="nx">metrics</span><span class="p">.</span><span class="nf">GetOrCreateGauge</span><span class="p">(</span><span class="s">`vm_cache_misses_total{type=&#34;promql/rollupResult&#34;}`</span><span class="p">,</span> <span class="kd">func</span><span class="p">()</span> <span class="kt">float64</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nb">float64</span><span class="p">(</span><span class="nx">redisClient</span><span class="p">.</span><span class="nf">GetMisses</span><span class="p">())</span>
+        <span class="p">})</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+
+    <span class="o">...</span>
+<span class="p">}</span>
+</code></pre></div><h2 id="效果对比">效果对比<a href="#效果对比" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>现在让我们来看看最终效果，用户需要怎样使用不同的缓存。</p>
+<p>In-memory 缓存依然与原来的使用方式一致：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 使用内存缓存, 退出时缓存数据不持久化</span>
+./vmselect -storageNode<span class="o">=</span>127.0.0.1:8401
+
+<span class="c1"># 使用内存缓存, 指定退出时缓存数据的持久化路径</span>
+./vmselect -storageNode<span class="o">=</span>127.0.0.1:8401 -cacheDataPath<span class="o">=</span>/my/tmp/dir
+
+<span class="c1"># (新) 使用内存缓存, 指定退出时缓存数据的持久化路径</span>
+./vmselect -storageNode<span class="o">=</span>127.0.0.1:8401 -cacheType<span class="o">=</span>in-memory -cacheDataPath<span class="o">=</span>/my/tmp/dir
+</code></pre></div><p>Redis 缓存与参数使用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># (新) 使用外部缓存</span>
+./vmselect -storageNode<span class="o">=</span>127.0.0.1:8401 -cacheType<span class="o">=</span>redis -cacheRedisAddr<span class="o">=</span>127.0.0.1:6379
+
+<span class="c1"># (新) 使用外部缓存, 指定 Item 的过期时间</span>
+./vmselect -storageNode<span class="o">=</span>127.0.0.1:8401 -cacheType<span class="o">=</span>redis -cacheRedisAddr<span class="o">=</span>127.0.0.1:6379 -cacheRedisTTL<span class="o">=</span>5m
+</code></pre></div><p>在进行一些查询后，可以从 vmselect 暴露的指标观察缓存使用情况：
+<img src="../202405-extending-go-application/metrics.png" alt=""></p>
+<h2 id="总结">总结<a href="#总结" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>这篇博客以最近为公司内的 VictoriaMetrics 开发缓存功能的实践为基础，介绍了 Go Interface 在抽象、扩展上的基础用法。你可以通过以下链接查看完整代码与改动部分：</p>
+<ul>
+<li><a href="https://github.com/jiekun/VictoriaMetrics/tree/feature/vmselect-ext-cache">feature/vmselect-ext-cache</a> 分支；</li>
+<li><a href="https://github.com/jiekun/VictoriaMetrics/compare/cluster...feature/vmselect-ext-cache">diff</a> 代码。</li>
+</ul>
+
+    <aside class="admonition tip">
+        <div class="admonition-title">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></div><b>什么时候能合并？</b>
+        </div>
+        <div class="admonition-content"><p>这个功能是否可以合并到 VictoriaMetrics 呢？暂时还不行。</p>
+<p>首先，代码中有几个错误——既有特意留下的，也有出于时间原因没有深入完善的。如果读者有兴趣的话可以尝试通过 Code Review 找出来。以下是对应的提示：</p>
+<ul>
+<li>在记录缓存命中率时，我们使用到了 <code>uint64</code> 进行自增，这种数据类型是线程安全的吗？</li>
+<li><code>rollupResultCacheClient</code> 中 <code>Save</code>、<code>UpdateStats</code> 方法是所有 Cache 都需要的吗？</li>
+<li><code>InitRollupResultCache</code> 需要接收许多参数，如果未来有更多类型的 Cache，或者 Redis Cache 需要更多控制参数，应该怎样设计得更优雅？</li>
+</ul>
+<p>其次，当前的代码分支中缺少了 Pull Request 必须具备的内容：</p>
+<ul>
+<li>文档；</li>
+<li>单元测试。</li>
+</ul>
+<p>最后，如<a href="#victoriametrics-%E7%9A%84%E7%BC%93%E5%AD%98%E9%97%AE%E9%A2%98">第一章</a>所说，上游还在针对以何种方式提供更好的缓存进行讨论。</p>
+</div>
+    </aside>
+<p>VictoriaMetrics 的社区非常活跃，对 Issue 的答复和处理也比较及时，希望这篇博客可以鼓励更多的 <a href="https://go.dev/blog/gopher">Gopher</a> 探索和参与到 VictoriaMetrics 社区中。</p>
+
+			</div>
+
+<hr>
+<div class="related-posts thin">
+	<h2>See Also</h2>
+	<ul>
+	
+	<li><a href="/posts/otlp-remote-write/">OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?</a></li>
+	
+	<li><a href="/posts/churn-rate-in-victoriametrics/">社区报障案例：没有新的 Time Series，为什么 Churn Rate 升高？</a></li>
+	
+	<li><a href="/posts/troubleshooting-victoriametrics/">监控数据问题排查：我的指标去哪儿了？</a></li>
+	
+	<li><a href="/posts/one-to-watch-victoriametrics/">[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事</a></li>
+	
+	<li><a href="/posts/vmselect-data-structures/">VictoriaMetrics 中的持久化数据结构 (Part 2): vmselect</a></li>
+	
+	</ul>
+</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 2808 字, 约 6 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2024-05-21 23:16 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#victoriametrics-的缓存问题">VictoriaMetrics 的缓存问题</a></li>
+    <li><a href="#观察">观察</a></li>
+    <li><a href="#开发">开发</a>
+      <ul>
+        <li><a href="#定义-interface">定义 Interface</a></li>
+        <li><a href="#添加-redis-的实现">添加 Redis 的实现</a></li>
+        <li><a href="#整理代码">整理代码</a></li>
+      </ul>
+    </li>
+    <li><a href="#效果对比">效果对比</a></li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事">
+<meta itemprop="description" content="Medium This blog post is originally posted by The Stack on: One to Watch: VictoriaMetrics - The story of a startup from Ukraine 这是一个初创公司追寻成功的故事，虽然不管从哪个方面看，这个故事都耳熟能详： 一群聪明人有一个填补"><meta itemprop="datePublished" content="2024-06-23T15:32:11+08:00" />
+<meta itemprop="dateModified" content="2024-06-23T15:32:11+08:00" />
+<meta itemprop="wordCount" content="2634">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事" />
+<meta property="og:description" content="Medium This blog post is originally posted by The Stack on: One to Watch: VictoriaMetrics - The story of a startup from Ukraine 这是一个初创公司追寻成功的故事，虽然不管从哪个方面看，这个故事都耳熟能详： 一群聪明人有一个填补" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/one-to-watch-victoriametrics/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2024-06-23T15:32:11+08:00" />
+<meta property="article:modified_time" content="2024-06-23T15:32:11+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事"/>
+<meta name="twitter:description" content="Medium This blog post is originally posted by The Stack on: One to Watch: VictoriaMetrics - The story of a startup from Ukraine 这是一个初创公司追寻成功的故事，虽然不管从哪个方面看，这个故事都耳熟能详： 一群聪明人有一个填补"/>
+<title>[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fone-to-watch-victoriametrics%2f&amp;text=%5b%e7%bf%bb%e8%af%91%5d%20%e8%81%9a%e7%84%a6%20VictoriaMetrics%ef%bc%9a%e4%b8%80%e5%ae%b6%e4%b9%8c%e5%85%8b%e5%85%b0%e5%88%9d%e5%88%9b%e4%bc%81%e4%b8%9a%e7%9a%84%e6%95%85%e4%ba%8b" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2fone-to-watch-victoriametrics%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=%5b%e7%bf%bb%e8%af%91%5d%20%e8%81%9a%e7%84%a6%20VictoriaMetrics%ef%bc%9a%e4%b8%80%e5%ae%b6%e4%b9%8c%e5%85%8b%e5%85%b0%e5%88%9d%e5%88%9b%e4%bc%81%e4%b8%9a%e7%9a%84%e6%95%85%e4%ba%8b&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2fone-to-watch-victoriametrics%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fone-to-watch-victoriametrics%2f&amp;source=https://jiekun.dev&amp;title=%5b%e7%bf%bb%e8%af%91%5d%20%e8%81%9a%e7%84%a6%20VictoriaMetrics%ef%bc%9a%e4%b8%80%e5%ae%b6%e4%b9%8c%e5%85%8b%e5%85%b0%e5%88%9d%e5%88%9b%e4%bc%81%e4%b8%9a%e7%9a%84%e6%95%85%e4%ba%8b&amp;summary=%5b%e7%bf%bb%e8%af%91%5d%20%e8%81%9a%e7%84%a6%20VictoriaMetrics%ef%bc%9a%e4%b8%80%e5%ae%b6%e4%b9%8c%e5%85%8b%e5%85%b0%e5%88%9d%e5%88%9b%e4%bc%81%e4%b8%9a%e7%9a%84%e6%95%85%e4%ba%8b%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事&#34;,&#34;https://jiekun.dev/posts/one-to-watch-victoriametrics/&#34;,&#34;[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Jun 23, 2024</span></div>
+				<h1>[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事</h1>
+			</header>
+			<div class="content">
+				<p><img src="../202406-one-to-watch-victoriametrics/cover.jpg" alt=""></p>
+
+    <aside class="admonition note">
+        <div class="admonition-title">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></div><b>Medium</b>
+        </div>
+        <div class="admonition-content"><p>This blog post is originally posted by <strong>The Stack</strong> on:</p>
+<ul>
+<li><a href="https://www.thestack.technology/one-to-watch-victoriametrics-the-story-of-a-startup-from-ukraine/">One to Watch: VictoriaMetrics - The story of a startup from Ukraine</a></li>
+</ul>
+</div>
+    </aside>
+<p>这是一个初创公司追寻成功的故事，虽然不管从哪个方面看，这个故事都耳熟能详：</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 一群聪明人有一个填补市场空白的创意；</li>
+<li><input checked="" disabled="" type="checkbox"> 他们成立了一家自力更生（Bootstrapped）的公司；</li>
+<li><input checked="" disabled="" type="checkbox"> 他们花时间编码实现这个创意；</li>
+<li><input checked="" disabled="" type="checkbox"> 他们对外宣传并展示 POC（Proof Of Concept）；</li>
+<li><input checked="" disabled="" type="checkbox"> 最终出现了愿意买单的用户；</li>
+<li><input checked="" disabled="" type="checkbox"> 然后他们继续努力将其发展成为一个更大的项目。</li>
+</ul>
+<p>但是 <a href="https://victoriametrics.com/">VictoriaMetrics</a> 有一点不同：它是一家乌克兰公司，尽管现在总部设在旧金山，它曾受到过战争的严重打击。</p>
+<p>让我们先来聊下公司本身。它的客户包括阿迪达斯（Adidas）、Grammarly 和欧洲粒子物理实验室（CERN）等，并被 <a href="https://thestack.technology">The Stack</a> 收录在最新一期“值得关注公司”名单中。VictoriaMetrics 提供时序数据库和监控软件服务，它们的口号是 “We make monitoring simple &amp; reliable for everyone”。</p>
+<h2 id="victoriametrics-具体是做什么的">VictoriaMetrics 具体是做什么的？<a href="#victoriametrics-具体是做什么的" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>这家公司聚焦的场景是：业务扩张与其带来的海量事件（Events），两者之间的脱节问题。例如，VictoriaMetrics 专注于指标（Metrics），指标代表的是系统的表现（译注：表现包括且不限于性能、业务量等），掌握这些指标，就能够构建监控面板并预测走势。但是指标数量随着业务规模增长，对计算和存储提出了实际的需求。</p>
+<p><img src="../202406-one-to-watch-victoriametrics/roman.jpg" alt=""></p>
+<p>“当业务增长了10%，需要追踪的指标就可能会增长 100 倍甚至 1000 倍，这时企业就会开始寻找（现有指标监控的）替代方案。” Co-Founder Roman Khavronenko 说道。</p>
+<p>“他们从简单的解决方案开始，碰到扩展上的瓶颈，但要想办法满足未来的增长。VictoriaMetrics 就是专门为处理这种海量数据的场景而诞生的。”</p>
+<p>该公司采用了一套很标准的商业产品开源模式：“99% 的功能对所有人免费开源，1% 的功能针对企业需求、安全性和租户管理闭源，仅向企业用户提供。企业服务的另一个重要部分是提供支持，帮助和指导客户管理指标。大公司希望保证一切正常运行，而监控是非常复杂的，他们需要专家来回答系统设计等方面的问题。”</p>
+<p>VictoriaMetrics 拒绝就营收问题作出评论，但表示已经有大约 1.2 亿次下载，并且有像网站构建工具 Wix、游戏平台 Roblox 和写作插件 <a href="https://www.grammarly.com/">Grammarly</a> 这些公司的使用案例。Grammarly 表示，与之前的监控解决方案相比，它降低了 10 倍的成本。其他用户还包括 CERN（用于大型强子对撞机的 CMS 通用探测器系统）和阿迪达斯（Adidas）等公司。</p>
+<h2 id="victoriametrics-与众不同的发展路线">VictoriaMetrics: 与众不同的发展路线<a href="#victoriametrics-与众不同的发展路线" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>该公司有机地进行招聘，仅依靠 10 至 20 名员工运作，并广泛使用 Contractors。与硅谷一些热门的初创公司不同，它目前没有计划寻求大规模的融资。</p>
+<p>“我们对来自企业业务的收入感到满意，” Khavronenko 说道。“这足以支持我们的团队扩张、发展和开发新的解决方案。”</p>
+<p>那为什么不像大多数初创公司那样迫切向前发展呢？</p>
+<p>“（如果融资）你会向投资者承诺份额，这是 OK 的，但这意味着你正在失去公司的一部分。 设想一下，你已经拥有了足够的资金，那么为什么还需要额外的融资呢？我并不是说融资是件坏事，这只是一个愿不愿意的权衡。”</p>
+<p>Khavronenko 强调并不是说绝对不会接受第三方资金，尽管目前还没有从外部筹集到任何资金。他的言辞中透露出，如果存在一个与众不同的提议，他可能会考虑接受第三方资金。</p>
+<p>“我坚持认为，筹集资金可以带来快速发展，并在市场上获得时间上的优势，就如人们所说的先行者优势。”</p>
+<p>他说道：“你可以更快地前进，但速度并不等同于质量。”</p>
+<p>“在许多情况下，这会带来压力并导致错误。”</p>
+<p>目前，该公司“不愿意为了投资者的 KPI 而牺牲自身”，但“如果未来有需要大量资金的机遇，这也会发生改变。一切都取决于 Oportunity、Cost 和 Cost of Opportunity”。</p>
+<p>并且，只要数据的规模足够大，机遇就无处不在。这个领域非常广阔，因为“如果你拥有巨大的数据规模，就需要收集所有这些数据的指标”。数据可以来自一个应用、你的汽车，甚至是你的冰箱，关键是观察正在发生的事情，然后窥探未来。</p>
+<p>因此，有很多机会扩展指标，然后对应调整市场上的操作。</p>
+<p>Khavronenko 表示：“日志与指标有所不同，但仍然是可观测性的三大支柱之一。我们正在努力研究这个领域，并对今年有很大的期望。”第三个支柱是追踪，VictoriaMetrics 似乎希望在日志之后构建一个完整的可观察性堆栈，这是一个很自然的发展方向。但他们还有很多其他的事情要考虑，比如在支持 AWS 和本地部署之后，增加对 Google 和 Microsoft 云的支持。</p>
+<h2 id="code-of-war">Code of war<a href="#code-of-war" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>因此，VictoriaMetrics 知道如何发展并扩展其影响力，追随着无数人遵循古老的创新智慧（“build a better mousetrap and the world will beat a path to your door”）和诗歌（“a man’s reach should exceed his grasp/Or what’s a heaven for?”）。</p>
+<p>但该公司拥有与大多数其他公司不同的视角，它曾经经历过一段战争。</p>
+<p>Khavronenko 以他特有的轻描淡写的方式说：“它确实对我们的工作地点和生活产生了影响。”</p>
+<p>他在疫情爆发前半年离开了伦敦 Cloudflare，他曾经在那里担任工程师，然后前往基辅加入了 VictoriaMetrics：“我买了一套公寓，我的儿子就在那里出生，然后战争开始了；那是一段可怕的经历，”他回忆道。“有些人留在了 VictoriaMetrics，有些人离开了。但这并没有影响公司的增长。我和其他同事在工作中找到了拯救。当你无法左右局势时，你只能去左右你能控制的事情&hellip;你可以控制自己写什么样的代码。”</p>
+<p>确实，在第一次危机期间，代码量出现了激增，比过往任何时候都多。</p>
+<p>如今，Khavronenko 表示他很平静，VictoriaMetrics 的员工们也安全。他提到，另一种不同类型的危机，即新冠疫情和随后的 Lockdown，燃起了在物理隔离的环境下合作工作的苗头。目前，VictoriaMetrics 是一家现代化的、成员分散在各地的初创公司，没有固定的工作时间，并通过线上渠道运作，如使用 GitHub 跟进工单等。“我们不遵循传统的 9 点到 5 点的工作时间，如果有人想多睡一会，也完全没问题，这是为了让你找到最适合的工作方式。”</p>
+<p>毕竟，还有更重要的事情需要考虑，Khavronenko 表示他对欧盟、对那些向他的同胞伸出援手并帮助他们重新开始生活的国家和公司“非常感激”。</p>
+<p>他目前居住在奥地利，另外两位联合创始人分别在美国和波兰。</p>
+<p>“每个人想象过的成功的样子，而这种想象又人人不同。”，他思考着说，“我们在 VictoriaMetrics 中打造的实际上是人和团队：喜欢相互合作的人在一起构建一个被成千上万人使用的产品。即使这个产品消失了，那些参与构建它的人仍然会在，他们可以构建更好的产品并解决更重要的问题。对我来说，这就是成功：人们解决真实问题。”</p>
+
+			</div>
+
+<hr>
+<div class="related-posts thin">
+	<h2>See Also</h2>
+	<ul>
+	
+	<li><a href="/posts/otlp-remote-write/">OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?</a></li>
+	
+	<li><a href="/posts/churn-rate-in-victoriametrics/">社区报障案例：没有新的 Time Series，为什么 Churn Rate 升高？</a></li>
+	
+	<li><a href="/posts/troubleshooting-victoriametrics/">监控数据问题排查：我的指标去哪儿了？</a></li>
+	
+	<li><a href="/posts/extending-go-application-with-interface/">用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例</a></li>
+	
+	<li><a href="/posts/vmselect-data-structures/">VictoriaMetrics 中的持久化数据结构 (Part 2): vmselect</a></li>
+	
+	</ul>
+</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 2634 字, 约 6 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2024-06-23 15:32 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#victoriametrics-具体是做什么的">VictoriaMetrics 具体是做什么的？</a></li>
+    <li><a href="#victoriametrics-与众不同的发展路线">VictoriaMetrics: 与众不同的发展路线</a></li>
+    <li><a href="#code-of-war">Code of war</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="GIAC 2022 深圳站小记">
+<meta itemprop="description" content="目录 启程 课程规划 快手 KBus：CDC 解决方案 Databus Pattern CDC Tool Production-Grade CDC Solution 开源与技术管理 项目推广 开源收益 写在最后 碎碎念 启程 周末蹭公司的门票参到 GIAC 现场学习了两"><meta itemprop="datePublished" content="2022-07-23T17:43:07+08:00" />
+<meta itemprop="dateModified" content="2022-07-23T17:43:07+08:00" />
+<meta itemprop="wordCount" content="4673">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="GIAC 2022 深圳站小记" />
+<meta property="og:description" content="目录 启程 课程规划 快手 KBus：CDC 解决方案 Databus Pattern CDC Tool Production-Grade CDC Solution 开源与技术管理 项目推广 开源收益 写在最后 碎碎念 启程 周末蹭公司的门票参到 GIAC 现场学习了两" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/giac-2022/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-07-23T17:43:07+08:00" />
+<meta property="article:modified_time" content="2022-07-23T17:43:07+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="GIAC 2022 深圳站小记"/>
+<meta name="twitter:description" content="目录 启程 课程规划 快手 KBus：CDC 解决方案 Databus Pattern CDC Tool Production-Grade CDC Solution 开源与技术管理 项目推广 开源收益 写在最后 碎碎念 启程 周末蹭公司的门票参到 GIAC 现场学习了两"/>
+<title>GIAC 2022 深圳站小记</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fgiac-2022%2f&amp;text=GIAC%202022%20%e6%b7%b1%e5%9c%b3%e7%ab%99%e5%b0%8f%e8%ae%b0" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2fgiac-2022%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=GIAC%202022%20%e6%b7%b1%e5%9c%b3%e7%ab%99%e5%b0%8f%e8%ae%b0&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2fgiac-2022%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fgiac-2022%2f&amp;source=https://jiekun.dev&amp;title=GIAC%202022%20%e6%b7%b1%e5%9c%b3%e7%ab%99%e5%b0%8f%e8%ae%b0&amp;summary=GIAC%202022%20%e6%b7%b1%e5%9c%b3%e7%ab%99%e5%b0%8f%e8%ae%b0%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;GIAC 2022 深圳站小记&#34;,&#34;https://jiekun.dev/posts/giac-2022/&#34;,&#34;GIAC 2022 深圳站小记, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Jul 23, 2022</span></div>
+				<h1>GIAC 2022 深圳站小记</h1>
+			</header>
+			<div class="content">
+				<h2 id="目录">目录<a href="#目录" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<ol>
+<li><a href="#%E5%90%AF%E7%A8%8B">启程</a></li>
+<li><a href="#%E8%AF%BE%E7%A8%8B%E8%A7%84%E5%88%92">课程规划</a></li>
+<li><a href="#%E5%BF%AB%E6%89%8B-kbuscdc-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88">快手 KBus：CDC 解决方案</a>
+<ul>
+<li><a href="#databus-pattern">Databus Pattern</a></li>
+<li><a href="#cdc-tool">CDC Tool</a></li>
+<li><a href="#production-grade-cdc-solution">Production-Grade CDC Solution</a></li>
+</ul>
+</li>
+<li><a href="#%E5%BC%80%E6%BA%90%E4%B8%8E%E6%8A%80%E6%9C%AF%E7%AE%A1%E7%90%86">开源与技术管理</a>
+<ul>
+<li><a href="#%E9%A1%B9%E7%9B%AE%E6%8E%A8%E5%B9%BF">项目推广</a></li>
+<li><a href="#%E5%BC%80%E6%BA%90%E6%94%B6%E7%9B%8A">开源收益</a></li>
+</ul>
+</li>
+<li><a href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E">写在最后</a></li>
+<li><a href="#%E7%A2%8E%E7%A2%8E%E5%BF%B5">碎碎念</a></li>
+</ol>
+<hr>
+<h2 id="启程">启程<a href="#启程" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>周末蹭公司的门票参到 <a href="https://giac.msup.com.cn/2022sz/schedule">GIAC</a> 现场学习了两天，受疫情影响，大会临时从华侨城改到了 40 公里外的龙岗，原定早上出发晚上回来的行程直接改成在酒店住两晚。对离得近的同学来说，改期自然是要比改地点好一些，特别感谢 <strong>Shopee Academy</strong> 的同事一直帮忙协调解决了很多问题。</p>
+<p><img src="../202207-giac/giac_entrance_ticket.jpg" alt=""></p>
+<h2 id="课程规划">课程规划<a href="#课程规划" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>GIAC 每天分为上下午场，每场又有 6 个分会场，分别对应不同主题，一个主题下大约有 3-4 场分享，因此想全都到现场听是不可能的。晚上在酒店预先做了点攻略，先把感兴趣的主题圈画出来，再看主题下具体有什么分享。</p>
+<p><img src="../202207-giac/giac_topics.png" alt=""></p>
+<p>选择听哪场分享影响因素有很多，例如作为后端工程师，我可能对前端、AI、大数据的内容暂时不感兴趣，如果想去听，那么：</p>
+<ul>
+<li>要花大量时间预热背景知识，在半天时间内几乎不可能；</li>
+<li>对团队内这个方向的实践不熟悉，不好对比，没有对比就没办法提出学习改进的思路。</li>
+</ul>
+<p>另外因为前几周刚刚返厂维修了膝盖，走路全靠拐杖，要在不同会场之间蠕动还很困难，所以尽可能保持每个半天都待在同一个会场，剩余分享可以在会后看回放学习，只少了提问交流的机会。</p>
+<p>综合各种因素和限制，最后选择了学习以下的分享，按照自己的理解重新分类，并从中挑选几个话题进行分享：</p>
+<ul>
+<li><strong>Database</strong>
+<ul>
+<li>快手数据总线 KBus 的设计和实践</li>
+<li>云巢：基于 K8s 的数据库云原生服务平台实践</li>
+</ul>
+</li>
+<li><strong>服务治理</strong>
+<ul>
+<li>基于 dubbo-go 构建跨语言的服务治理平台</li>
+<li>无侵入式多重灰度和全链路压力测试</li>
+</ul>
+</li>
+<li><strong>Open-source software</strong>
+<ul>
+<li>让开源成为公司技术管理的杠杆</li>
+</ul>
+</li>
+<li><strong>运维</strong>
+<ul>
+<li>腾讯游戏的海量 SRE 运维实践</li>
+</ul>
+</li>
+<li><strong>Kubernetes</strong>
+<ul>
+<li>云原生跨集群统一算力调度在网易的实践</li>
+</ul>
+</li>
+</ul>
+<h2 id="快手-kbuscdc-解决方案">快手 KBus：CDC 解决方案<a href="#快手-kbuscdc-解决方案" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>数据写入 Database、缓存、搜索引擎是很常见的存储方案，在过往的一些项目中，产生数据的一方会独立完成这些操作，先写入某个中间件，再写入某个中间件。引入 Databus（数据总线）之后，产生数据的应用可以专注于完成 Database 的写入，在它的视角里面，数据库写事务成功提交，处理就已经完成了，写入架构可以变成下面这样：</p>
+<p><img src="../202207-giac/kbus.png" alt=""></p>
+<h3 id="databus-pattern">Databus Pattern<a href="#databus-pattern" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>在 Shopee Affiliate 团队，同样也有 Databus 的概念。当用户注册后，一条 “注册” 消息会被发送至 Kafka，不同微服务消费到这条消息后对用户进行审核、打标（Tagging）等操作。跟快手 KBus 的不同之处在于，KBus 本质上是一个 CDC 应用，它的消息代表的是数据变更内容；而 Affiliate 团队的 Databus 是用 Kafka 承载的是一个业务事件消息。</p>
+<p><img src="../202207-giac/different_databus.png" alt=""></p>
+<p>两种类型的 Databus 是否可以合并呢？其实业务事件大多数场景下都是一次 Database 操作的结果，例如用户注册可能就是一条 <code>INSERT</code> 语句，用户审批可能是一条 <code>UPDATE</code> 语句等，Consumer 确实可以通过识别这些 SQL 语句的执行来实现类似功能，但是：</p>
+<ul>
+<li>如果业务非常复杂，从 100 次 <code>INSERT</code> 消息中识别一个事件可能需要筛除掉另外的 99 条 <code>INSERT</code> 消息。换句话说，SQL 执行的语义必然不如自定义的业务事件<strong>语义清晰</strong>，简化 Producer 的逻辑即是加重 Consumer 的逻辑；</li>
+<li>业务应用有能力向 Databus 投递复合的数据。例如一个 User 的数据散落在不同表中，我希望借助 Databus 来更新这个 User 的缓存，单靠某句 <code>INSERT</code> 或者 <code>UPDATE</code> 的消息不容易完成，需要联合上下文相关的语句才能构建完整的 User 模型。这种场景在 KBus 的模式下就会比较困难，需要 Consumer 来处理；而如果 Producer 投递的就已经是组装好的数据，那 Consumer 侧就只需要 <code>SET</code> 操作直接更新缓存即可。</li>
+</ul>
+<h3 id="cdc-tool">CDC Tool<a href="#cdc-tool" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>在业务的角度来看，如果在使用不同的存储中间件，用<strong>可靠</strong>的 CDC 方案来完成次级存储（Redis、Elasticsearch、Clickhouse）的写入可以提升开发效率，在一些方案设计时，只要体现出业务应用与 Database 的交互，不再关心缓存的写入时机，听起来似乎很诱人。Affiliate 团队当前大部分 Redis 的写入是在业务应用内完成，Elasticsearch 的写入则是利用与 KBus 类似的 CDC 组件来完成。</p>
+<p>在确认 KBus 是一个 CDC 平台后，很自然地会将它与我们当前正在使用的 <a href="https://github.com/alibaba/canal">canal</a> 进行比较。下图来自分享老师的 PPT，可以看到 KBus 内部是多个 Server + Kafka 的模型。</p>
+<p><img src="../202207-giac/kbus_design.png" alt=""></p>
+<p>其中，<strong>Meta Server</strong> 存储元信息，不同 Database 的配置应该是依赖它来存储的，而<strong>协调中心</strong>自然是分布式系统中的中心化节点，协调不同 Server 的工作。而 Server 就是伪装成 Database 的 Slave，是真正的 CDC worker。</p>
+<p>这套设计跟 canal 很像，canal 中没有 Meta Server，取而代之的是一个 MySQL 或配置文件；协调中心则是直接使用了 ZooKeeper，“协调” 工作通过类似于<strong>抢占</strong>的操作来完成，某个 Server 抢占到了 Database 的使用权，那它就是这个 Database 的 CDC worker。</p>
+<p>canal 中 ZooKeeper 同时用于 “协调” 和 “记录位点信息”，KBus 将它们拆到了不同的地方，但不管怎么做，由于 “消息投递至 Kafka” 与 “更新位点（至 ZooKeeper 或 Meta Server）” 不是事务操作，总会出现消息已投递，但未来得及记录进度，Server 就意外不可用的情况，紧接着替代的 Server 就会从历史进度开始获取变更数据信息继续投递。这个问题在 Consumer 视角来看，就是会出现消息重复投递的情况，需要自行实现幂等处理。</p>
+<p><img src="../202207-giac/kbus_server.png" alt=""></p>
+<p>在现场我还提了另一个问题，日常 canal 使用中，我们发现如果单纯依赖 “抢占” 逻辑，当出现新的 Database 需要被 CDC worker 处理时，极有可能出现资源分配不均匀的情况，某个 CDC worker 抢占到了大量 Database 目标，而其他 CDC worker 则没有太多负载。KBus 的解决方案是通过考察落在 Server 上的 Database 数量来尽可能保持均衡，这样做一定程度能缓解倾斜的问题，但是由于不同的 Database 使用情况不同，例如有的 Database 可能写操作非常多，而有的 Database 则很闲，几乎不产生数据变更，那实际上 Server 上的 CPU 使用情况仍然会出现倾斜。当然，这个问题优先级可能比较低，况且 KBus 也已经有根据数量来保持平衡的策略，比完全依赖抢占会改善很多。对 CDC 组件来说，保证消息不丢失是最重要的。</p>
+<h3 id="production-grade-cdc-solution">Production-Grade CDC Solution<a href="#production-grade-cdc-solution" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>工具需要不断完善才能变成一个平台，对外提供能力。之前一直好奇正儿八经的 CDC 平台是什么样子的（当然，也是因为过往公司内没有合适的 CDC 平台，不同团队各造轮子），通过这次分享窥探了一下 “别人是怎么做的”，然后发现，痛点在哪里都是痛点，问题在哪里都是问题。</p>
+<p>我们在用 canal 的时候觉得它不好用，很多地方都做得像个玩具（例如管理后台的登录态存储在内存中，意味着难以部署在多个机器上做高可用），再看 KBus，核心技术思路几乎是完全一致的，例如元信息存储、DDL 执行期间 Server 切换等的处理方式。然后面对 Server 分配不均匀、重复投递这些问题，canal 没处理好的，KBus 或多或少也有（面对过）类似问题，那为什么要用 KBus 不用六七年前就已经发布了的 canal 呢？</p>
+<p>答案跟下一节要讲的开源有一点联系。</p>
+<p>我不太相信阿里内部使用工具跟开源出来的项目一样。canal 本身有很多小问题，都不是一个面向企业级业务量的工具应该出现的。自研的工具优势很简单：</p>
+<ul>
+<li>业务场景明确，设计有针对；</li>
+<li>从 0 到 1 溯源，各种技术决策的原因可追踪；</li>
+<li>专职维护，没有二次开发困难。</li>
+</ul>
+<p>那开源项目难道就做不到这些了吗？也不见得，Kubernetes、TiDB、Redis 都是开源的，当开源的项目满足不了业务需求，要么提 Issue 和 Pull Request 贡献，要么二次开发或者重新造轮子，这些就是用开源工具的难点，特别是用一个社区不活跃的开源工具。</p>
+<p>回到正题，当企业内能孵化出这样的项目，它本身：</p>
+<ul>
+<li>开发和解决问题是团队的职责；</li>
+<li>不好用就没人用，没人用就没有对应的成果和绩效。所以只要这个能力一直被需要，它就能一直在改进。</li>
+</ul>
+<p>所以在听完分享之后我觉得 KBus 确实是一个使用上能满足企业级业务接入的要求、能运维得当的 CDC 解决方案。在之前，我会想象别人家 Production-Grade 的解决方案能解决我们遇到的（绝大多数）问题，现在改变了主意：<strong>原来别家也一样，那 canal 改改也可以。只是比起自己造的轮子，从开源社区白嫖的工具 “改改” 难度大了许多而已</strong>。</p>
+<h2 id="开源与技术管理">开源与技术管理<a href="#开源与技术管理" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>这一场的分享者是 Apache Member 郭炜老师，很可惜老师没有来到现场，改用线上的形式。Slides：<a href="https://drive.google.com/file/d/1glfSIR09ksjyJdAFc-twWU4eQKnOOV4-/view?usp=sharing">HERE</a>。</p>
+<p>头一天晚上在酒店的时候，看到这场分享的题目，心里想的是：</p>
+<ul>
+<li>我有做出来过什么开源（/能在不同团队里使用）的东西吗？
+<ul>
+<li>如果有的话，那它好推广吗？不好推广的原因是什么？</li>
+</ul>
+</li>
+<li>为什么要做开源和推广？</li>
+<li>我从开源和推广里面收获过什么？</li>
+</ul>
+<p>第二天带着杂七杂八的问题来到了分享的会场，因为上一场在其他会场结束得比较晚，导致来到的时候只能蹲在后面的角落。</p>
+<p><img src="../202207-giac/oss.jpg" alt=""></p>
+<h3 id="项目推广">项目推广<a href="#项目推广" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>对于内部开源，老师提到了一些作为（开源）管理者应该倡导和要避免的要点，仔细一看，有我们一直鼓励的、正在实践的、做失败的、踩过坑不好维护的，各种问题都有。其中，团队内一直都提倡结合实际痛点，落地能解决问题的、团队适用的工具，对产品线内外宣讲也很支持。</p>
+<p><img src="../202207-giac/advocating_opensourcing.png" alt=""></p>
+<p>如果能观察一下自己、企业内做失败的工具，问题都很容易总结出来：</p>
+<ul>
+<li>边界不清晰。什么都想做的项目，基本上都失败了；</li>
+<li>代码开源。应该推广的是产品而不是代码；</li>
+<li>开发者寥寥无几。通常只有写下这个工具的一两个人在维护和迭代。</li>
+</ul>
+<p>对于推广的工具，大部分的使用者都不是它的开发者，所以他们还不是社区的一部分，这就是所谓的 “代码开源”。那使用者没这么多时间去开发，在企业内似乎也很正常？其实没关系，开源社区的参与并不只是代码上的参与，传统的需求流程和老师提出来的下一代的开发形式差别就在这里。</p>
+<p>想一下，你推广出去的开源工具，有听到用户的声音了吗？你的用户在使用你的代码，还是有 feedback 给你，或者甚至提方案、提 Pull Request？那接到这些信息的时候，你或者社区内的其他人有关注吗？所有的这些问题对应的就是：</p>
+<ul>
+<li>谁在参与这个社区；</li>
+<li>这个社区的活跃程度。</li>
+</ul>
+<p>提升这方面的要点其实就一句话：<strong>让更多的人参与进来</strong>。不光是对开源项目，任何想推广的内部项目也都可以这样处理。</p>
+<p><img src="../202207-giac/software_developing.png" alt=""></p>
+<h3 id="开源收益">开源收益<a href="#开源收益" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>参与开源有两条不同的路径，一是将新的轮子推广出去，二是参与到已有开源项目的开发中。在企业内想推广一些<strong>新</strong>工具和平台往往都是不容易的（强制推行的除外），因为业务团队大都有正儿八经的业务项目需要维护，那为什么要做额外的工具和推广呢？当你决定要把某个项目共享出去，可能是基于：</p>
+<ul>
+<li>共享轮子；</li>
+<li>内部开源走向外部开源；</li>
+<li>产生技术影响力；</li>
+<li>打造商业模式。</li>
+</ul>
+<p>但是能实现这些其实都是很难的，更多的项目还没走出部门内就已经死了。</p>
+<p>而参与到开源项目，对公司和个人都有一些来得更直接的收益。其次就像某人所说的，“The best programs are the ones written when the programmer is supposed to be working on something else.”。</p>
+<p><img src="../202207-giac/oss_incentive.png" alt=""></p>
+<p>最后，开源项目不代表免费，也不代表不盈利，受限于篇幅，这里推荐阅读一下 slides 中 “<strong>外部开源要做商业么？</strong>” 的部分，企业、项目的可持续发展离不开社区的目标。</p>
+<h2 id="写在最后">写在最后<a href="#写在最后" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>文章大部分只是听分享过程中闪过的一些想法和随手的笔录，<strong>有的思考和观点并不严谨，也不一定正确</strong>。</p>
+<p>在听分享的过程中，发现最没有意义的就是介绍一个很庞大的系统，模块非常多，功能非常全，几乎我能想到的功能它都有。不出 10 页 slides 一定有超多框框箭头的架构图，有降级熔断模块、告警监控模块、管理模块、调度模块等等，如果有哪个系统能把这么多的模块都做得很完善，那自然是很优秀的，但可惜没有能借鉴的地方，因为大家都知道要去做，只是受限于 ROI，未必需要都做出来。这样的分享更像是在展示一款产品，说，你来用吧。抱歉，我其实不是来听这些的。</p>
+<p>以及，2 天听的分享时间上满满当当，匆忙间也没办法记录下太多的内容。后续等录播上线之后，还有其他老师的分享需要看录播完善一下思考才能写进来。</p>
+<h2 id="碎碎念">碎碎念<a href="#碎碎念" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>原本以为临时改了这么远的地点，参会的人会少很多，毕竟也提供了线上直播，但是其实周五当天人还是挺多的，以致于换会场的时候发现没有位置坐了，拄着拐杖听了大半个小时。周六反而人少了一些，可能大家都觉得周五外出摸一天鱼更有利于吸收知识。</p>
+<p><img src="../202207-giac/giac_entrance.jpeg" alt=""></p>
+<p><img src="../202207-giac/audience.jpeg" alt=""></p>
+<p>早上急急忙忙起来只吃了个鸡蛋，喝了豆浆，偷了根香蕉就往会场赶，倒是中午的时候听完慢悠悠去用餐比较舒服，但是去晚了就剩养生食品，想着晚上要出去吃，中午就随便糊弄一下也行。</p>
+<p><img src="../202207-giac/lunch.jpeg" alt=""></p>
+<p>晚上跟朋友去吃了一顿自助餐，改善一下开会的体验，毕竟坐一整天确实挺累的，不过如果有下一次的话，那大概也还是会去，咱毕竟是去上课不是来接雨水的。</p>
+<p><img src="../202207-giac/dinner.jpeg" alt=""></p>
+
+			</div>
+
+<hr>
+<div class="related-posts thin">
+	<h2>See Also</h2>
+	<ul>
+	
+	<li><a href="/posts/exclude-filtered-nodes/">Learn from issues: PodTopologySpread Skew 与 nodeAffinity 过滤</a></li>
+	
+	</ul>
+</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 4673 字, 约 10 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2022-07-23 17:43 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#目录">目录</a></li>
+    <li><a href="#启程">启程</a></li>
+    <li><a href="#课程规划">课程规划</a></li>
+    <li><a href="#快手-kbuscdc-解决方案">快手 KBus：CDC 解决方案</a>
+      <ul>
+        <li><a href="#databus-pattern">Databus Pattern</a></li>
+        <li><a href="#cdc-tool">CDC Tool</a></li>
+        <li><a href="#production-grade-cdc-solution">Production-Grade CDC Solution</a></li>
+      </ul>
+    </li>
+    <li><a href="#开源与技术管理">开源与技术管理</a>
+      <ul>
+        <li><a href="#项目推广">项目推广</a></li>
+        <li><a href="#开源收益">开源收益</a></li>
+      </ul>
+    </li>
+    <li><a href="#写在最后">写在最后</a></li>
+    <li><a href="#碎碎念">碎碎念</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

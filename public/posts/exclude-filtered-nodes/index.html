@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="Learn from issues: PodTopologySpread Skew 与 nodeAffinity 过滤">
+<meta itemprop="description" content="『Learn from issues』 系列通过讲解 Kubernetes 的 Issue 及 PR 中涉及的概念、代码，来帮助 Kubernetes 新人快速了解功能和代码思路。在以往的学习中，阅读大型项目的代码"><meta itemprop="datePublished" content="2021-12-20T20:06:27+08:00" />
+<meta itemprop="dateModified" content="2021-12-20T20:06:27+08:00" />
+<meta itemprop="wordCount" content="1848">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="Learn from issues: PodTopologySpread Skew 与 nodeAffinity 过滤" />
+<meta property="og:description" content="『Learn from issues』 系列通过讲解 Kubernetes 的 Issue 及 PR 中涉及的概念、代码，来帮助 Kubernetes 新人快速了解功能和代码思路。在以往的学习中，阅读大型项目的代码" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/exclude-filtered-nodes/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-12-20T20:06:27+08:00" />
+<meta property="article:modified_time" content="2021-12-20T20:06:27+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Learn from issues: PodTopologySpread Skew 与 nodeAffinity 过滤"/>
+<meta name="twitter:description" content="『Learn from issues』 系列通过讲解 Kubernetes 的 Issue 及 PR 中涉及的概念、代码，来帮助 Kubernetes 新人快速了解功能和代码思路。在以往的学习中，阅读大型项目的代码"/>
+<title>Learn from issues: PodTopologySpread Skew 与 nodeAffinity 过滤</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fexclude-filtered-nodes%2f&amp;text=Learn%20from%20issues%3a%20PodTopologySpread%20Skew%20%e4%b8%8e%20nodeAffinity%20%e8%bf%87%e6%bb%a4" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2fexclude-filtered-nodes%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=Learn%20from%20issues%3a%20PodTopologySpread%20Skew%20%e4%b8%8e%20nodeAffinity%20%e8%bf%87%e6%bb%a4&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2fexclude-filtered-nodes%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fexclude-filtered-nodes%2f&amp;source=https://jiekun.dev&amp;title=Learn%20from%20issues%3a%20PodTopologySpread%20Skew%20%e4%b8%8e%20nodeAffinity%20%e8%bf%87%e6%bb%a4&amp;summary=Learn%20from%20issues%3a%20PodTopologySpread%20Skew%20%e4%b8%8e%20nodeAffinity%20%e8%bf%87%e6%bb%a4%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;Learn from issues: PodTopologySpread Skew 与 nodeAffinity 过滤&#34;,&#34;https://jiekun.dev/posts/exclude-filtered-nodes/&#34;,&#34;Learn from issues: PodTopologySpread Skew 与 nodeAffinity 过滤, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Dec 20, 2021</span></div>
+				<h1>Learn from issues: PodTopologySpread Skew 与 nodeAffinity 过滤</h1>
+			</header>
+			<div class="content">
+				<blockquote>
+<p>『Learn from issues』 系列通过讲解 Kubernetes 的 Issue 及 PR 中涉及的概念、代码，来帮助 Kubernetes 新人快速了解功能和代码思路。在以往的学习中，阅读大型项目的代码往往比较困难，而且如果没有使用场景，一些功能对新手而言或许会比较模糊且无法复现。本系列挑选的 Issue/PR 通常是只针对特定功能、bug 的改动，并且提供足够精简清晰的上下文来降低理解的负担。文末会附上对应的 Issue/PR 链接方便查看原内容。</p>
+</blockquote>
+<h2 id="功能简介">功能简介<a href="#功能简介" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>Kubernetes Scheduler 的任务是将未被调度的 Pod 调度至特定 Node 上。自 v1.19 版本开始，我们可以使用 Pod Topology Spread Constraints 来控制 Pod 在一定拓扑结构集群的调度。</p>
+<p>我们假定有 4 个带有 Labels 的 Node：</p>
+<pre tabindex="0"><code>NAME    STATUS   ROLES    AGE     VERSION   LABELS
+node1   Ready    &lt;none&gt;   4m26s   v1.16.0   node=node1,zone=zoneA
+node2   Ready    &lt;none&gt;   3m58s   v1.16.0   node=node2,zone=zoneA
+node3   Ready    &lt;none&gt;   3m17s   v1.16.0   node=node3,zone=zoneB
+node4   Ready    &lt;none&gt;   2m43s   v1.16.0   node=node4,zone=zoneB
+</code></pre><p>编写以下 yaml 文件使用 Pod Topology Spread Constraints：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l">Pod</span><span class="w">
+</span><span class="w"></span><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l">v1</span><span class="w">
+</span><span class="w"></span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">mypod</span><span class="w">
+</span><span class="w">  </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l">bar</span><span class="w">
+</span><span class="w"></span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">topologySpreadConstraints</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span>- <span class="nt">maxSkew</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">                                 </span><span class="c"># 最大不均匀度</span><span class="w">
+</span><span class="w">    </span><span class="nt">topologyKey</span><span class="p">:</span><span class="w"> </span><span class="l">zone                         </span><span class="w"> </span><span class="c"># Node 拓扑结构的 Label</span><span class="w">
+</span><span class="w">    </span><span class="nt">whenUnsatisfiable</span><span class="p">:</span><span class="w"> </span><span class="l">DoNotSchedule          </span><span class="w"> </span><span class="c"># 不满足条件时的策略</span><span class="w">
+</span><span class="w">    </span><span class="nt">labelSelector</span><span class="p">:</span><span class="w">                             </span><span class="c"># 针对带有哪些 Label 的 Pods 生效</span><span class="w">
+</span><span class="w">      </span><span class="nt">matchLabels</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l">bar</span><span class="w">
+</span><span class="w">  </span><span class="nt">containers</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">pause</span><span class="w">
+</span><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">k8s.gcr.io/pause:3.1</span><span class="w">
+</span></code></pre></div><p>简单来说，<code>pod.spec.topologySpreadConstraints</code> 要求满足条件的 Pod 在集群中分布的不均匀度不超过 1，统计的以 Node 中 的 <code>zone</code> 字段聚合。以前文的 4 Nodes 集群为例，<code>zone</code> 只有两个值：<code>zoneA</code> 和 <code>zoneB</code>，如果当前已有 3 个 Pod 如下图分布，那么当前的不均匀度为 <code>2 - 1 = 1</code>。新 Pod 想要加入进来，如果加入至 <code>zoneA</code>，则不均匀度变为 <code>3 - 1 = 2</code>，超出了设定值，因此只能被调度至 <code>zoneB</code> 的 Node 上。至于最终调度至 Node 3 或是 Node 4 均符合预期结果。</p>
+<p><img src="../202112-exclude-filtered-nodes/topology_spread_constraint.png" alt=""></p>
+<p>不同的 <code>pod.spec.topologySpreadConstraints</code> 条件为 <code>&amp;&amp;</code> 关系，需要同时满足。因此，如果期望 Pod 被调度到 Node 4，可以通过增加以下配置，以 <code>node</code> 作为统计字段：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="nn">...</span><span class="w">
+</span><span class="w"></span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">topologySpreadConstraints</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span>- <span class="nt">maxSkew</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span><span class="w">    </span><span class="nt">topologyKey</span><span class="p">:</span><span class="w"> </span><span class="l">zone</span><span class="w">
+</span><span class="w">    </span><span class="l">...</span><span class="w">
+</span><span class="w">  </span>- <span class="nt">maxSkew</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span><span class="w">    </span><span class="nt">topologyKey</span><span class="p">:</span><span class="w"> </span><span class="l">node</span><span class="w">
+</span><span class="w">    </span><span class="nt">whenUnsatisfiable</span><span class="p">:</span><span class="w"> </span><span class="l">DoNotSchedule</span><span class="w">
+</span><span class="w">    </span><span class="nt">labelSelector</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">matchLabels</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l">bar</span><span class="w">
+</span><span class="w"></span><span class="nn">...</span><span class="w">
+</span></code></pre></div><p>更多示例可以参考<a href="https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/">官方文档</a>。</p>
+<p>除了 Pod Topology Spread Constraints，<a href="https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity">Node affinity</a> 也可以用来控制调度，本文只介绍涉及的配置以减少需要理解的内容。以下面 yaml 为例，要求 Pod 必须调度至带有 <code>kubernetes.io/e2e-az-name</code> 标签且标签值为 <code>e2e-az1</code> 或 <code>e2e-az2</code> 的 Nodes 上：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l">v1</span><span class="w">
+</span><span class="w"></span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l">Pod</span><span class="w">
+</span><span class="w"></span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">with-node-affinity</span><span class="w">
+</span><span class="w"></span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">affinity</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">nodeAffinity</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">requiredDuringSchedulingIgnoredDuringExecution</span><span class="p">:</span><span class="w">  </span><span class="c"># 硬性要求, 必须满足</span><span class="w">
+</span><span class="w">        </span><span class="nt">nodeSelectorTerms</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span>- <span class="nt">matchExpressions</span><span class="p">:</span><span class="w">
+</span><span class="w">          </span>- <span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l">kubernetes.io/e2e-az-name            </span><span class="w"> </span><span class="c"># 必须调度至带有此标签的 Nodes</span><span class="w">
+</span><span class="w">            </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l">In                              </span><span class="w"> </span><span class="c"># 标签的值落在以下范围内</span><span class="w">
+</span><span class="w">            </span><span class="nt">values</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span>- <span class="l">e2e-az1</span><span class="w">
+</span><span class="w">            </span>- <span class="l">e2e-az2</span><span class="w">
+</span><span class="w">  </span><span class="nt">containers</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">with-node-affinity</span><span class="w">
+</span><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">k8s.gcr.io/pause:2.0</span><span class="w">
+</span></code></pre></div><h2 id="问题描述">问题描述<a href="#问题描述" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>当同时使用 Pod Topology Spread Constraints 和 Node affinity 来控制调度时，我们考虑以下例子，当前集群一共有 3 个 Nodes，其中 Node 1 和 Node 2 属于 zoneA，Node 3 属于 zoneB。已有 2 个 Pod 落在 Node 2 上，1 个 Pod 落在 Node 3。</p>
+<p><img src="../202112-exclude-filtered-nodes/filter_bug_example.png" alt=""></p>
+<p>现在如下文 yaml 新建一个 deployment，要求不同 zone 之间不均匀度不超过 1，且 Pod 不落入带有 <code>name=2</code> 标签的 Nodes。如果调度至 Node 3，那么不同 <code>zone</code> 之间的不均匀度为 <code>2 - 2 = 0</code>，并且也没调度至带有 <code>name=2</code> 标签的 Node，看起来很合理不是吗？</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="nn">...</span><span class="w">
+</span><span class="w">    </span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">topologySpreadConstraints</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="nt">maxSkew</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span><span class="w">        </span><span class="nt">topologyKey</span><span class="p">:</span><span class="w"> </span><span class="l">zone</span><span class="w">
+</span><span class="w">        </span><span class="nt">whenUnsatisfiable</span><span class="p">:</span><span class="w"> </span><span class="l">DoNotSchedule</span><span class="w">
+</span><span class="w">        </span><span class="nt">labelSelector</span><span class="p">:</span><span class="w">
+</span><span class="w">          </span><span class="nt">matchLabels</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l">pause</span><span class="w">
+</span><span class="w">      </span><span class="nt">affinity</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span><span class="nt">nodeAffinity</span><span class="p">:</span><span class="w">
+</span><span class="w">          </span><span class="nt">requiredDuringSchedulingIgnoredDuringExecution</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">nodeSelectorTerms</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span>- <span class="nt">matchExpressions</span><span class="p">:</span><span class="w">
+</span><span class="w">              </span>- <span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l">name</span><span class="w">
+</span><span class="w">                </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l">NotIn</span><span class="w">
+</span><span class="w">                </span><span class="nt">values</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;2&#34;</span><span class="p">]</span><span class="w">
+</span><span class="w"></span><span class="nn">...</span><span class="w">
+</span></code></pre></div><p>但是如果先考虑 nodeAffinity，Pod 永远不能调度至 <code>name=2</code> 标签的 Node，实际上，在 zoneA 中用于计算不均匀度的 Pod 数量应该为 0（仅有 Node 1 拥有的 Pod 才应被计算），而 zoneB 中的 Pod 为 1，如果继续调度至 zoneB，则不均匀度应为 <code>2 - 0 = 2</code>，不符合要求。</p>
+<p>因此，这里的问题是在计算不均匀度时，应该先排除被 <code>nodeAffinity</code> 所过滤的 Node。</p>
+<h2 id="代码修复">代码修复<a href="#代码修复" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>知道问题之后修复就比较容易，对应代码为以下方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">pl</span> <span class="o">*</span><span class="nx">PodTopologySpread</span><span class="p">)</span> <span class="nf">calPreFilterState</span><span class="p">(</span><span class="nx">pod</span> <span class="o">*</span><span class="nx">v1</span><span class="p">.</span><span class="nx">Pod</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">preFilterState</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">allNodes</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pl</span><span class="p">.</span><span class="nx">sharedLister</span><span class="p">.</span><span class="nf">NodeInfos</span><span class="p">().</span><span class="nf">List</span><span class="p">()</span>  <span class="c1">// 获取到所有节点
+</span><span class="c1"></span>	<span class="o">...</span>
+	<span class="nx">requiredSchedulingTerm</span> <span class="o">:=</span> <span class="nx">nodeaffinity</span><span class="p">.</span><span class="nf">GetRequiredNodeAffinity</span><span class="p">(</span><span class="nx">pod</span><span class="p">)</span>
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">n</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">allNodes</span> <span class="p">{</span>
+		<span class="nx">node</span> <span class="o">:=</span> <span class="nx">n</span><span class="p">.</span><span class="nf">Node</span><span class="p">()</span>
+
+		<span class="nx">match</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">requiredSchedulingTerm</span><span class="p">.</span><span class="nf">Match</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>  <span class="c1">// 是否匹配 nodeAffinity 要求
+</span><span class="c1"></span>		<span class="k">if</span> <span class="p">!</span><span class="nx">match</span> <span class="p">{</span>
+			<span class="k">continue</span>
+		<span class="p">}</span>
+		<span class="k">if</span> <span class="p">!</span><span class="nf">nodeLabelsMatchSpreadConstraints</span><span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">Labels</span><span class="p">,</span> <span class="nx">constraints</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// 是否匹配 Spread Constraints 要求
+</span><span class="c1"></span>			<span class="k">continue</span>
+		<span class="p">}</span>
+		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">constraints</span> <span class="p">{</span>
+			<span class="nx">pair</span> <span class="o">:=</span> <span class="nx">topologyPair</span><span class="p">{</span><span class="nx">key</span><span class="p">:</span> <span class="nx">c</span><span class="p">.</span><span class="nx">TopologyKey</span><span class="p">,</span> <span class="nx">value</span><span class="p">:</span> <span class="nx">node</span><span class="p">.</span><span class="nx">Labels</span><span class="p">[</span><span class="nx">c</span><span class="p">.</span><span class="nx">TopologyKey</span><span class="p">]}</span>
+			<span class="nx">s</span><span class="p">.</span><span class="nx">TpPairToMatchNum</span><span class="p">[</span><span class="nx">pair</span><span class="p">]</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="kt">int32</span><span class="p">)</span>  <span class="c1">// 全都满足后记录在 map 中
+</span><span class="c1"></span>		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="nx">processNode</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">i</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">nodeInfo</span> <span class="o">:=</span> <span class="nx">allNodes</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>  <span class="c1">// 此处用了 allNodes, 即包括不满足 nodeAffinity 要求的 Nodes
+</span><span class="c1"></span>		<span class="nx">node</span> <span class="o">:=</span> <span class="nx">nodeInfo</span><span class="p">.</span><span class="nf">Node</span><span class="p">()</span>
+
+		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">constraint</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">constraints</span> <span class="p">{</span>
+			<span class="c1">// 计算 Spread Constraints 分组的 Pod 数量
+</span><span class="c1"></span>		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="nx">pl</span><span class="p">.</span><span class="nx">parallelizer</span><span class="p">.</span><span class="nf">Until</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="nx">allNodes</span><span class="p">),</span> <span class="nx">processNode</span><span class="p">)</span>
+
+	<span class="c1">// 最后得出满足不同 Topology 要求的方案
+</span><span class="c1"></span>	<span class="o">...</span>
+<span class="p">}</span>
+</code></pre></div><p>显然由于在计算 Spread Constraints 分组时使用了 <code>allNodes[i]</code>，因此被 nodeAffinity 过滤的 Nodes 也被计算入内。所以只需要构造一个新的切片，记录被过滤后得到的节点 <code>filteredNodes[i]</code>，并在后续的处理中以此为统计目标：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">pl</span> <span class="o">*</span><span class="nx">PodTopologySpread</span><span class="p">)</span> <span class="nf">calPreFilterState</span><span class="p">(</span><span class="nx">pod</span> <span class="o">*</span><span class="nx">v1</span><span class="p">.</span><span class="nx">Pod</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">preFilterState</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">allNodes</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pl</span><span class="p">.</span><span class="nx">sharedLister</span><span class="p">.</span><span class="nf">NodeInfos</span><span class="p">().</span><span class="nf">List</span><span class="p">()</span>
+	<span class="o">...</span>
+	<span class="kd">var</span> <span class="nx">filteredNodes</span> <span class="p">[]</span><span class="o">*</span><span class="nx">framework</span><span class="p">.</span><span class="nx">NodeInfo</span>  <span class="c1">// 构造新切片
+</span><span class="c1"></span>	<span class="nx">requiredSchedulingTerm</span> <span class="o">:=</span> <span class="nx">nodeaffinity</span><span class="p">.</span><span class="nf">GetRequiredNodeAffinity</span><span class="p">(</span><span class="nx">pod</span><span class="p">)</span>
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">n</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">allNodes</span> <span class="p">{</span>
+		<span class="nx">node</span> <span class="o">:=</span> <span class="nx">n</span><span class="p">.</span><span class="nf">Node</span><span class="p">()</span>
+
+		<span class="nx">match</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">requiredSchedulingTerm</span><span class="p">.</span><span class="nf">Match</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+		<span class="k">if</span> <span class="p">!</span><span class="nx">match</span> <span class="p">{</span>
+			<span class="k">continue</span>        
+		<span class="p">}</span>
+		<span class="k">if</span> <span class="p">!</span><span class="nf">nodeLabelsMatchSpreadConstraints</span><span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">Labels</span><span class="p">,</span> <span class="nx">constraints</span><span class="p">)</span> <span class="p">{</span>
+			<span class="k">continue</span>
+		<span class="p">}</span>
+		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">constraints</span> <span class="p">{</span>
+			<span class="o">...</span>
+		<span class="p">}</span>
+		
+		<span class="c1">// 此处均为满足 nodeAffinity 和 Spread Constraints 的结果, 加入 filteredNodes
+</span><span class="c1"></span>		<span class="nx">filteredNodes</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">filteredNodes</span><span class="p">,</span> <span class="nx">n</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="nx">processNode</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">i</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">nodeInfo</span> <span class="o">:=</span> <span class="nx">filteredNodes</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>  <span class="c1">// 改用 filteredNodes 而非 allNodes
+</span><span class="c1"></span>		<span class="nx">node</span> <span class="o">:=</span> <span class="nx">nodeInfo</span><span class="p">.</span><span class="nf">Node</span><span class="p">()</span>
+
+		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">constraint</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">constraints</span> <span class="p">{</span>
+			<span class="o">...</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="nx">pl</span><span class="p">.</span><span class="nx">parallelizer</span><span class="p">.</span><span class="nf">Until</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="nx">filteredNodes</span><span class="p">),</span> <span class="nx">processNode</span><span class="p">)</span>
+	<span class="o">...</span>
+<span class="p">}</span>
+</code></pre></div><h2 id="issue--pr">Issue &amp; PR<a href="#issue--pr" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p><a href="https://github.com/kubernetes/kubernetes/issues/106971">#106971: Potential bug of PodTopologySpread when nodeAffinity is specified</a></p>
+<p><a href="https://github.com/kubernetes/kubernetes/pull/107009">#107009: nodeAffinity filtered nodes should be excluded when calculating skew in PodTopologySpread</a></p>
+
+			</div>
+
+<hr>
+<div class="related-posts thin">
+	<h2>See Also</h2>
+	<ul>
+	
+	<li><a href="/posts/giac-2022/">GIAC 2022 深圳站小记</a></li>
+	
+	</ul>
+</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 1848 字, 约 4 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2021-12-20 20:06 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#功能简介">功能简介</a></li>
+    <li><a href="#问题描述">问题描述</a></li>
+    <li><a href="#代码修复">代码修复</a></li>
+    <li><a href="#issue--pr">Issue &amp; PR</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

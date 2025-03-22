@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="InnoDB中的B树与分裂">
+<meta itemprop="description" content="Tree Binary Search Tree 在二叉查找树中，左子树的键值总是小于根的键值，右子树的键值总是大于根的键值。 6 / \ 3 7 / \ \ 2 5 8 利用这棵二叉树对各个节点进行查找，"><meta itemprop="datePublished" content="2020-08-05T12:58:10+00:00" />
+<meta itemprop="dateModified" content="2020-08-05T12:58:10+00:00" />
+<meta itemprop="wordCount" content="3584">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="InnoDB中的B树与分裂" />
+<meta property="og:description" content="Tree Binary Search Tree 在二叉查找树中，左子树的键值总是小于根的键值，右子树的键值总是大于根的键值。 6 / \ 3 7 / \ \ 2 5 8 利用这棵二叉树对各个节点进行查找，" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/b_tree_page_split/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-08-05T12:58:10+00:00" />
+<meta property="article:modified_time" content="2020-08-05T12:58:10+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="InnoDB中的B树与分裂"/>
+<meta name="twitter:description" content="Tree Binary Search Tree 在二叉查找树中，左子树的键值总是小于根的键值，右子树的键值总是大于根的键值。 6 / \ 3 7 / \ \ 2 5 8 利用这棵二叉树对各个节点进行查找，"/>
+<title>InnoDB中的B树与分裂</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fb_tree_page_split%2f&amp;text=InnoDB%e4%b8%ad%e7%9a%84B%e6%a0%91%e4%b8%8e%e5%88%86%e8%a3%82" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2fb_tree_page_split%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=InnoDB%e4%b8%ad%e7%9a%84B%e6%a0%91%e4%b8%8e%e5%88%86%e8%a3%82&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2fb_tree_page_split%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fb_tree_page_split%2f&amp;source=https://jiekun.dev&amp;title=InnoDB%e4%b8%ad%e7%9a%84B%e6%a0%91%e4%b8%8e%e5%88%86%e8%a3%82&amp;summary=InnoDB%e4%b8%ad%e7%9a%84B%e6%a0%91%e4%b8%8e%e5%88%86%e8%a3%82%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;InnoDB中的B树与分裂&#34;,&#34;https://jiekun.dev/posts/b_tree_page_split/&#34;,&#34;InnoDB中的B树与分裂, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Aug 5, 2020</span></div>
+				<h1>InnoDB中的B树与分裂</h1>
+			</header>
+			<div class="content">
+				<h1 id="tree">Tree<a href="#tree" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<h2 id="binary-search-tree">Binary Search Tree<a href="#binary-search-tree" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>在二叉查找树中，左子树的键值总是小于根的键值，右子树的键值总是大于根的键值。</p>
+<pre tabindex="0"><code>        6
+       / \
+      3   7
+     / \   \
+    2   5   8
+</code></pre><p>利用这棵二叉树对各个节点进行查找，平均查找次数为<code>(1+2+3+3+2+3) / 6 = 2.3</code>次，比起[2，3，5，6，7，8]顺序查找次数<code>(1+2+3+4+5+6) / 6 = 3.3</code>次要少。</p>
+<p>二叉查找树还可以这样构建：</p>
+<pre tabindex="0"><code>    2
+     \
+      3
+       \
+        5
+         \
+          6
+           \
+            7
+             \
+              8
+</code></pre><p>这时查找的平均次数退化为顺序查找次数。</p>
+<p>因此如果想高性能地构造一棵二叉查找树，需要这棵二叉查找树是<strong>平衡</strong>的。</p>
+<h2 id="balance-tree">Balance Tree<a href="#balance-tree" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>平衡二叉树符合二叉查找树的定义，并且满足任何节点的两个子树高度最大差为1。</p>
+<pre tabindex="0"><code>        6                     6
+       / \                  /   \
+      3   7                3     8
+     / \   \              / \   / \
+    2   5   8            2   5 7   9
+             \
+              9
+</code></pre><p>在插入新节点后，平衡二叉树节点7的左右子树高度差为2，需要通过一次左旋操作来让树重新保持平衡。</p>
+<p>但是有的情况可能需要旋转多次才能达到平衡。</p>
+<pre tabindex="0"><code>      2             2             2               4    
+     / \           / \           / \             / \   
+    1   5         1   5         1   4           2   5  
+       / \           / \           / \         / \   \ 
+      4   9         4   9         3   5       1   3   9
+                   /                   \                  
+                  3                     9                 
+</code></pre><p>除了插入操作，还有更新和删除操作都会导致平衡树需要进行旋转。因此维护一棵平衡树是有一定开销的。</p>
+<h1 id="b-tree">B+ Tree<a href="#b-tree" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>B+树是：</p>
+<ul>
+<li>一棵n叉树(m-ary)</li>
+<li>记录节点按照键值大小顺序存放在同一层叶子节点上，各叶子节点指针进行连接</li>
+</ul>
+<h2 id="b-tree插入操作">B+ Tree插入操作<a href="#b-tree插入操作" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<ul>
+<li>Leaf Page未满、Index Page未满时，直接将记录插入到叶子节点</li>
+<li>Leaf Page满、Index Page未满时，拆分Leaf Page，将中间的节点（指的是Leaf Page几个节点的中间）放入到Index Page中，小于中间节点的记录放左边，大于中间节点的记录放右边</li>
+<li>Leaf Page满、Index Page满时，拆分Leaf Page，小于中间节点的记录放左边，大于中间节点的记录放右边；拆分Index Page，原理同上，此时树的高度+1</li>
+</ul>
+<h2 id="b-tree删除操作">B+ Tree删除操作<a href="#b-tree删除操作" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<ul>
+<li>Leaf Page大于填充因子、Index Page大于填充因子，直接删除，如果该节点是Index Page节点，用该节点的右节点代替</li>
+<li>Leaf Page小于填充因子、Index Page大于填充因子，合并Leaf Page和它的兄弟节点，同时更新Index Page</li>
+<li>Leaf Page小于填充因子、Index Page小于填充因子，合并Leaf Page和它的兄弟节点，更新Index Page，合并Index Page和它的兄弟节点</li>
+</ul>
+<h2 id="示例">示例<a href="#示例" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>一棵高度为2，扇出值为5的B+树：</p>
+<p><img src="../2020/08/1.jpg" alt="">
+插入键值<code>28</code>，Leaf Page和Index Page都没满，直接插入：</p>
+<p><img src="../2020/08/2.jpg" alt="">
+插入键值<code>70</code>发现Leaf Page已满，这时页的键为<code>[50, 55, 60, 65, 70]</code>，中间值为<code>60</code>，则根据<code>60</code>来<strong>拆分</strong>叶子节点，并且将<code>60</code>放入Index Page中：</p>
+<p><img src="../2020/08/3.jpg" alt="">
+插入键值<code>95</code>，此时Leaf Page和Index Page都已满，Leaf Page为<code>[75, 80, 85, 90, 95]</code>，按照<code>85</code>拆分，并将<code>85</code>放入Index Page；Index Page为<code>[25, 50, 60, 75, 85]</code>，按照<code>60</code>拆分，并将<code>60</code>放入新的Index Page：</p>
+<p><img src="../2020/08/4.jpg" alt="">
+Rotation操作，Leaf Page已满但是左右兄弟节点没有满的情况下，不急于做拆分页的操作，将记录移到所在页的兄弟节点上。插入键值<code>70</code>时因为左Leaf Page未满，进行Rotation，<code>50</code>被Rotate到左页，<code>55</code>被Rotate上Index Page：</p>
+<p><img src="../2020/08/5.jpg" alt="">
+删除键值<code>70</code>，删除后Fill Factor大于50%，直接删除：</p>
+<p><img src="../2020/08/6.jpg" alt="">
+删除键值<code>25</code>，直接删除，但是<code>25</code>还是Index Page中的值，因此要将右侧键值<code>28</code>更新到Index Page：</p>
+<p><img src="../2020/08/7.jpg" alt="">
+删除键值<code>60</code>，删除后Fill Factor小于50%，发生<strong>合并</strong>操作，所在Leaf Page与左侧合并，并且更新Index Page，树高度降低：</p>
+<p><img src="../2020/08/8.jpg" alt=""></p>
+<h1 id="b-tree索引">B+ Tree索引<a href="#b-tree索引" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>B+树索引是B+树中数据库中的实现，具有高扇出性(fanout)，通常扇出值在100以上。</p>
+<p>B+树索引的节点在逻辑上是顺序存储的，但是在物理上因为分裂和合并的缘故，并不一定是连续的。从根节点开始向下查找每次都是随机IO。B+树因为高扇出性，高度一般在2-4层，也就是说从根节点开始查找到对应的叶子节点<strong>最多</strong>需要2-4次随机IO。又由于B+树索引的上层是常驻内存的，因此通常只需要更少次的随机IO即可定位到目标的叶子节点。</p>
+<p>页是B+树索引磁盘管理的最小单位，在查询某行数据时，需要加载行所在的页到缓冲区再在页内Fetch目标行。</p>
+<h2 id="b-tree索引的分裂">B+ Tree索引的分裂<a href="#b-tree索引的分裂" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>考虑以下情况，如果页内存储的键值为<code>[1, 2, 3, 4, 5, 6, 7, 8]</code>，如果新增键值<code>9</code>时页满需要发生分裂，按照之前介绍的分裂方法，取<code>5</code>为分裂点，页分裂成<code>[1, 2, 3, 4]</code>和<code>[5, 6, 7, 8, 9]</code>两个页。如果后续的写入操作均为顺序写入，那么页<code>[1, 2, 3, 4]</code>就会永远填充不满，剩余的页同理，因此会导致页空间的浪费。</p>
+<p>所以，B+树索引的分裂并不总是从页的中间记录开始。在InnoDB引擎的Page Header中，有以下部分用来保存插入的顺序信息：</p>
+<ul>
+<li><code>PAGE_LAST_INSERT</code>，记录上一次写入位置的指针</li>
+<li><code>PAGE_DIRECTION</code>， 值为<code>PAGE_LEFT</code>、<code>PAGE_RIGHT</code>和<code>PAGE_NO_DIRECTION</code>之一</li>
+<li><code>PAGE_N_DIRECTION</code>，表示连续向同一方向插入的数量</li>
+</ul>
+<p>通过这些信息，InnoDB引擎可以决定要向左还是向右分裂，分裂点记录为哪一个：</p>
+<ul>
+<li>在随机插入的情况下，取页中间记录作为分裂点的记录</li>
+<li>在定位到插入记录的位置后，如果已经向同一方向插入记录数量为5，并且当前位置后还有3条记录，则分裂点的记录定位到当前位置后到第三条记录，否则分裂点就是当前待插入的记录</li>
+</ul>
+<p>向右分裂的示例：</p>
+<p><img src="../2020/08/9.jpg" alt=""></p>
+<h2 id="b-tree索引的管理">B+ Tree索引的管理<a href="#b-tree索引的管理" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>通过<code>show index</code>命令可以查看表的索引情况：</p>
+<pre tabindex="0"><code>mysql&gt; show index from a_real_secret_table_for_testing_000087\G
+*************************** 1. row ***************************
+        Table: a_real_secret_table_for_testing_000087         -- 索引所在表名
+   Non_unique: 0                                              -- 是否唯一
+     Key_name: PRIMARY                                        -- 索引名
+ Seq_in_index: 1                                              -- 该列在索引中的顺序
+  Column_name: id                                             -- 列名
+    Collation: A                                              -- 列以什么方式存储在索引中，A：排序的
+  Cardinality: 1637220                                        -- 索引中唯一值的数目的估计值
+     Sub_part: NULL                                           -- 是否是列的部分被索引，如100即该列前100字符被索引
+       Packed: NULL                                           -- 关键字如何被压缩
+         Null:                                                -- 是否索引列含有NULL值
+   Index_type: BTREE                                          -- 索引类型，InnoDB均为BTREE
+      Comment:
+Index_comment:
+
+</code></pre><h2 id="cardinality值">Cardinality值<a href="#cardinality值" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>Cardinality值与表的行数比应该尽可能接近1，否则说明这个索引列选择性小，可能需要考虑是否删除此索引，例如在用户表中的性别等。</p>
+<p>Cardinality值非常关键，优化器会根据这个值来判断是否使用这个索引。它代表索引中唯一值的数目的估计值，因此真实值在每次<code>INSERT</code>、<code>UPDATE</code>、<code>DELETE</code>操作时都会改变，InnoDB不可能在每次写操作时都更新该值，因为这样做代价太大了，所以Cardinality是一个估计值，如果需要更新Cardinality信息，可以使用<code>ANALYZE TABLE</code>命令。</p>
+<p>在InnoDB中，更新Cardinality值的策略为：</p>
+<ul>
+<li>表中1/16的数据已经发生过变化</li>
+<li>stat_modified_counter &gt; 2,000,000,000</li>
+</ul>
+<p>在满足更新条件的情况下，InnoDB通过采样的方法统计Cardinality值：</p>
+<ul>
+<li>取得B+树索引中叶子节点的数量，记为P</li>
+<li>随机取所有叶子节点中的8（默认，<code>innodb_stats_sample_pages</code>配置）个叶子节点，统计每个页不同值的个数，记为N0, N1, &hellip; ,N7</li>
+<li>Cardinality预估值 = (N0 + N1 + &hellip; + N7) / 8 * P</li>
+</ul>
+<p>因此，Cardinality不是一个精确值，同时，即使没有数据改动，每次统计得到的值也可能会不同。</p>
+<h2 id="online-schema-change">Online Schema Change<a href="#online-schema-change" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>在MySQL 5.5版本前，对索引的增删改这类DDL操作，MySQL的操作过程为：</p>
+<ul>
+<li>创建一张新的临时表，表结构为<code>ALTER</code>命令定义的新结构</li>
+<li>将原表数据导入临时表</li>
+<li>删除原表</li>
+<li>临时表重命名为原表</li>
+</ul>
+<p>这意味着在对大表的索引进行添加删除操作时会需要很长时间，并且服务会对其他事务不可用。</p>
+<p>Facebook用PHP脚本实现OSC：</p>
+<ul>
+<li>init，验证表的主键、触发器、外键等是否满足</li>
+<li>createCopyTable，创建和原始表结构一样的新表</li>
+<li>alterCopyTable，对新表进行<code>ALTER</code>操作，如添加索引或列</li>
+<li>createDeltasTable，创建<code>deltas</code>表</li>
+<li>createTriggers，对原表创建<code>INSERT</code>、<code>UPDATE</code>、<code>DELETE</code>操作对触发器，触发操作产生的记录会被写到<code>deltas</code>表</li>
+<li>startSnpshotXact，开始OSC操作的事务</li>
+<li>seletTableIntoOutfile，将原表中的数据写入外部文件</li>
+<li>dropNCIndexs，导入数据到新表前，删除新表中的所有辅助索引</li>
+<li>loadCopyTable，将导出的文件导入到新表</li>
+<li>replayChanges，将OSC过程中原表的DML操作（保存在<code>deltas</code>表）的记录应用到新表中</li>
+<li>recreateNCIndexes，重新创建辅助索引</li>
+<li>replayChanges，再次进行DML日志的回放操作，这些操作是在重建辅助索引时产生的</li>
+<li>swapTables，原子的<code>RENAME</code>操作互换新旧表名</li>
+</ul>
+<h1 id="与页和b-tree相关的查询case">与页和B+ Tree相关的查询Case<a href="#与页和b-tree相关的查询case" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>示例的查询会使用索引吗 / 会使用哪个索引 / 为什么？</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="c1">-- Table Schema
+</span><span class="c1"></span><span class="k">create</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span><span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="nb">int</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="w"> </span><span class="n">auto_increment</span><span class="w"> </span><span class="k">comment</span><span class="w"> </span><span class="s2">&#34;unique id&#34;</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">a</span><span class="w"> </span><span class="nb">int</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">comment</span><span class="w"> </span><span class="s2">&#34;column a&#34;</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">b</span><span class="w"> </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w"> </span><span class="k">comment</span><span class="w"> </span><span class="s2">&#34;column b&#34;</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="k">c</span><span class="w"> </span><span class="nb">int</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">comment</span><span class="w"> </span><span class="s2">&#34;column c&#34;</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="k">primary</span><span class="w"> </span><span class="k">key</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">),</span><span class="w">
+</span><span class="w">  </span><span class="k">key</span><span class="w"> </span><span class="n">idx_a</span><span class="p">(</span><span class="n">a</span><span class="p">),</span><span class="w">
+</span><span class="w">  </span><span class="k">key</span><span class="w"> </span><span class="n">idx_a_b</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="p">)</span><span class="w"> </span><span class="k">comment</span><span class="w"> </span><span class="s2">&#34;test table for index decision&#34;</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="c1">-- Table record count
+</span><span class="c1"></span><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w"> </span><span class="k">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">t</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">----------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">----------+
+</span><span class="c1"></span><span class="o">|</span><span class="w">   </span><span class="mi">500000</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">----------+
+</span><span class="c1"></span><span class="mi">1</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">02</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="c1">-- Table data sample
+</span><span class="c1"></span><span class="n">mysql</span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">limit</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">----+----------+--------------------------------------------------------------+----------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">a</span><span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">b</span><span class="w">                                                            </span><span class="o">|</span><span class="w"> </span><span class="k">c</span><span class="w">        </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">----+----------+--------------------------------------------------------------+----------+
+</span><span class="c1"></span><span class="o">|</span><span class="w">  </span><span class="mi">1</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">74050441</span><span class="w"> </span><span class="o">|</span><span class="w">                                                              </span><span class="o">|</span><span class="w"> </span><span class="mi">83633927</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w">  </span><span class="mi">2</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">74330977</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">JayiceJayiceJayiceJayiceJayiceJayiceJayiceJayiceJayiceJayice</span><span class="w"> </span><span class="o">|</span><span class="w">  </span><span class="mi">1986453</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w">  </span><span class="mi">3</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">90869050</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">JayiceJayiceJayice</span><span class="w">                                           </span><span class="o">|</span><span class="w"> </span><span class="mi">13026881</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w">  </span><span class="mi">4</span><span class="w"> </span><span class="o">|</span><span class="w">  </span><span class="mi">6235189</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">JayiceJayiceJayiceJayiceJayiceJayiceJayice</span><span class="w">                   </span><span class="o">|</span><span class="w">  </span><span class="mi">6147585</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w">  </span><span class="mi">5</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">29282553</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">JayiceJayiceJayiceJayice</span><span class="w">                                     </span><span class="o">|</span><span class="w"> </span><span class="mi">51497909</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w">  </span><span class="mi">6</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">30223437</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">JayiceJayiceJayice</span><span class="w">                                           </span><span class="o">|</span><span class="w"> </span><span class="mi">28159699</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w">  </span><span class="mi">7</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">37207514</span><span class="w"> </span><span class="o">|</span><span class="w">                                                              </span><span class="o">|</span><span class="w"> </span><span class="mi">71102047</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w">  </span><span class="mi">8</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">76961456</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">JayiceJayiceJayiceJayiceJayiceJayice</span><span class="w">                         </span><span class="o">|</span><span class="w"> </span><span class="mi">17116481</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w">  </span><span class="mi">9</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">87737033</span><span class="w"> </span><span class="o">|</span><span class="w">                                                              </span><span class="o">|</span><span class="w"> </span><span class="mi">70935248</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">67230439</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Jayice</span><span class="w">                                                       </span><span class="o">|</span><span class="w"> </span><span class="mi">99513787</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">----+----------+--------------------------------------------------------------+----------+
+</span><span class="c1"></span><span class="mi">10</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span><span class="w"> </span><span class="n">sec</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="c1">-- Query
+</span><span class="c1"></span><span class="k">explain</span><span class="w"> </span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">???</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="k">explain</span><span class="w"> </span><span class="k">select</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">???</span><span class="p">;</span><span class="w">
+</span></code></pre></div>
+			</div>
+
+<hr>
+<div class="related-posts thin">
+	<h2>See Also</h2>
+	<ul>
+	
+	<li><a href="/posts/db-partitioning/">业务核心数据库架构演变——权衡取舍的艺术</a></li>
+	
+	<li><a href="/posts/join-algorithm/">我的Join查询是如何得出结果的？</a></li>
+	
+	</ul>
+</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 3584 字, 约 8 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-08-05 20:58 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#binary-search-tree">Binary Search Tree</a></li>
+    <li><a href="#balance-tree">Balance Tree</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#b-tree插入操作">B+ Tree插入操作</a></li>
+    <li><a href="#b-tree删除操作">B+ Tree删除操作</a></li>
+    <li><a href="#示例">示例</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#b-tree索引的分裂">B+ Tree索引的分裂</a></li>
+    <li><a href="#b-tree索引的管理">B+ Tree索引的管理</a></li>
+    <li><a href="#cardinality值">Cardinality值</a></li>
+    <li><a href="#online-schema-change">Online Schema Change</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

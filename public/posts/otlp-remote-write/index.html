@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?">
+<meta itemprop="description" content="Medium This blog post is also available in English: OpenTelemetry, Prometheus, and More: Which Is Better for Metrics Collection and Propagation? Prometheus and Remote Write Prometheus 是云原生指标监控领域的事实标准。它的工作模式很简单：应用提供 /metrics HTTP API，以文本格式暴露指"><meta itemprop="datePublished" content="2024-12-21T01:22:23+08:00" />
+<meta itemprop="dateModified" content="2024-12-21T01:22:23+08:00" />
+<meta itemprop="wordCount" content="3018">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?" />
+<meta property="og:description" content="Medium This blog post is also available in English: OpenTelemetry, Prometheus, and More: Which Is Better for Metrics Collection and Propagation? Prometheus and Remote Write Prometheus 是云原生指标监控领域的事实标准。它的工作模式很简单：应用提供 /metrics HTTP API，以文本格式暴露指" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/otlp-remote-write/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2024-12-21T01:22:23+08:00" />
+<meta property="article:modified_time" content="2024-12-21T01:22:23+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?"/>
+<meta name="twitter:description" content="Medium This blog post is also available in English: OpenTelemetry, Prometheus, and More: Which Is Better for Metrics Collection and Propagation? Prometheus and Remote Write Prometheus 是云原生指标监控领域的事实标准。它的工作模式很简单：应用提供 /metrics HTTP API，以文本格式暴露指"/>
+<title>OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fotlp-remote-write%2f&amp;text=OpenTelemetry%2c%20Prometheus%2c%20and%20More%3a%20%e8%b0%81%e6%98%af%e9%87%87%e9%9b%86%e7%9b%91%e6%8e%a7%e6%8c%87%e6%a0%87%e7%9a%84%e6%9c%80%e4%bd%b3%e9%80%89%e6%8b%a9%3f" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2fotlp-remote-write%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=OpenTelemetry%2c%20Prometheus%2c%20and%20More%3a%20%e8%b0%81%e6%98%af%e9%87%87%e9%9b%86%e7%9b%91%e6%8e%a7%e6%8c%87%e6%a0%87%e7%9a%84%e6%9c%80%e4%bd%b3%e9%80%89%e6%8b%a9%3f&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2fotlp-remote-write%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fotlp-remote-write%2f&amp;source=https://jiekun.dev&amp;title=OpenTelemetry%2c%20Prometheus%2c%20and%20More%3a%20%e8%b0%81%e6%98%af%e9%87%87%e9%9b%86%e7%9b%91%e6%8e%a7%e6%8c%87%e6%a0%87%e7%9a%84%e6%9c%80%e4%bd%b3%e9%80%89%e6%8b%a9%3f&amp;summary=OpenTelemetry%2c%20Prometheus%2c%20and%20More%3a%20%e8%b0%81%e6%98%af%e9%87%87%e9%9b%86%e7%9b%91%e6%8e%a7%e6%8c%87%e6%a0%87%e7%9a%84%e6%9c%80%e4%bd%b3%e9%80%89%e6%8b%a9%3f%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?&#34;,&#34;https://jiekun.dev/posts/otlp-remote-write/&#34;,&#34;OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Dec 21, 2024</span></div>
+				<h1>OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?</h1>
+			</header>
+			<div class="content">
+				
+    <aside class="admonition note">
+        <div class="admonition-title">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></div><b>Medium</b>
+        </div>
+        <div class="admonition-content"><p>This blog post is also available in <strong>English</strong>:</p>
+<ul>
+<li><a href="https://victoriametrics.com/blog/opentelemetry-prometheus-and-more/">OpenTelemetry, Prometheus, and More: Which Is Better for Metrics Collection and Propagation?</a></li>
+</ul>
+</div>
+    </aside>
+<h2 id="prometheus-and-remote-write">Prometheus and Remote Write<a href="#prometheus-and-remote-write" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>Prometheus 是云原生指标监控领域的事实标准。它的工作模式很简单：应用提供 <code>/metrics</code> HTTP API，以文本格式暴露指标数据；Prometheus 访问这些 API，将数据采集，然后提供查询 API 进行展示。</p>
+<p>虽然 Prometheus 的生态发展出了很丰富的组件，它的核心 Prometheus Server（下称 Prometheus）仍然保持 All-in-One 的设计，提供一个可执行文件，无需任何依赖即可运行，这使得它的安装和部署更加简单。</p>
+<p>但是，这也使得 Prometheus 不易扩展。想象一下，一开始的时候，你在一台 2 CPU，4GiB 内存的机器上运行 Prometheus，用它来监控 100 个应用程序，这很容易。很快你需要用它监控 10000 个、100000 个应用程序，Prometheus 需要更多的机器资源，但是单台机器的配置总是有限的；另外，这些应用可能部署于不同的集群，不同的可用区，用单个 Prometheus 来四处收集数据并不高效。</p>
+<p>所以，Prometheus 也提供了两个重要功能：</p>
+<ol>
+<li>Remote Write：将指标数据发送给<strong>远端存储</strong>，例如 Thanos，Cortex，Mimir 和 VictoriaMetrics。</li>
+<li>Agent Mode：省略查询、告警、本地存储功能，降低 Prometheus 仅用作数据采集 Agent 时的成本。</li>
+</ol>
+<p>有了这些功能，面对大量应用时，监控架构可能是如下图这样：</p>
+<p><img src="../202412-otlp-remote-write/metrics_monitoring.png" alt=""></p>
+<h2 id="opentelemetry-and-otlp">OpenTelemetry and OTLP<a href="#opentelemetry-and-otlp" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>2019 年，OpenTelemetry 诞生，它提供了统一、开源的可观测性标准，避免用户因依赖特定供应商或者协议而难以更换、迁移到新的技术服务上。</p>
+<p>OpenTelemetry 定义了一系列的概念，例如 Signal，即一类 Telemetry，包括 Tracing Signal、Metric Signal、Log Signal 等。而在不同组件间传输这些 Telemetry 数据需要遵循的协议就是 OpenTelemetry 协议（OpenTelemetry Protocol，OTLP）。</p>
+<h2 id="prometheus-and-opentelemetry">Prometheus and OpenTelemetry<a href="#prometheus-and-opentelemetry" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>那么当谈及 Metrics 时，似乎很容易将 OpenTelemetry 与 Prometheus 进行类比：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Prometheus</th>
+<th>OpenTelemetry</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Data Model</td>
+<td>Metrics</td>
+<td>Metrics Signal</td>
+</tr>
+<tr>
+<td>Protocol of Data Propagation</td>
+<td>Remote Write</td>
+<td>OTLP</td>
+</tr>
+</tbody>
+</table>
+<p>不知道大家是否有过这样的疑问：<strong>Prometheus 既然已经是云原生指标监控领域的事实标准，大多数供应商、项目也支持它的 Data Model 和 Remote Write Protocol，那为什么要考虑 OpenTelemetry 呢？</strong></p>
+<p>假设你已经在使用 Kubernetes，这个生态里的许多组件都是以 HTTP API 的形式暴露 Prometheus 文本格式的指标数据：</p>
+<ol>
+<li><a href="https://kubernetes.io/docs/reference/instrumentation/metrics/">Kubernetes</a>.</li>
+<li><a href="https://istio.io/latest/docs/reference/config/metrics/">Istio</a>.</li>
+<li><a href="https://github.com/kubernetes/kube-state-metrics">kube-state-metrics</a>.</li>
+<li>&hellip;</li>
+</ol>
+<p>当这些基础设施都不可改变的时候，前面的问题就变成了：<strong>抓取指标数据并将他发送给 Remote Storage，Prometheus 还是 OpenTelemetry 更好？</strong></p>
+<p>不妨来做一下性能测试。</p>
+<h2 id="benchmark">Benchmark<a href="#benchmark" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h3 id="setup">Setup<a href="#setup" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>我们分别运行 <a href="https://github.com/prometheus/prometheus">Prometheus</a>（Agent Mode）、<a href="https://github.com/open-telemetry/opentelemetry-collector">OpenTelemetry Collector</a> 和 <a href="https://github.com/VictoriaMetrics/VictoriaMetrics/tree/master">vmagent</a> 抓取 1200 个分散在 3 个 Region 的 <a href="https://github.com/prometheus/node_exporter">Node exporter</a>，并将数据以不同协议发送给 Receiver。这个 Receiver 会对数据进行 Decompress 和 Unmarshal，并且记录一些统计信息，但没有实际的数据持久化操作。</p>
+<p>相关组件的信息如下：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Version</th>
+<th>Machine Type</th>
+<th>vCPUs</th>
+<th>Memory (GB)</th>
+<th>Standard persistent disk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prometheus</td>
+<td>2.53.3</td>
+<td>e2-highcpu-2</td>
+<td>2</td>
+<td>2</td>
+<td>Standard persistent disk(HDD)</td>
+</tr>
+<tr>
+<td>Prometheus</td>
+<td>3.0.1</td>
+<td>e2-highcpu-2</td>
+<td>2</td>
+<td>2</td>
+<td>Standard persistent disk(HDD)</td>
+</tr>
+<tr>
+<td>OpenTelemetry Collector</td>
+<td>v0.115.0</td>
+<td>e2-highcpu-2</td>
+<td>2</td>
+<td>2</td>
+<td>Standard persistent disk(HDD)</td>
+</tr>
+<tr>
+<td>vmagent</td>
+<td>v1.108.0</td>
+<td>e2-highcpu-2</td>
+<td>2</td>
+<td>2</td>
+<td>Standard persistent disk(HDD)</td>
+</tr>
+<tr>
+<td>Node exporter</td>
+<td>1.8.2</td>
+<td>e2-micro</td>
+<td>2(0.25)</td>
+<td>1</td>
+<td>Standard persistent disk(HDD)</td>
+</tr>
+<tr>
+<td>No-op Receiver</td>
+<td>N/A</td>
+<td>n2d-highcpu-4</td>
+<td>4</td>
+<td>4</td>
+<td>Balanced persistent disk(SSD)</td>
+</tr>
+</tbody>
+</table>
+<p>整体的 Benchmark 架构如下：</p>
+<p><img src="../202412-otlp-remote-write/benchmark_setup.png" alt=""></p>
+<h3 id="result-1">Result #1<a href="#result-1" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>首次 Benchmark 主要了解不同组件的资源使用情况，为后续测试提供参考基准。在运行了数天后，我们得到了一些监控数据。</p>
+<p><img src="../202412-otlp-remote-write/benchmark-1-resource.png" alt=""></p>
+<p>看起来<strong>从 Prometheus 2.x 升级到 Prometheus 3.x 并不会给你额外的节约 CPU 和内存资源</strong>。它是测试组件中<strong>使用内存最多</strong>的，这可能与 WAL 的存在有关。<strong>OpenTelemetry Collector</strong> 如果用作数据采集的 Agent，<strong>CPU 开销似乎太高了</strong>，同时在没有 WAL 的情况下，内存的使用量也处在较高的水平。</p>
+<p><img src="../202412-otlp-remote-write/benchmark-1-traffic.png" alt=""></p>
+<p>网络流量的情况反映的是不同协议的数据传输效率。由于采集的是相同的目标，In-Traffic 是几乎一致的。而 Out-Traffic 告诉我们，Prometheus 3.x 使用的 <strong>Remote Write 2.0 相比 Remote Write 1.0 能节约 40% 的带宽</strong>，而 OpenTelemetry Collector 使用的 OTLP 似乎在这方面不太占优势。vmagent 使用的是 Remote Write 1.0，但是压缩算法从 Prometheus 规范中指定的 <a href="https://github.com/google/snappy">Snappy</a> 变成了 <a href="https://github.com/valyala/gozstd">zstd</a>，这为它节约了大量的带宽。</p>
+<p><img src="../202412-otlp-remote-write/benchmark-1-disk.png" alt=""></p>
+<p>在磁盘使用量方面，因为 Benchmark 并没有关注 Remote Storage 不可用时的情况，所以 OpenTelemetry Collector 和 vmagent 几乎都没有使用额外的存储空间。Prometheus 由于 WAL 的存在，尽管处于 Agent Mode，WAL 仍然需要正常写入以提供 Remote Write 支持。这些 WAL 数据每隔 2 小时清理，因此在磁盘用量的监控上图线呈现锯齿状。</p>
+<p>在简单总结之后，我们发现了一些值得继续探讨的问题：</p>
+<ol>
+<li><strong>为什么 OpenTelemetry Collector 的 CPU 使用率远高于其它 Agent？</strong></li>
+<li>vmagent 仅修改了 Remote Write 1.0 的压缩算法就能使带宽用量降低这么多，那 <strong>Remote Write 2.0 使用 zstd 压缩算法有用吗？</strong></li>
+</ol>
+<h3 id="profiling-opentelemetry-collector">Profiling OpenTelemetry Collector<a href="#profiling-opentelemetry-collector" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>我们使用到的 OpenTelemetry Collector 配置非常简洁：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="nt">service</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">pipelines</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">metrics</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">receivers</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">prometheus]</span><span class="w">
+</span><span class="w">      </span><span class="nt">processors</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">batch]</span><span class="w">
+</span><span class="w">      </span><span class="nt">exporters</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">otlp]</span><span class="w">
+</span></code></pre></div><p>所以问题无非出在 Prometheus Receiver 或 OTLP Exporter 上。</p>
+<p>因此，我们通过增加 <code>extensions: [pprof]</code>，收集了它的 <a href="../202412-otlp-remote-write/otel-profile.prof">profile</a> 样本。从中可以看出，OpenTelemetry Collector 在 Scrape 操作花费的时间较多，所以基本可以确定是 <strong>Prometheus Receiver</strong> 带来的开销。</p>
+<p><img src="../202412-otlp-remote-write/otel-profile.jpg" alt=""></p>
+<p>考虑到抓取 Prometheus 文本格式的指标并不算是 OpenTelemetry Collector 的“本职工作”，这些性能上的瑕疵似乎可以理解。对它进行优化会是个很有趣的过程，但这不是本文讨论的重点。</p>
+<p><strong>假若未来各类基础设施（例如 Node exporter）可以提供 OTLP 支持，这个问题能否得到改善呢？</strong> 我们重新设计了 OpenTelemetry Collector 的数据采集流程，考察其在 Push 模式下收集数据的资源使用情况。架构修改如下：</p>
+<p><img src="../202412-otlp-remote-write/otel_setup.png" alt=""></p>
+<p>其中，OpenTelemetry Collector Helper 仍然使用 Prometheus Receiver 来主动采集 Node exporter 指标，移除 Batch Processor，然后借助 OTLP Exporter 将数据推送给 OpenTelemetry Collector。在这种场景下，被测的 OpenTelemetry Collector 收到请求速率大约为 40 req/s。</p>
+<p>通过对比，我们发现这种工作模式下 OpenTelemetry Collector 的 <strong>CPU 使用率降低了 35%</strong>，<strong>内存使用率降低了 70%</strong>。</p>
+<p><img src="../202412-otlp-remote-write/benchmark-otel-receiver.png" alt=""></p>
+<h3 id="zstd-silver-bullet">zstd: Silver Bullet?<a href="#zstd-silver-bullet" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>在惊讶于 vmagent 定制版 Remote Write 1.0 的超低带宽使用量之余，我们尝试让 Remote Write 2.0 也与 zstd 进行结合。通过对 Prometheus 3.x 进行简单调整，我们观测到了如下的结果：</p>
+<p><img src="../202412-otlp-remote-write/benchmark-prometheus-vmagent-zstd.png" alt=""></p>
+<p>借助 zstd，Remote Write 2.0 的带宽使用降低了 30%。压缩算法的变更影响最大的是 CPU 使用率，但是在测试的负载下，CPU 使用率仅上升了 4%，并不明显。因此，有理由认为 zstd 对于关注带宽使用的用户（例如多云商部署，需要跨 Available Zone 传输数据）有不错的使用价值。</p>
+<h3 id="result-full">Result (Full)<a href="#result-full" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p><img src="../202412-otlp-remote-write/benchmark-full.png" alt=""></p>
+<p>现在，你还可以在 <a href="https://snapshots.raintank.io/dashboard/snapshot/HS3eUWxbt8sjwyOByd6WclWElEAyUUMv?orgId=0">snapshots.raintank.io</a> 上查看这份监控数据 Snapshot。</p>
+<h2 id="conclusion">Conclusion<a href="#conclusion" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>我们最初提出的问题是：<strong>Prometheus 既然已经是云原生指标监控领域的事实标准，大多数供应商、项目也支持它的 Data Model 和 Remote Write Protocol，那为什么要考虑 OpenTelemetry 呢？</strong></p>
+<p>通过前文的比较，我们认为，<strong>在大部分 Exporter</strong>（特别是 <a href="https://istio.io/latest/docs/reference/config/metrics/">Istio</a>、<a href="https://github.com/kubernetes/kube-state-metrics">kube-state-metrics</a> 这种数据量庞大的 Exporter）<strong>能提供完善的 OTLP 支持之前，使用 OpenTelemetry 是需要不小的代价的</strong>，在数据采集、转换所需要的 CPU 资源上体现尤为明显。</p>
+<p>而关注到 Prometheus 生态内部，<strong>Prometheus 3.x 的全新 Remote Write 协议直接减少了 40% 的带宽使用</strong>，若进一步加入 zstd 压缩算法的选项，用户甚至可以得到一张 4 折的带宽账单。但其他资源使用上，因为 Prometheus 2.x 仍在继续开发迭代，所以也会收到性能优化 Patch，相比之下，<strong>两个大版本间的资源使用差距似乎不太明显</strong>。</p>
+<p>而 <strong>vmagent</strong> 作为众多比较对象中较为特殊的存在，相比 OpenTelemetry Collector 和 Prometheus 3.x，它以能<strong>以极低的 CPU（相比前两者降低 70% / 39%）和内存（相比前两者降低 64% / 67%）开销</strong>直接采集 Prometheus 文本格式的 Exporter。同时，借助 Remote Write 1.0 及 zstd 压缩算法的组合，它又能最小化带宽需求，<strong>即使对比 Remote Write 2.0 仍能节约 46% 的网络带宽</strong>，算得上是用户的极致性价比之选。</p>
+<p>随着 OpenTelemetry 和 Prometheus 不断推动新的标准，未来若有能更好利用 OTLP 和 Remote Write 2.0 标准的 Exporter，或许新的协议会体现出更多的优势。但是就目前而言，用户似乎仍有理由坚守在现存的版本，毕竟，伴随每次迁移升级的不止有收益，也有很多不可忽视的成本。</p>
+
+			</div>
+
+<hr>
+<div class="related-posts thin">
+	<h2>See Also</h2>
+	<ul>
+	
+	<li><a href="/posts/churn-rate-in-victoriametrics/">社区报障案例：没有新的 Time Series，为什么 Churn Rate 升高？</a></li>
+	
+	<li><a href="/posts/troubleshooting-victoriametrics/">监控数据问题排查：我的指标去哪儿了？</a></li>
+	
+	<li><a href="/posts/one-to-watch-victoriametrics/">[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事</a></li>
+	
+	<li><a href="/posts/extending-go-application-with-interface/">用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例</a></li>
+	
+	<li><a href="/posts/vmselect-data-structures/">VictoriaMetrics 中的持久化数据结构 (Part 2): vmselect</a></li>
+	
+	</ul>
+</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 3018 字, 约 7 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2024-12-21 01:22 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#prometheus-and-remote-write">Prometheus and Remote Write</a></li>
+    <li><a href="#opentelemetry-and-otlp">OpenTelemetry and OTLP</a></li>
+    <li><a href="#prometheus-and-opentelemetry">Prometheus and OpenTelemetry</a></li>
+    <li><a href="#benchmark">Benchmark</a>
+      <ul>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#result-1">Result #1</a></li>
+        <li><a href="#profiling-opentelemetry-collector">Profiling OpenTelemetry Collector</a></li>
+        <li><a href="#zstd-silver-bullet">zstd: Silver Bullet?</a></li>
+        <li><a href="#result-full">Result (Full)</a></li>
+      </ul>
+    </li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

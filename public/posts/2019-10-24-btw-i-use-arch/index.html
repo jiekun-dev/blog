@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="BTW, I use Arch">
+<meta itemprop="description" content="rm -rf当然是假的啊，怎么可能失败？ ArchLinux Installation Intro ArchLinux是Linux的一个发行版。 特点 滚动更新 Package管理：pacman 极简安装 高"><meta itemprop="datePublished" content="2019-10-24T03:19:30+00:00" />
+<meta itemprop="dateModified" content="2019-10-24T03:19:30+00:00" />
+<meta itemprop="wordCount" content="5557">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="BTW, I use Arch" />
+<meta property="og:description" content="rm -rf当然是假的啊，怎么可能失败？ ArchLinux Installation Intro ArchLinux是Linux的一个发行版。 特点 滚动更新 Package管理：pacman 极简安装 高" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2019-10-24-btw-i-use-arch/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2019-10-24T03:19:30+00:00" />
+<meta property="article:modified_time" content="2019-10-24T03:19:30+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="BTW, I use Arch"/>
+<meta name="twitter:description" content="rm -rf当然是假的啊，怎么可能失败？ ArchLinux Installation Intro ArchLinux是Linux的一个发行版。 特点 滚动更新 Package管理：pacman 极简安装 高"/>
+<title>BTW, I use Arch</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2f2019-10-24-btw-i-use-arch%2f&amp;text=BTW%2c%20I%20use%20Arch" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2f2019-10-24-btw-i-use-arch%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=BTW%2c%20I%20use%20Arch&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2f2019-10-24-btw-i-use-arch%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2f2019-10-24-btw-i-use-arch%2f&amp;source=https://jiekun.dev&amp;title=BTW%2c%20I%20use%20Arch&amp;summary=BTW%2c%20I%20use%20Arch%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;BTW, I use Arch&#34;,&#34;https://jiekun.dev/posts/2019-10-24-btw-i-use-arch/&#34;,&#34;BTW, I use Arch, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Oct 24, 2019</span></div>
+				<h1>BTW, I use Arch</h1>
+			</header>
+			<div class="content">
+				<p><img src="../2019/10/001-zhujiekun-screens.jpg" alt="">
+rm -rf当然是假的啊，怎么可能失败？</p>
+<h1 id="archlinux-installation">ArchLinux Installation<a href="#archlinux-installation" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<h2 id="intro">Intro<a href="#intro" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>ArchLinux是Linux的一个发行版。</p>
+<h3 id="特点">特点<a href="#特点" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Rolling_release">滚动更新</a></li>
+<li>Package管理：<a href="https://en.wikipedia.org/wiki/Arch_Linux#Pacman">pacman</a></li>
+<li>极简安装</li>
+<li>高度个性化</li>
+</ul>
+<h3 id="缺点">缺点<a href="#缺点" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<ul>
+<li>社区相对更小</li>
+<li>出问题修复耗费时间</li>
+<li>滚动更新带来的不稳定性</li>
+</ul>
+<h2 id="environment">Environment<a href="#environment" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<pre tabindex="0"><code>CPU.........: Intel(R) Core(TM) i3-4150 CPU @ 3.50GHz
+MOTHERBOARD.: B85M-DS3H-A Gigabyte Technology Co., Ltd.
+MEMORY......: 8GB
+STORAGE.....: 120GB SSD
+
+</code></pre><h2 id="installation-note">Installation Note<a href="#installation-note" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>安装过程参照官方文档<a href="https://wiki.archlinux.org/index.php/Installation_guide">Installation guide</a>及DistroTube的视频<a href="https://www.youtube.com/watch?v=HpskN_jKyhc&amp;t=606s">Arch Linux Installation Guide (2019)</a>即可顺利完成。</p>
+<h3 id="history-commands">History Commands<a href="#history-commands" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<pre tabindex="0"><code># 检查联网
+ping www.baidu.com
+timedatectl set-ntp true
+
+# 划分磁盘
+cfdisk
+mkfs.ext4 /dev/sda1
+mkswap /dev/sda2
+swapon /dev/sda2
+
+# 安装部分必要的包
+vim /etc/pacman.d/mirrorlist
+pacstrap /mnt base linux linux-firmware
+
+# 生成fstab分区记录文件
+genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
+
+# 切换至新系统root
+arch-chroot /mnt
+
+pacman -S vim
+
+# 时区和主机设置
+ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+hwclock --systohc
+locale-gen
+vim /etc/locale.conf
+vim /etc/hostname
+vim /etc/hosts
+
+passwd
+
+# 补充安装网络相关内容
+pacman -S net-tools
+pacman -S dhcpcd
+# 启动dhcpcd
+systemctl enable dhcpcd
+
+# 创建普通用户 &amp; sudo权限
+useradd -m duck
+pacman -S sudo
+usermod -aG wheel,audio,video,storage duck
+vim /etc/sudoers
+passwd duck
+
+# 安装grub 生成引导文件
+pacman -S grub
+grub-install /dev/sda
+grub-mkconfig -o /boot/grub/grub.cfg
+
+exit
+boot
+
+</code></pre><h3 id="troubleshooting">Troubleshooting<a href="#troubleshooting" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<h4 id="legacy-vs-uefi">Legacy vs UEFI<a href="#legacy-vs-uefi" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>Legacy BIOS是基于<a href="https://en.wikipedia.org/wiki/Option_ROM">option ROMs</a>的，ROM顾名思义是一些只读的信息，是厂商在设备出厂时写入的，通过读取option ROMs中的信息加载硬件。如果硬件升级后，也需要有对应的options ROMs才能够正常使用。不同厂商提供的信息不一样，没有通用标准，大小为64KB。</p>
+<p>UEFI借助将驱动存放至文件系统中而非option ROMs解决这个问题。驱动可以以光盘、闪存等形式存在，由UEFI接口处理这些信息，保证兼容性。</p>
+<p>延伸阅读： <a href="https://pediaa.com/difference-between-uefi-and-legacy-boot/">Difference Between UEFI and Legacy Boot</a></p>
+<p>本次安装过程中在BIOS设置了使用Legacy模式启动。</p>
+<h4 id="分区划分">分区划分<a href="#分区划分" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>安装过程中使用了cfdisk代替fdisk进行分区，分区设置如下：</p>
+<ul>
+<li>创建Primary分区并设置”Bootable”</li>
+<li>创建Primary分区，类型设置为swap</li>
+</ul>
+<h1 id="awesomewm-setup">AwesomeWM Setup<a href="#awesomewm-setup" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<h2 id="xorg">Xorg<a href="#xorg" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>Xorg是Linux系统上一个知名的display server。图形化界面（graphical interface）和窗口管理（windows manager）都是基于display server的。因此首先在安装AwesomeWM之前需要有Xorg。</p>
+<h2 id="awesome-windows-manager">Awesome Windows Manager<a href="#awesome-windows-manager" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>AwesomeWM顾名思义是个窗口管理工具。</p>
+<h2 id="xinit">xinit<a href="#xinit" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>xinit允许用户手动启动一个Xorg display server。通常来说就用用来启动WM或者GI的。</p>
+<h2 id="准备工作">准备工作<a href="#准备工作" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>基于上述内容，开始配置之前需要安装：</p>
+<pre tabindex="0"><code>udo pacman -S xorg xorg-xinit awesome
+
+</code></pre><p>当然，除了三件套以外还有一些相关的包，例如字体相关包，awesome默认设置了nano为编辑器，因此需要安装nano，默认设置了xtrem为终端，因此还需要安装xtrem等。</p>
+<h2 id="配置">配置<a href="#配置" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>awesome通过xinit运行，因此要修改xinit的配置文件让它从默认运行的WM（或者其他）改为运行awesome。</p>
+<h3 id="xinit配置">xinit配置<a href="#xinit配置" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>xinit配置在<code>/etc/X11/xinit/xinitrc</code>文件，复制一份到家目录下并更名：</p>
+<pre tabindex="0"><code>/etc/X11/xinit/xinitrc ~/.xinitrc
+mv /etc/X11/xinit/xinitrc /etc/X11/xinit/xinitrc.bak
+
+</code></pre><p>这样xinit运行（startx)的时候会读取家目录下的配置。</p>
+<p>vim打开.xinitrc有如下内容</p>
+<pre tabindex="0"><code>#!/bin/sh
+
+userresources=$HOME/.Xresources
+usermodmap=$HOME/.Xmodmap
+sysresources=/etc/X11/xinit/.Xresources
+sysmodmap=/etc/X11/xinit/.Xmodmap
+
+# merge in defaults and keymaps
+
+if [ -f $sysresources ]; then
+
+
+
+
+
+
+
+    xrdb -merge $sysresources
+
+fi
+
+if [ -f $sysmodmap ]; then
+    xmodmap $sysmodmap
+fi
+
+if [ -f &quot;$userresources&quot; ]; then
+
+
+
+
+
+
+
+    xrdb -merge &quot;$userresources&quot;
+
+fi
+
+if [ -f &quot;$usermodmap&quot; ]; then
+    xmodmap &quot;$usermodmap&quot;
+fi
+
+# start some nice programs
+
+if [ -d /etc/X11/xinit/xinitrc.d ] ; then
+ for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
+  [ -x &quot;$f&quot; ] &amp;&amp; . &quot;$f&quot;
+ done
+ unset f
+fi
+
+xec awesome
+
+</code></pre><p>默认示例配置中最后一段打开了3个不同大小的小窗口，其他内容直接省略，只需要保留<code># start some nice programs</code>后的内容，运行程序修改为awesome：</p>
+<pre tabindex="0"><code>#!/bin/sh
+# start some nice programs
+
+if [ -d /etc/X11/xinit/xinitrc.d ] ; then
+ for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
+  [ -x &quot;$f&quot; ] &amp;&amp; . &quot;$f&quot;
+ done
+ unset f
+fi
+
+xec awesome
+
+</code></pre><p>xinit配置完毕，执行startx即可运行配置中的内容。</p>
+<h3 id="awesome配置">awesome配置<a href="#awesome配置" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>awesome配置分为两部分：</p>
+<ul>
+<li>awesome全局配置</li>
+<li>theme配置</li>
+</ul>
+<h4 id="awesome全局配置">awesome全局配置<a href="#awesome全局配置" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>这部分配置控制awesome选择的主题、默认软件（编辑器、浏览器、终端等），是个lua脚本，示例文件在<code>/etc/xdg/awesome/rc.lua</code>，同样在家目录创建一份配置：</p>
+<pre tabindex="0"><code>mkdir ~/.config
+mkdir ~/.config/awesome
+ /etc/xdg/awesome/rc.lua ~/.config/awesome/rc.lua
+
+</code></pre><h4 id="theme配置">theme配置<a href="#theme配置" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>这部分配置控制具体的主题样式，包括各种图标、热键Mapping、颜色、壁纸、控件等等，通过改动theme配置可以实现高度自定义的awesome界面，示例文件目录在<code>/usr/share/awesome/</code>下，默认有：</p>
+<ul>
+<li>icons，图标</li>
+<li>lib，lua脚本目录</li>
+<li>themes，主题文件夹，默认包括几个示例主题<br>
+将默认的配置复制到家目录下：</li>
+</ul>
+<pre tabindex="0"><code>usr/share/awesome/* ~/.config/awesome/
+
+</code></pre><h4 id="具体配置及效果示例">具体配置及效果示例<a href="#具体配置及效果示例" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>awesome默认使用xtrem作为终端，没有安装的情况下进入桌面是无法使用终端的。这里改用rxvt-unicode作为终端：</p>
+<pre tabindex="0"><code># 安装rxvt-unicode
+sudo pacman -S rxvt-unicode
+
+# 修改rc.lua
+vim ~/.config/awesome/rc.lua
+
+</code></pre><p>搜索关键词terminal并将：</p>
+<pre tabindex="0"><code>terminal     = &quot;xtrem&quot;
+
+</code></pre><p>修改为：</p>
+<pre tabindex="0"><code>terminal     = &quot;urxvtc&quot;
+
+</code></pre><p>awesome默认主题为default，并且提供了几个内置主题，将主题修改为sky：</p>
+<pre tabindex="0"><code>vim ~/.config/awesome/rc.lua
+
+</code></pre><p>搜索关键词theme并将：</p>
+<pre tabindex="0"><code>utiful.init(gears.filesystem.get_themes_dir() .. &quot;default/theme.lua&quot;)
+
+</code></pre><p>修改为：</p>
+<pre tabindex="0"><code>utiful.init(&quot;/home/duck/.config/awesome/themes/sky/theme.lua&quot;)
+
+</code></pre><p>原代码使用lib中的gears.filesystem.get_themes_dir()方法拿到主题文件夹路径，正确配置之后可以直接修改主题名即可，这里示例使用了绝对路径。</p>
+<p>主题默认壁纸在主题文件夹内，修改壁纸为自定义的图片：</p>
+<pre tabindex="0"><code>vim ~/.config/awesome/themes/sky/theme.lua
+
+</code></pre><p>搜索关键词wallpaper并将：</p>
+<pre tabindex="0"><code>theme.wallpaper = themes_path .. &quot;sky/sky-background.png&quot;
+
+</code></pre><p>修改为：</p>
+<pre tabindex="0"><code>utiful.init(&quot;/home/duck/.config/awesome/themes/sky/my_background.png&quot;)
+
+</code></pre><p>完成之后启动awesomeWM：</p>
+<pre tabindex="0"><code>tartx
+
+</code></pre><p>即可看到效果。</p>
+<h2 id="小结">小结<a href="#小结" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>awesomeWM可以理解为一个针对键盘操作而设计的窗口管理工具，通过使用awesomeWM可以快速完成各种终端管理，提高工作效率。通过配置awesome的主题可以添加很多控件，如日历、天气等，自定义出专属的生产工具。</p>
+<h1 id="linux-booting-process">Linux Booting Process<a href="#linux-booting-process" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p><img src="../2019/10/001-zhujiekun-Stages-of-Linux-Boot-Process.jpg" alt="">
+Linux启动过程可以分为6个阶段</p>
+<h2 id="bios">BIOS<a href="#bios" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>BIOS主要进行系统完整性检查，它会查找和执行对应的boot loader程序，比如在CD-ROM中找boot loader、在硬盘中找boot loader等。当查找到boot loader后，加载boot loader进内存，控制权交至boot loader。</p>
+<h2 id="mbr">MBR<a href="#mbr" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>MBR即Master Boot Record，位于bootable磁盘的第一个扇区。MBR大小小于512bytes，由三部分组成：</p>
+<ul>
+<li>主boot loader信息，在最前面的446bytes中</li>
+<li>分区表信息，在随后的64bytes中</li>
+<li>MBR校验信息，在最后的2bytes中</li>
+</ul>
+<p>它包含了GRUB相关信息，简单来说MBR加载和执行GRUB的boot loader。</p>
+<h2 id="grub">GRUB<a href="#grub" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>GRUB即Grand Unified Bootloader，它负责加载和执行内核和文件镜像。如果安装了多个内核的话可以允许用户选择加载的内核，否则按照配置问价加载默认项，配置即之前grub-mkconfig生成的文件：</p>
+<pre tabindex="0"><code>#
+# DO NOT EDIT THIS FILE
+#
+# It is automatically generated by grub-mkconfig using templates
+# from /etc/grub.d and settings from /etc/default/grub
+#
+
+### BEGIN /etc/grub.d/00_header ###
+insmod part_gpt
+insmod part_msdos
+if [ -s $prefix/grubenv ]; then
+  load_env
+fi
+if [ &quot;${next_entry}&quot; ] ; then
+   set default=&quot;${next_entry}&quot;
+   set next_entry=
+   save_env next_entry
+   set boot_once=true
+else
+   set default=&quot;0&quot;
+fi
+
+if [ x&quot;${feature_menuentry_id}&quot; = xy ]; then
+  menuentry_id_option=&quot;--id&quot;
+else
+  menuentry_id_option=&quot;&quot;
+fi
+
+export menuentry_id_option
+
+if [ &quot;${prev_saved_entry}&quot; ]; then
+  set saved_entry=&quot;${prev_saved_entry}&quot;
+  save_env saved_entry
+  set prev_saved_entry=
+  save_env prev_saved_entry
+  set boot_once=true
+fi
+
+function savedefault {
+  if [ -z &quot;${boot_once}&quot; ]; then
+    saved_entry=&quot;${chosen}&quot;
+    save_env saved_entry
+  fi
+}
+
+function load_video {
+  if [ x$feature_all_video_module = xy ]; then
+    insmod all_video
+  else
+    insmod efi_gop
+    insmod efi_uga
+    insmod ieee1275_fb
+    insmod vbe
+    insmod vga
+    insmod video_bochs
+    insmod video_cirrus
+  fi
+}
+
+if [ x$feature_default_font_path = xy ] ; then
+   font=unicode
+else
+insmod part_msdos
+insmod ext2
+set root='hd0,msdos1'
+if [ x$feature_platform_search_hint = xy ]; then
+  search --no-floppy --fs-uuid --set=root --hint-ieee1275='ieee1275//disk@0,msdos1' --hint-bios=hd0,msdos1 --hint-efi=hd0,msdos1 --hint-baremetal=ahci0,msdos1  0a869b77-d317-4b40-8fb1-ffa44721cce6
+else
+  search --no-floppy --fs-uuid --set=root 0a869b77-d317-4b40-8fb1-ffa44721cce6
+fi
+    font=&quot;/usr/share/grub/unicode.pf2&quot;
+fi
+
+if loadfont $font ; then
+  set gfxmode=auto
+  load_video
+  insmod gfxterm
+  set locale_dir=$prefix/locale
+  set lang=en_US
+  insmod gettext
+fi
+terminal_input console
+terminal_output gfxterm
+if [ x$feature_timeout_style = xy ] ; then
+  set timeout_style=menu
+  set timeout=5
+# Fallback normal timeout code in case the timeout_style feature is
+# unavailable.
+else
+  set timeout=5
+fi
+### END /etc/grub.d/00_header ###
+
+### BEGIN /etc/grub.d/10_linux ###
+menuentry 'Arch Linux' --class arch --class gnu-linux --class gnu --class os $menuentry_id_option 'gnulinux-simple-0a869b77-d317-4b40-8fb1-ffa44721cce6' {
+    load_video
+    set gfxpayload=keep
+    insmod gzio
+    insmod part_msdos
+    insmod ext2
+    set root='hd0,msdos1'
+    if [ x$feature_platform_search_hint = xy ]; then
+      search --no-floppy --fs-uuid --set=root --hint-ieee1275='ieee1275//disk@0,msdos1' --hint-bios=hd0,msdos1 --hint-efi=hd0,msdos1 --hint-baremetal=ahci0,msdos1  0a869b77-d317-4b40-8fb1-ffa44721cce6
+    else
+      search --no-floppy --fs-uuid --set=root 0a869b77-d317-4b40-8fb1-ffa44721cce6
+    fi
+    echo    'Loading Linux linux ...'
+    linux   /boot/vmlinuz-linux root=UUID=0a869b77-d317-4b40-8fb1-ffa44721cce6 rw  loglevel=3 quiet
+    echo    'Loading initial ramdisk ...'
+    initrd  /boot/initramfs-linux.img
+}
+submenu 'Advanced options for Arch Linux' $menuentry_id_option 'gnulinux-advanced-0a869b77-d317-4b40-8fb1-ffa44721cce6' {
+    menuentry 'Arch Linux, with Linux linux' --class arch --class gnu-linux --class gnu --class os $menuentry_id_option 'gnulinux-linux-advanced-0a869b77-d317-4b40-8fb1-ffa44721cce6' {
+        load_video
+        set gfxpayload=keep
+        insmod gzio
+        insmod part_msdos
+        insmod ext2
+        set root='hd0,msdos1'
+        if [ x$feature_platform_search_hint = xy ]; then
+          search --no-floppy --fs-uuid --set=root --hint-ieee1275='ieee1275//disk@0,msdos1' --hint-bios=hd0,msdos1 --hint-efi=hd0,msdos1 --hint-baremetal=ahci0,msdos1  0a869b77-d317-4b40-8fb1-ffa44721cce6
+        else
+          search --no-floppy --fs-uuid --set=root 0a869b77-d317-4b40-8fb1-ffa44721cce6
+        fi
+        echo    'Loading Linux linux ...'
+        linux   /boot/vmlinuz-linux root=UUID=0a869b77-d317-4b40-8fb1-ffa44721cce6 rw  loglevel=3 quiet
+        echo    'Loading initial ramdisk ...'
+        initrd  /boot/initramfs-linux.img
+    }
+    menuentry 'Arch Linux, with Linux linux (fallback initramfs)' --class arch --class gnu-linux --class gnu --class os $menuentry_id_option 'gnulinux-linux-fallback-0a869b77-d317-4b40-8fb1-ffa44721cce6' {
+        load_video
+        set gfxpayload=keep
+        insmod gzio
+        insmod part_msdos
+        insmod ext2
+        set root='hd0,msdos1'
+        if [ x$feature_platform_search_hint = xy ]; then
+          search --no-floppy --fs-uuid --set=root --hint-ieee1275='ieee1275//disk@0,msdos1' --hint-bios=hd0,msdos1 --hint-efi=hd0,msdos1 --hint-baremetal=ahci0,msdos1  0a869b77-d317-4b40-8fb1-ffa44721cce6
+        else
+          search --no-floppy --fs-uuid --set=root 0a869b77-d317-4b40-8fb1-ffa44721cce6
+        fi
+        echo    'Loading Linux linux ...'
+        linux   /boot/vmlinuz-linux root=UUID=0a869b77-d317-4b40-8fb1-ffa44721cce6 rw  loglevel=3 quiet
+        echo    'Loading initial ramdisk ...'
+        initrd  /boot/initramfs-linux-fallback.img
+    }
+}
+
+### END /etc/grub.d/10_linux ###
+
+### BEGIN /etc/grub.d/20_linux_xen ###
+### END /etc/grub.d/20_linux_xen ###
+
+### BEGIN /etc/grub.d/30_os-prober ###
+### END /etc/grub.d/30_os-prober ###
+
+### BEGIN /etc/grub.d/40_custom ###
+# This file provides an easy way to add custom menu entries.  Simply type the
+# menu entries you want to add after this comment.  Be careful not to change
+# the 'exec tail' line above.
+### END /etc/grub.d/40_custom ###
+
+### BEGIN /etc/grub.d/41_custom ###
+if [ -f  ${config_directory}/custom.cfg ]; then
+  source ${config_directory}/custom.cfg
+elif [ -z &quot;${config_directory}&quot; -a -f  $prefix/custom.cfg ]; then
+  source $prefix/custom.cfg;
+fi
+### END /etc/grub.d/41_custom ###
+
+</code></pre><h2 id="kernel">Kernel<a href="#kernel" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>内核负责根据grub.cfg中声明的<code>root='hd0,msdos1'</code>挂载文件系统，并且执行<code>/sbin/init</code>的程序。因为init是第一个被Linux内核执行的程序，所以<code>ps aux | grep init</code>的pid为1。</p>
+<pre tabindex="0"><code>t         1  0.0  0.0 165304 10528 ?        Ss   11:45   0:13 /sbin/init splash
+
+</code></pre><p>grub.cfg中有一行：</p>
+<pre tabindex="0"><code>initrd  /boot/initramfs-linux.img
+
+</code></pre><p>initrd即初始化RAM Disk，使用initramfs-linux.img镜像，作为临时的root文件系统，直到启动后真正的文件系统挂载。initrd同时还包括了一些必要的驱动，让内核可以获取分区和硬件等信息。</p>
+<h2 id="init">Init<a href="#init" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>查看/etc/inittab文件来决定Linux运行的Level，具体包括以下7个Level：</p>
+<ul>
+<li>0 – halt</li>
+<li>1 – Single user mode</li>
+<li>2 – Multiuser, without NFS</li>
+<li>3 – Full multiuser mode</li>
+<li>4 – unused</li>
+<li>5 – X11</li>
+<li>6 – reboot</li>
+</ul>
+<p>Init根据文件决定默认的initlevel，加载所有相关的程序。</p>
+<h2 id="runlevel">Runlevel<a href="#runlevel" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>Linux启动时，你会看到各种服务启动，比如“starting sendmail …. OK”，这些都是Runlevel的程序，不同的runlevel在相应的目录中：</p>
+<pre tabindex="0"><code># Run level ?
+ /etc/rc.d/rc?.d/
+
+</code></pre><p>在目录下有“S”和“K”开头的程序，S代表startup的时候运行，K代表kill的时候运行。</p>
+<h1 id="linux-command-analysis">Linux Command Analysis<a href="#linux-command-analysis" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>以<code>free</code>命令为例分析执行过程。</p>
+<h2 id="free">free<a href="#free" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>free命令源码参考<a href="https://github.com/soarpenguin/procps-3.0.5/blob/master/free.c">procps</a>。节选如下：</p>
+<pre tabindex="0"><code>int main(int argc, char **argv)
+{
+    int c, flags = 0, unit_set = 0;
+    struct commandline_arguments args;
+
+    /*
+     * For long options that have no equivalent short option, use a
+     * non-character as a pseudo short option, starting with CHAR_MAX + 1.
+     */
+    enum {
+        SI_OPTION = CHAR_MAX + 1,
+        KILO_OPTION,
+        MEGA_OPTION,
+        GIGA_OPTION,
+        TERA_OPTION,
+        PETA_OPTION,
+        TEBI_OPTION,
+        PEBI_OPTION,
+        HELP_OPTION
+    };
+
+    static const struct option longopts[] = {
+        {  &quot;bytes&quot;, no_argument,        NULL,  'b'      },
+        {  &quot;kilo&quot;,  no_argument,        NULL,  KILO_OPTION  },
+        {  &quot;mega&quot;,  no_argument,        NULL,  MEGA_OPTION  },
+        {  &quot;giga&quot;,  no_argument,        NULL,  GIGA_OPTION  },
+        {  &quot;tera&quot;,  no_argument,        NULL,  TERA_OPTION  },
+        {  &quot;peta&quot;,  no_argument,        NULL,  PETA_OPTION  },
+        {  &quot;kibi&quot;,  no_argument,        NULL,  'k'      },
+        {  &quot;mebi&quot;,  no_argument,        NULL,  'm'      },
+        {  &quot;gibi&quot;,  no_argument,        NULL,  'g'      },
+        {  &quot;tebi&quot;,  no_argument,        NULL,  TEBI_OPTION  },
+        {  &quot;pebi&quot;,  no_argument,        NULL,  PEBI_OPTION  },
+        {  &quot;human&quot;, no_argument,        NULL,  'h'      },
+        {  &quot;si&quot;,    no_argument,        NULL,  SI_OPTION    },
+        {  &quot;lohi&quot;,  no_argument,        NULL,  'l'      },
+        {  &quot;total&quot;, no_argument,        NULL,  't'      },
+        {  &quot;seconds&quot;,   required_argument,  NULL,  's'      },
+        {  &quot;count&quot;, required_argument,  NULL,  'c'      },
+        {  &quot;wide&quot;,  no_argument,        NULL,  'w'      },
+        {  &quot;help&quot;,  no_argument,        NULL,  HELP_OPTION  },
+        {  &quot;version&quot;,   no_argument,        NULL,  'V'      },
+        {  NULL,    0,          NULL,  0        }
+    };
+
+    /* defaults */
+    args.exponent = 0;
+    args.repeat_interval = 1000000;
+    args.repeat_counter = 0;
+
+#ifdef HAVE_PROGRAM_INVOCATION_NAME
+    program_invocation_name = program_invocation_short_name;
+#endif
+    setlocale (LC_ALL, &quot;&quot;);
+    bindtextdomain(PACKAGE, LOCALEDIR);
+    textdomain(PACKAGE);
+    atexit(close_stdout);
+
+    while ((c = getopt_long(argc, argv, &quot;bkmghltc:ws:V&quot;, longopts, NULL)) != -1)
+        switch (c) {
+        case 'b':
+                check_unit_set(&amp;unit_set);
+            args.exponent = 1;
+            break;
+        case 'k':
+                check_unit_set(&amp;unit_set);
+            args.exponent = 2;
+            break;
+        case 'm':
+                check_unit_set(&amp;unit_set);
+            args.exponent = 3;
+            break;
+        case 'g':
+                check_unit_set(&amp;unit_set);
+            args.exponent = 4;
+            break;
+        case TEBI_OPTION:
+                check_unit_set(&amp;unit_set);
+            args.exponent = 5;
+            break;
+        case PEBI_OPTION:
+                check_unit_set(&amp;unit_set);
+            args.exponent = 6;
+            break;
+        case KILO_OPTION:
+                check_unit_set(&amp;unit_set);
+            args.exponent = 2;
+            flags |= FREE_SI;
+            break;
+        case MEGA_OPTION:
+                check_unit_set(&amp;unit_set);
+            args.exponent = 3;
+            flags |= FREE_SI;
+            break;
+        case GIGA_OPTION:
+                check_unit_set(&amp;unit_set);
+            args.exponent = 4;
+            flags |= FREE_SI;
+            break;
+        case TERA_OPTION:
+                check_unit_set(&amp;unit_set);
+            args.exponent = 5;
+            flags |= FREE_SI;
+            break;
+        case PETA_OPTION:
+                check_unit_set(&amp;unit_set);
+            args.exponent = 6;
+            flags |= FREE_SI;
+            break;
+        case 'h':
+            flags |= FREE_HUMANREADABLE;
+            break;
+        case SI_OPTION:
+            flags |= FREE_SI;
+            break;
+        case 'l':
+            flags |= FREE_LOHI;
+            break;
+        case 't':
+            flags |= FREE_TOTAL;
+            break;
+        case 's':
+            flags |= FREE_REPEAT;
+            errno = 0;
+            args.repeat_interval = (1000000 * strtod_nol_or_err(optarg, &quot;seconds argument failed&quot;));
+            if (args.repeat_interval &amp;lt; 1)
+                xerrx(EXIT_FAILURE,
+                     _(&quot;seconds argument `%s' is not positive number&quot;), optarg);
+            break;
+        case 'c':
+            flags |= FREE_REPEAT;
+            flags |= FREE_REPEATCOUNT;
+            args.repeat_counter = strtol_or_err(optarg,
+                _(&quot;failed to parse count argument&quot;));
+            if (args.repeat_counter &amp;lt; 1)
+              error(EXIT_FAILURE, ERANGE,
+                  _(&quot;failed to parse count argument: '%s'&quot;), optarg);
+            break;
+        case 'w':
+            flags |= FREE_WIDE;
+            break;
+        case HELP_OPTION:
+            usage(stdout);
+        case 'V':
+            printf(PROCPS_NG_VERSION);
+            exit(EXIT_SUCCESS);
+        default:
+            usage(stderr);
+        }
+
+    do {
+
+        meminfo();
+        /* Translation Hint: You can use 9 character words in
+         * the header, and the words need to be right align to
+         * beginning of a number. */
+        if (flags &amp; FREE_WIDE) {
+            printf(_(&quot;              total        used        free      shared     buffers       cache   available&quot;));
+        } else {
+            printf(_(&quot;              total        used        free      shared  buff/cache   available&quot;));
+        }
+        printf(&quot;\n&quot;);
+        printf(&quot;%-7s&quot;, _(&quot;Mem:&quot;));
+        printf(&quot; %11s&quot;, scale_size(kb_main_total, flags, args));
+        printf(&quot; %11s&quot;, scale_size(kb_main_used, flags, args));
+        printf(&quot; %11s&quot;, scale_size(kb_main_free, flags, args));
+        printf(&quot; %11s&quot;, scale_size(kb_main_shared, flags, args));
+        if (flags &amp; FREE_WIDE) {
+            printf(&quot; %11s&quot;, scale_size(kb_main_buffers, flags, args));
+            printf(&quot; %11s&quot;, scale_size(kb_main_cached, flags, args));
+        } else {
+            printf(&quot; %11s&quot;, scale_size(kb_main_buffers+kb_main_cached, flags, args));
+        }
+        printf(&quot; %11s&quot;, scale_size(kb_main_available, flags, args));
+        printf(&quot;\n&quot;);
+        /*
+         * Print low vs. high information, if the user requested it.
+         * Note we check if low_total == 0: if so, then this kernel
+         * does not export the low and high stats. Note we still want
+         * to print the high info, even if it is zero.
+         */
+        if (flags &amp; FREE_LOHI) {
+            printf(&quot;%-7s&quot;, _(&quot;Low:&quot;));
+            printf(&quot; %11s&quot;, scale_size(kb_low_total, flags, args));
+            printf(&quot; %11s&quot;, scale_size(kb_low_total - kb_low_free, flags, args));
+            printf(&quot; %11s&quot;, scale_size(kb_low_free, flags, args));
+            printf(&quot;\n&quot;);
+
+            printf(&quot;%-7s&quot;, _(&quot;High:&quot;));
+            printf(&quot; %11s&quot;, scale_size(kb_high_total, flags, args));
+            printf(&quot; %11s&quot;, scale_size(kb_high_total - kb_high_free, flags, args));
+            printf(&quot; %11s&quot;, scale_size(kb_high_free, flags, args));
+            printf(&quot;\n&quot;);
+        }
+
+        printf(&quot;%-7s&quot;, _(&quot;Swap:&quot;));
+        printf(&quot; %11s&quot;, scale_size(kb_swap_total, flags, args));
+        printf(&quot; %11s&quot;, scale_size(kb_swap_used, flags, args));
+        printf(&quot; %11s&quot;, scale_size(kb_swap_free, flags, args));
+        printf(&quot;\n&quot;);
+
+        if (flags &amp; FREE_TOTAL) {
+            printf(&quot;%-7s&quot;, _(&quot;Total:&quot;));
+            printf(&quot; %11s&quot;, scale_size(kb_main_total + kb_swap_total, flags, args));
+            printf(&quot; %11s&quot;, scale_size(kb_main_used + kb_swap_used, flags, args));
+            printf(&quot; %11s&quot;, scale_size(kb_main_free + kb_swap_free, flags, args));
+            printf(&quot;\n&quot;);
+        }
+        fflush(stdout);
+        if (flags &amp; FREE_REPEATCOUNT) {
+            args.repeat_counter--;
+            if (args.repeat_counter &amp;lt; 1)
+                exit(EXIT_SUCCESS);
+        }
+        if (flags &amp; FREE_REPEAT) {
+            printf(&quot;\n&quot;);
+            usleep(args.repeat_interval);
+        }
+    } while ((flags &amp; FREE_REPEAT));
+
+    exit(EXIT_SUCCESS);
+}
+
+</code></pre><p>可以观察到命令主要做了几件事：</p>
+<ul>
+<li>执行meminfo()方法</li>
+<li>根据输入参数，进行格式转换、单位转换等</li>
+</ul>
+<p>meminfo()方法并不在free.c中，全局查找定位到sysinfo.c文件中：</p>
+<pre tabindex="0"><code>void meminfo(void){
+  char namebuf[32]; /* big enough to hold any row name */
+  int linux_version_code = procps_linux_version();
+  mem_table_struct findme = { namebuf, NULL};
+  mem_table_struct *found;
+  char *head;
+  char *tail;
+  static const mem_table_struct mem_table[] = {
+  {&quot;Active&quot;,       &amp;kb_active},       // important
+  {&quot;Active(file)&quot;, &amp;kb_active_file},
+  {&quot;AnonPages&quot;,    &amp;kb_anon_pages},
+  {&quot;Bounce&quot;,       &amp;kb_bounce},
+  {&quot;Buffers&quot;,      &amp;kb_main_buffers}, // important
+  {&quot;Cached&quot;,       &amp;kb_page_cache},  // important
+  {&quot;CommitLimit&quot;,  &amp;kb_commit_limit},
+  {&quot;Committed_AS&quot;, &amp;kb_committed_as},
+  {&quot;Dirty&quot;,        &amp;kb_dirty},        // kB version of vmstat nr_dirty
+  {&quot;HighFree&quot;,     &amp;kb_high_free},
+  {&quot;HighTotal&quot;,    &amp;kb_high_total},
+  {&quot;Inact_clean&quot;,  &amp;kb_inact_clean},
+  {&quot;Inact_dirty&quot;,  &amp;kb_inact_dirty},
+  {&quot;Inact_laundry&quot;,&amp;kb_inact_laundry},
+  {&quot;Inact_target&quot;, &amp;kb_inact_target},
+  {&quot;Inactive&quot;,     &amp;kb_inactive},     // important
+  {&quot;Inactive(file)&quot;,&amp;kb_inactive_file},
+  {&quot;LowFree&quot;,      &amp;kb_low_free},
+  {&quot;LowTotal&quot;,     &amp;kb_low_total},
+  {&quot;Mapped&quot;,       &amp;kb_mapped},       // kB version of vmstat nr_mapped
+  {&quot;MemAvailable&quot;, &amp;kb_main_available}, // important
+  {&quot;MemFree&quot;,      &amp;kb_main_free},    // important
+  {&quot;MemTotal&quot;,     &amp;kb_main_total},   // important
+  {&quot;NFS_Unstable&quot;, &amp;kb_nfs_unstable},
+  {&quot;PageTables&quot;,   &amp;kb_pagetables},   // kB version of vmstat nr_page_table_pages
+  {&quot;ReverseMaps&quot;,  &amp;nr_reversemaps},  // same as vmstat nr_page_table_pages
+  {&quot;SReclaimable&quot;, &amp;kb_slab_reclaimable}, // &quot;slab reclaimable&quot; (dentry and inode structures)
+  {&quot;SUnreclaim&quot;,   &amp;kb_slab_unreclaimable},
+  {&quot;Shmem&quot;,        &amp;kb_main_shared},  // kernel 2.6.32 and later
+  {&quot;Slab&quot;,         &amp;kb_slab},         // kB version of vmstat nr_slab
+  {&quot;SwapCached&quot;,   &amp;kb_swap_cached},
+  {&quot;SwapFree&quot;,     &amp;kb_swap_free},    // important
+  {&quot;SwapTotal&quot;,    &amp;kb_swap_total},   // important
+  {&quot;VmallocChunk&quot;, &amp;kb_vmalloc_chunk},
+  {&quot;VmallocTotal&quot;, &amp;kb_vmalloc_total},
+  {&quot;VmallocUsed&quot;,  &amp;kb_vmalloc_used},
+  {&quot;Writeback&quot;,    &amp;kb_writeback},    // kB version of vmstat nr_writeback
+  };
+  const int mem_table_count = sizeof(mem_table)/sizeof(mem_table_struct);
+  unsigned long watermark_low;
+  signed long mem_available, mem_used;
+
+  FILE_TO_BUF(MEMINFO_FILE,meminfo_fd);
+
+  kb_inactive = ~0UL;
+  kb_low_total = kb_main_available = 0;
+
+  head = buf;
+  for(;;){
+    tail = strchr(head, ':');
+    if(!tail) break;
+    *tail = '\0';
+    if(strlen(head) &gt;= sizeof(namebuf)){
+      head = tail+1;
+      goto nextline;
+    }
+    strcpy(namebuf,head);
+    found = bsearch(&amp;findme, mem_table, mem_table_count,
+        sizeof(mem_table_struct), compare_mem_table_structs
+    );
+    head = tail+1;
+    if(!found) goto nextline;
+    *(found-&gt;slot) = (unsigned long)strtoull(head,&amp;tail,10);
+nextline:
+    tail = strchr(head, '\n');
+    if(!tail) break;
+    head = tail+1;
+  }
+  if(!kb_low_total){  /* low==main except with large-memory support */
+    kb_low_total = kb_main_total;
+    kb_low_free  = kb_main_free;
+  }
+  if(kb_inactive==~0UL){
+    kb_inactive = kb_inact_dirty + kb_inact_clean + kb_inact_laundry;
+  }
+  kb_main_cached = kb_page_cache + kb_slab_reclaimable;
+  kb_swap_used = kb_swap_total - kb_swap_free;
+
+  /* if kb_main_available is greater than kb_main_total or our calculation of
+     mem_used overflows, that's symptomatic of running within a lxc container
+     where such values will be dramatically distorted over those of the host. */
+  if (kb_main_available &gt; kb_main_total)
+    kb_main_available = kb_main_free;
+  mem_used = kb_main_total - kb_main_free - kb_main_cached - kb_main_buffers;
+  if (mem_used &amp;lt; 0)
+    mem_used = kb_main_total - kb_main_free;
+  kb_main_used = (unsigned long)mem_used;
+
+  /* zero? might need fallback for 2.6.27 &amp;lt;= kernel &amp;lt;? 3.14 */
+  if (!kb_main_available) {
+#ifdef __linux__
+    if (linux_version_code &amp;lt; LINUX_VERSION(2, 6, 27))
+      kb_main_available = kb_main_free;
+    else {
+      FILE_TO_BUF(VM_MIN_FREE_FILE, vm_min_free_fd);
+      kb_min_free = (unsigned long) strtoull(buf,&amp;tail,10);
+
+      watermark_low = kb_min_free * 5 / 4; /* should be equal to sum of all 'low' fields in /proc/zoneinfo */
+
+      mem_available = (signed long)kb_main_free - watermark_low
+      + kb_inactive_file + kb_active_file - MIN((kb_inactive_file + kb_active_file) / 2, watermark_low)
+      + kb_slab_reclaimable - MIN(kb_slab_reclaimable / 2, watermark_low);
+
+      if (mem_available &amp;lt; 0) mem_available = 0;
+      kb_main_available = (unsigned long)mem_available;
+    }
+#else
+      kb_main_available = kb_main_free;
+#endif /* linux */
+  }
+}
+
+</code></pre><p>主要进行了：</p>
+<ul>
+<li>定义数据格式mem_table_struct</li>
+<li>执行FILE_TO_BUF(MEMINFO_FILE, meminfo_fd)，这里的MEMINFO_FILE在上文有定义<code>#define MEMINFO_FILE &quot;/proc/meminfo&quot;</code>，meminfo_fd同样有定义为-1</li>
+<li>后续主要对stdout内容进行计算，例如<code>mem_used = kb_main_total - kb_main_free - kb_main_cached - kb_main_buffers</code>，以及异常数值处理，例如当上面计算得出的mem_used为负值时，重新以<code>mem_used = kb_main_total - kb_main_free</code>计算</li>
+</ul>
+<p>FILE_TO_BUF方法具体没有找到定义，在sysinfo.c中有一段相关注释代码如下：</p>
+<pre tabindex="0"><code>#define FILE_TO_BUF(filename, fd) do{               \
+    static int local_n;                     \
+    if (fd == -1 &amp;&amp; (fd = open(filename, O_RDONLY)) == -1) {    \
+    fputs(BAD_OPEN_MESSAGE, stderr);            \
+    fflush(NULL);                       \
+    _exit(102);                     \
+    }                               \
+    lseek(fd, 0L, SEEK_SET);                    \
+    if ((local_n = read(fd, buf, sizeof buf - 1)) &amp;lt; 0) {    \
+    perror(filename);                   \
+    fflush(NULL);                       \
+    _exit(103);                     \
+    }                               \
+    buf[local_n] = '\0';                    \
+}while(0)
+
+</code></pre><p>可以看到FILE_TO_BUF()主要进行了：</p>
+<ul>
+<li>fd默认-1，表示未打开</li>
+<li>尝试打开对应文件（如/proc/meminfo），赋给fd，成功则fd改变，否则fputs打开失败消息，退出</li>
+<li>打开成功，读取fd内容，放入buf中</li>
+</ul>
+<p>总结free命令从读取/proc/meminfo到显示过程：</p>
+<ul>
+<li>尝试打开/proc/meminfo，成功则暂存至变量，失败退出</li>
+<li>读取暂存的变量，根据定义的数据结构，将各个值放至对应字段</li>
+<li>根据读取的数值，计算一些统计值，如已使用内存=总内存-可用内存，并进行对应的异常处理</li>
+<li>处理完毕的数据，根据free命令的参数，进行格式转换，如：kb、gb间的转换；根据-h参数决定是否添加单位；根据参数决定字段是否要显示等</li>
+<li>输出格式化（类似表格形式）后的内容</li>
+</ul>
+
+			</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg><span class="category"><a href="https://jiekun.dev/categories/%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">最佳实践</a></span></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 5557 字, 约 12 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2019-10-24 11:19 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		
+		<div id="comments" class="thin"></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>
