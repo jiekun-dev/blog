@@ -18,7 +18,7 @@ At that time, there were already some companies using VictoriaMetrics at a large
 
 I noticed that many questions were duplicated and already explained in the document. Therefore, in order to reduce the pressure on the VictoriaMetrics engineers (so they would have time to help with my questions), I started to answer questions based on my limited knowledge or the information available in the document.
 
-![](../202503-2024-summary/comment_trend.png)
+![](../202503-2024-summary/comment_trend.webp)
 
 By doing so, I looked through many documents and sometimes read the source code to find the answer. It's very helpful, both for the community and me:
 1. **Open-source community always lack first-line supporter**, not matter how good the document is. Most people are asking questions, while only a few are answering. The vast majority of these few are core developers because they understand everything, and a very small number are some interested users who try to help each other.
@@ -65,7 +65,7 @@ I'm not very passionate about exploring AI. What I most enjoy doing with AI is:
 
 We have a daily sync where everyone talks about what they've done yesterday and discuss some issues. This is how I started.
 
-![](../202503-2024-summary/daily_sync.png)
+![](../202503-2024-summary/daily_sync.webp)
 
 It's interesting because you only flow smoothly when reading this pre-prepared content. If there are any questions or discussions, it becomes choppy. It's somewhat better now, but to make it easier for my colleagues to understand, I will still prepare this cheat sheet for every daily sync.
 
@@ -73,7 +73,7 @@ It's interesting because you only flow smoothly when reading this pre-prepared c
 
 I have participated in KubeCon as a speaker twice. So this year, I wanted to try something different. I was selected to be on the program committee for KubeCon Europe 2025 and Observability Day Europe 2025. However, I seem to have used up all my luck on that, as I have received 6 proposal rejections for KubeCon and Co-Located Events so far this year.
 
-![](../202503-2024-summary/pc_1.png)
+![](../202503-2024-summary/pc_1.webp)
 
 Before the official transparency report comes out, I have some numbers about the track/event I've reviewed.
 

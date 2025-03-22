@@ -16,32 +16,79 @@
 			
 			<guid>https://jiekun.dev/posts/2024-summary/</guid>
 			<description>This blog post is written before my trip to KubeCon London. Exactly one year ago, I met with the VictoriaMetrics team in Paris for the first time. So, this review is about what I have been doing during this past year and how these things have changed my life.
- Contributing Without Pull Requests: Learning Through Action At first, I didn&amp;rsquo;t know much about VictoriaMetrics. We were using Prometheus and Thanos, well-recognized metrics monitoring solutions.</description>
+ Contributing Without Pull Requests: Learning by Supporting At first, I didn&amp;rsquo;t know much about VictoriaMetrics. We were using Prometheus and Thanos, well-recognized metrics monitoring solutions.</description>
 			<content type="html"><![CDATA[<blockquote>
 <p>This blog post is written before my trip to <a href="https://kccnceu2025.sched.com/">KubeCon London</a>. Exactly one year ago, I met with the VictoriaMetrics team in Paris for the first time. So, this review is about what I have been doing during this past year and how these things have changed my life.</p>
 </blockquote>
-<h2 id="contributing-without-pull-requests-learning-through-action">Contributing Without Pull Requests: Learning Through Action</h2>
+<h2 id="contributing-without-pull-requests-learning-by-supporting">Contributing Without Pull Requests: Learning by Supporting</h2>
 <p>At first, I didn&rsquo;t know much about VictoriaMetrics. We were using Prometheus and Thanos, well-recognized metrics monitoring solutions. Like everyone else, we had performance and other issues, so we started looking for alternatives.</p>
 <p>At that time, there were already some companies using VictoriaMetrics at a large scale in China, with some case study blog posts. We saw them and started a PoC(proof of concept). It took months, and I, as the one in charge of the PoC, asked some questions in Slack and GitHub. Everything up to now has nothing special, every developer would do the same.</p>
 <p>I noticed that many questions were duplicated and already explained in the document. Therefore, in order to reduce the pressure on the VictoriaMetrics engineers (so they would have time to help with my questions), I started to answer questions based on my limited knowledge or the information available in the document.</p>
-<p><img src="../202503-2024-summary/comment_trend.png" alt=""></p>
+<p><img src="../202503-2024-summary/comment_trend.webp" alt=""></p>
 <p>By doing so, I looked through many documents and sometimes read the source code to find the answer. It&rsquo;s very helpful, both for the community and me:</p>
 <ol>
-<li>Open-source community always lack first-line supporter, not matter how good the document is. Most people are asking questions, while only a few are answering. The vast majority of these few are core developers because they understand everything, and a very small number are some interested users who try to help each other.</li>
-<li>Questions force me to read and learn. That&rsquo;s a good first step to get familiar with a open-source project. Sometimes it could be the only way, because you may not have a chance to work with it in your day job (e.g., a Go developer maintaining a payment service trying to learn about Kubernetes).</li>
+<li><strong>Open-source community always lack first-line supporter</strong>, not matter how good the document is. Most people are asking questions, while only a few are answering. The vast majority of these few are core developers because they understand everything, and a very small number are some interested users who try to help each other.</li>
+<li><strong>Questions force me to read and learn</strong>. That&rsquo;s a good first step to get familiar with a open-source project. Sometimes it could be the only way, because you may not have a chance to work with it in your day job (e.g., a Go developer maintaining a payment service trying to learn about Kubernetes).</li>
 </ol>
 <p>I am very grateful that these supporting things are receiving attention and sometimes I can see comments like &ldquo;thank you, this solved my issue&rdquo;. At least it proves that (sometimes) my comments are helpful.</p>
-<p>Everything happens for a reason. The documentation and source code of VictoriaMetrics are well-organized; at least they didn&rsquo;t give me too much trouble while reading them.</p>
+<p>Everything happens for a reason. The documentation and source code of VictoriaMetrics are well-organized. At least they didn&rsquo;t give me too much trouble while reading them.</p>
 <p>I&rsquo;m not sure if this &ldquo;learn by answering&rdquo; approach would work in other projects. For example, take a look at the issue list of Kubernetes: If the answer is available in the documentation, that would be ideal. If you need to delve into the code, I believe that would be much more challenging.</p>
 <p>In summary, if you want to learn and contribute to open-source projects, choosing a good project and starting by addressing real user issues is a good approach, especially for developers who may not have chance to use it in their day job.</p>
 <h2 id="my-new-role-at-victoriametrics">My New Role At VictoriaMetrics</h2>
-<p>I really like this scene in the movie &ldquo;Catch Me If You Can&rdquo;, but I want to make a slight modification to it.</p>
+<p>I really like this scene in the movie &ldquo;<a href="https://www.imdb.com/title/tt0264464/">Catch Me If You Can</a>&rdquo;, but I want to make a slight modification to it.</p>
 <p><img src="../202503-2024-summary/interview.webp" alt=""></p>
 <p>I actually failed the technical interview. But, fortunately, I am not bothered by that and continue my &ldquo;unofficial&rdquo; support within the VictoriaMetrics community. Because it helps me gain knowledge and sometimes a simple word of thanks.</p>
-<p>Even more fortunate, the team was willing to accept someone who didn&rsquo;t pass the interview, giving me the opportunity to turn supporting into an official role.</p>
+<p>Even more fortunate, the team was willing to accept someone who didn&rsquo;t pass the interview, giving me the opportunity to turn supporting into an day job.</p>
 <h2 id="how-my-life-was-changed">How My Life Was Changed</h2>
 <p>It&rsquo;s a remote job, so every day I find myself sitting at home in front of the laptop. Meetings, tasks, everything is conducted virtually online.</p>
 <p>Without a commute, I can take time to play sports in the mornings or after work. On the flip side, without a company canteen, I now have to cook for myself or order delivery.</p>
+<p>Working remotely is also a test of self-discipline. Sometimes I feel exhausted and want to rest. I have the following options:</p>
+<ol>
+<li>Go to sleep and continue working when I feel better (e.g., in the evening).</li>
+<li>Take a leave and rest.</li>
+<li>Work inefficiently.</li>
+</ol>
+<p>The first option is best for me because most of my colleagues work in the European time zone. If I rest during the day and work at night, I will have a chance to communicate with them and seek help rather than working alone.</p>
+<p>While the other options more or less affect your work output. In fact, our team doesn’t have something like &ldquo;KPI&rdquo;. However, from the users' (whether from the community or enterprises) perspective, they might be waiting for your response. In the worst case, users who have a poor experience with technical support might abandon the product, which would make me feel even more mentally exhausted than physically.</p>
+<p>In short, I took some time to adapt to the flexible work hours, thinking about how to help the project without clear objectives (I&rsquo;m not doing it well, tho). This is very different from the work patterns I&rsquo;ve experienced. I believe this requires engineers who are truly passionate about the project, rather than those solely seeking wealth through computer science.</p>
+<h2 id="the-language">The Language</h2>
+<p>I&rsquo;m not very passionate about exploring AI. What I most enjoy doing with AI is:</p>
+<ol>
+<li>Translation.</li>
+<li>Practicing spoken English by having conversations with it.</li>
+</ol>
+<p>We have a daily sync where everyone talks about what they&rsquo;ve done yesterday and discuss some issues. This is how I started.</p>
+<p><img src="../202503-2024-summary/daily_sync.webp" alt=""></p>
+<p>It&rsquo;s interesting because you only flow smoothly when reading this pre-prepared content. If there are any questions or discussions, it becomes choppy. It&rsquo;s somewhat better now, but to make it easier for my colleagues to understand, I will still prepare this cheat sheet for every daily sync.</p>
+<h2 id="new-role-at-the-conference">New Role At The Conference</h2>
+<p>I have participated in KubeCon as a speaker twice. So this year, I wanted to try something different. I was selected to be on the program committee for KubeCon Europe 2025 and Observability Day Europe 2025. However, I seem to have used up all my luck on that, as I have received 6 proposal rejections for KubeCon and Co-Located Events so far this year.</p>
+<p><img src="../202503-2024-summary/pc_1.webp" alt=""></p>
+<p>Before the official transparency report comes out, I have some numbers about the track/event I&rsquo;ve reviewed.</p>
+<p>For the observability track of KubeCon Europe 2025, there are <strong>185 submissions</strong> in total. 17 of them have been accepted, resulting in a <strong>9.1% acceptance rate</strong>.</p>
+<p>For Observability Day Europe 2025, we have received <strong>284 submissions</strong>. 22 of them (7.7%) have been accepted, along with 5 sponsor keynotes, project updates, and opening and closing remarks sessions.</p>
+<p>Reviewing proposals is fun only if you don&rsquo;t have to rate and comment. It took me a total of <strong>11 hours</strong> (and earned me a free all-access pass to the conference).</p>
+<p>It is quite evident from the review process that:</p>
+<ol>
+<li>Many speakers have not read the submission guidelines carefully. For example, they did not include a video recording of their previous speech.</li>
+<li>End-user submissions focusing on real-world large-scale practices are more competitive than a simple introduction to tools or projects.</li>
+<li>Attendees want to learn about the mistakes you&rsquo;ve made on a large scale and how they were rectified. Providing detailed numbers would be even better.</li>
+</ol>
+<h2 id="never-make-the-same-mistake-twice">Never Make the Same Mistake Twice</h2>
+<p>Now let&rsquo;s discuss some aspects that leave me dissatisfied with myself. As mentioned earlier, I am relatively new to VictoriaMetrics. My colleagues are kind and have been very helpful. There are times when I feel confident that I have grasped a concept fully, but the next day when I come across it again, I struggle to recall it (the root cause).</p>
+<p>It happened during one of our root cause analysis meetings with a customer. I was nervously checking all available monitoring dashboards and striving to provide a comprehensive analysis. But, bviously, I failed.</p>
+<p>During the post-mortem, my colleague elaborated on the reasons behind everything in detail. I felt very unconfortable because this was almost identical to what we had analyzed in another case not long ago.</p>
+
+    <aside class="admonition tip">
+        <div class="admonition-title">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></div><b>Note</b>
+        </div>
+        <div class="admonition-content">I think the root cause analysis will be presented on the blog in a different format, because we should not mention any of the customer information. However, the issue itself and how my colleague analyzed it are valuable for learning.</div>
+    </aside>
+<p>It&rsquo;s not irrelevant whether the customer blames us or not. Regardless of their satisfaction with this root cause analysis, making the same mistake twice is highly unacceptable for me.</p>
+<h2 id="next-steps">Next Steps</h2>
+<p>These are the only things I remember regarding last year. Currently, I have many interesting things on my plate (beyond work), such as evaluating VictoriaLogs as a distributed tracing storage, shooting video interviews for my employer, and in the next few weeks, I&rsquo;ll have a new piano that I should make good use of&hellip;</p>
+<p>One notable difference from previous annual reviews is that I decided not to set any goals at this moment. Although it may seem that I have more free time, the list of things I wish to accomplish has also grown.</p>
+<p>So, let&rsquo;s just go with the flow for now.</p>
 ]]></content>
 		</item>
 		
