@@ -9,7 +9,11 @@ comments: true
 toc: true
 ---
 
-> This blog post is written before my trip to [KubeCon London](https://kccnceu2025.sched.com/). Exactly one year ago, I met with the VictoriaMetrics team in Paris for the first time. So, this review is about what I have been doing during this past year and how these things have changed my life.
+{{<admonition type=note title="Context">}}
+
+This blog post is written before my trip to [KubeCon London](https://kccnceu2025.sched.com/). Exactly one year ago, I met with the [VictoriaMetrics](https://victoriametrics.com/) team in Paris for the first time. So, this review is about what I have been doing during this past year and how these things have changed my life.
+
+{{< /admonition >}}
 
 ## Contributing Without Pull Requests: Learning by Supporting
 At first, I didn't know much about VictoriaMetrics. We were using Prometheus and Thanos, well-recognized metrics monitoring solutions. Like everyone else, we had performance and other issues, so we started looking for alternatives.

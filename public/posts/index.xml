@@ -15,11 +15,14 @@
 			<pubDate>Fri, 21 Mar 2025 21:48:21 +0800</pubDate>
 			
 			<guid>https://jiekun.dev/posts/2024-summary/</guid>
-			<description>This blog post is written before my trip to KubeCon London. Exactly one year ago, I met with the VictoriaMetrics team in Paris for the first time. So, this review is about what I have been doing during this past year and how these things have changed my life.
- Contributing Without Pull Requests: Learning by Supporting At first, I didn&amp;rsquo;t know much about VictoriaMetrics. We were using Prometheus and Thanos, well-recognized metrics monitoring solutions.</description>
-			<content type="html"><![CDATA[<blockquote>
-<p>This blog post is written before my trip to <a href="https://kccnceu2025.sched.com/">KubeCon London</a>. Exactly one year ago, I met with the VictoriaMetrics team in Paris for the first time. So, this review is about what I have been doing during this past year and how these things have changed my life.</p>
-</blockquote>
+			<description>Context  This blog post is written before my trip to KubeCon London. Exactly one year ago, I met with the VictoriaMetrics team in Paris for the first time. So, this review is about what I have been doing during this past year and how these things have changed my life.  Contributing Without Pull Requests: Learning by Supporting At first, I didn&amp;rsquo;t know much about VictoriaMetrics. We were using Prometheus and Thanos, well-recognized metrics monitoring solutions.</description>
+			<content type="html"><![CDATA[
+    <aside class="admonition note">
+        <div class="admonition-title">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></div><b>Context</b>
+        </div>
+        <div class="admonition-content">This blog post is written before my trip to <a href="https://kccnceu2025.sched.com/">KubeCon London</a>. Exactly one year ago, I met with the <a href="https://victoriametrics.com/">VictoriaMetrics</a> team in Paris for the first time. So, this review is about what I have been doing during this past year and how these things have changed my life.</div>
+    </aside>
 <h2 id="contributing-without-pull-requests-learning-by-supporting">Contributing Without Pull Requests: Learning by Supporting</h2>
 <p>At first, I didn&rsquo;t know much about VictoriaMetrics. We were using Prometheus and Thanos, well-recognized metrics monitoring solutions. Like everyone else, we had performance and other issues, so we started looking for alternatives.</p>
 <p>At that time, there were already some companies using VictoriaMetrics at a large scale in China, with some case study blog posts. We saw them and started a PoC(proof of concept). It took months, and I, as the one in charge of the PoC, asked some questions in Slack and GitHub. Everything up to now has nothing special, every developer would do the same.</p>

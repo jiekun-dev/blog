@@ -14,8 +14,7 @@
       <pubDate>Fri, 21 Mar 2025 21:48:21 +0800</pubDate>
       
       <guid>https://jiekun.dev/posts/2024-summary/</guid>
-      <description>This blog post is written before my trip to KubeCon London. Exactly one year ago, I met with the VictoriaMetrics team in Paris for the first time. So, this review is about what I have been doing during this past year and how these things have changed my life.
- Contributing Without Pull Requests: Learning by Supporting At first, I didn&amp;rsquo;t know much about VictoriaMetrics. We were using Prometheus and Thanos, well-recognized metrics monitoring solutions.</description>
+      <description>Context  This blog post is written before my trip to KubeCon London. Exactly one year ago, I met with the VictoriaMetrics team in Paris for the first time. So, this review is about what I have been doing during this past year and how these things have changed my life.  Contributing Without Pull Requests: Learning by Supporting At first, I didn&amp;rsquo;t know much about VictoriaMetrics. We were using Prometheus and Thanos, well-recognized metrics monitoring solutions.</description>
     </item>
     
     <item>
