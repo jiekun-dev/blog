@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="Redis 6.0新Feature实现原理——Threaded I/O">
+<meta itemprop="description" content="Introduction Redis从6.0版本开始引入了Threaded I/O，目的是为了提升执行命令前后的网络I/O性能。本文会先从Redis的主流程开始分析，"><meta itemprop="datePublished" content="2020-09-20T05:16:52+00:00" />
+<meta itemprop="dateModified" content="2020-09-20T05:16:52+00:00" />
+<meta itemprop="wordCount" content="8739">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="Redis 6.0新Feature实现原理——Threaded I/O" />
+<meta property="og:description" content="Introduction Redis从6.0版本开始引入了Threaded I/O，目的是为了提升执行命令前后的网络I/O性能。本文会先从Redis的主流程开始分析，" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/redis-tio-implementation/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-09-20T05:16:52+00:00" />
+<meta property="article:modified_time" content="2020-09-20T05:16:52+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Redis 6.0新Feature实现原理——Threaded I/O"/>
+<meta name="twitter:description" content="Introduction Redis从6.0版本开始引入了Threaded I/O，目的是为了提升执行命令前后的网络I/O性能。本文会先从Redis的主流程开始分析，"/>
+<title>Redis 6.0新Feature实现原理——Threaded I/O</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fredis-tio-implementation%2f&amp;text=Redis%206.0%e6%96%b0Feature%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86%e2%80%94%e2%80%94Threaded%20I%2fO" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2fredis-tio-implementation%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=Redis%206.0%e6%96%b0Feature%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86%e2%80%94%e2%80%94Threaded%20I%2fO&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2fredis-tio-implementation%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fredis-tio-implementation%2f&amp;source=https://jiekun.dev&amp;title=Redis%206.0%e6%96%b0Feature%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86%e2%80%94%e2%80%94Threaded%20I%2fO&amp;summary=Redis%206.0%e6%96%b0Feature%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86%e2%80%94%e2%80%94Threaded%20I%2fO%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;Redis 6.0新Feature实现原理——Threaded I/O&#34;,&#34;https://jiekun.dev/posts/redis-tio-implementation/&#34;,&#34;Redis 6.0新Feature实现原理——Threaded I/O, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Sep 20, 2020</span></div>
+				<h1>Redis 6.0新Feature实现原理——Threaded I/O</h1>
+			</header>
+			<div class="content">
+				<h1 id="introduction">Introduction<a href="#introduction" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>Redis从6.0版本开始引入了Threaded I/O，目的是为了提升执行命令前后的网络I/O性能。本文会先从Redis的主流程开始分析，讲解网络I/O发生在哪里，以及现有的网络I/O模型，然后介绍Threaded I/O的新模型、实现以及生效场景，最后会进行场景测试，对比Threaded I/O关闭与开启，以及启用Threaded I/O与在单实例上搭建集群的性能差异。如果你已经了解过Redis的循环流程，可以直接跳至<strong>Threaded I/O相关</strong>的部分；如果你只关心新功能的实际提升，可以跳至<strong>性能测试</strong>部分查看。</p>
+<h1 id="redis是如何运行的">Redis是如何运行的<a href="#redis是如何运行的" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<h2 id="事件循环">事件循环<a href="#事件循环" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h3 id="main">main<a href="#main" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>Redis的入口位于server.c下，<code>main()</code>方法流程如图所示。</p>
+<p><img src="../2020/09/redis_main-878x1024.png" alt="">
+在<code>main()</code>方法中Redis首先需要做的是<strong>初始化各种库以及服务配置</strong>。具体举例：</p>
+<ul>
+<li><code>crc64_init()</code>会初始化一个crc校验用的Lookup Table</li>
+<li><code>getRandomBytes()</code>为<code>hashseed</code>填充随机元素作为初始化值，用作哈希表的seed</li>
+<li>…</li>
+<li><code>initServerConfig()</code>中执行了大量对<code>server</code>对象属性的初始化操作：
+<ul>
+<li>初始化<code>server.runid</code>，如<code>16e05f486b8d41e79593a35c8b96edaff101c194</code></li>
+<li>获取当前的时区信息，存放至<code>server.timezone</code>中</li>
+<li>初始化<code>server.next_client_id</code>值，使得连接进来的客户端id从1开始自增</li>
+<li>…</li>
+</ul>
+</li>
+<li><code>ACLInit()</code>是对Redis 6.0新增的ACL系统的初始化操作，包括初始化用户列表、ACL日志、默认用户等信息</li>
+<li>通过<code>moduleInitModulesSystem()</code>和<code>tlsInit()</code>初始化模块系统和SSL等</li>
+<li>…</li>
+</ul>
+<p>初始化结束后，开始<strong>读取用户的启动参数</strong>，和大多数配置加载过程类似，Redis也通过字符串匹配等分析用户输入的<code>argc</code>和<code>argv[]</code>，这个过程中可能会发生：</p>
+<ul>
+<li>获取到配置文件路径，修改<code>server.configfile</code>的值，后续用于加载配置文件</li>
+<li>获取到启动选项参数，如<code>loadmodule</code>和对应的Module文件路径，保存至<code>options</code>变量中</li>
+</ul>
+<p>解析完参数之后，执行<code>loadServerConfig()</code>，<strong>读取配置文件并与命令行参数options的内容进行合并</strong>，组成一个<code>config</code>变量，并且逐个将name和value设置进configs列表中。对于每个config，有对应的switch-case的代码，例如对于<code>loadmodule</code>，会执行<code>queueLoadModule()</code>方法，以完成真正的配置加载：</p>
+<pre tabindex="0"><code>...
+        } else if (!strcasecmp(argv[0],&quot;logfile&quot;) &amp;&amp; argc == 2) {   
+            ... 
+        } else if (!strcasecmp(argv[0],&quot;loadmodule&quot;) &amp;&amp; argc &gt;= 2) {
+            queueLoadModule(argv[1],&amp;argv[2],argc-2);
+        } else if (!strcasecmp(argv[0],&quot;sentinel&quot;)) {
+...
+
+</code></pre><p>回到<code>main</code>方法的流程，Redis会开始打印启动的日志，执行<code>initServer()</code>方法，服务根据配置项，继续<strong>为<code>server</code>对象初始化内容</strong>，例如：</p>
+<ul>
+<li>创建事件循环结构体<code>aeEventLoop</code>（定义在ae.h），赋值给<code>server.el</code></li>
+<li>根据配置的db数目，分配大小为<code>sizeof(redisDb) * dbnum</code>的内存空间，<code>server.db</code>保存这块空间的地址指针</li>
+<li>每个db都是一个redisDb结构，将这个结构中的保存key、保存过期时间等的字典初始化为空dict</li>
+<li>…</li>
+</ul>
+<p>此后就是一些根据不同运行模式的初始化，例如常规模式运行时会记录常规日志、加载磁盘持久化的数据；而在sentinel模式运行时记录哨兵日志，不加载数据等。</p>
+<p>在所有准备操作都完成后，<strong>Redis开始陷入<code>aeMain()</code>的事件循环，在这个循环中会不断执行<code>aeProcessEvents()</code>处理发生的各种事件，直到Redis结束退出</strong>。</p>
+<h3 id="两种事件">两种事件<a href="#两种事件" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>Redis中存在有两种类型的事件：<strong>时间事件</strong>、<strong>文件事件</strong>。</p>
+<p><strong>时间事件也就是到了一定事件会发生的事件</strong>，在Redis中它们被记录成一个链表，每次创建新的事件事件的时候，都会在链表头部插入一个<code>aeTimeEvent</code>节点，其中保存了该事件会在何时发生，需要调用什么样的方法处理。遍历整个链表我们可以知道离最近要发生的时间事件还有多久，因为链表里面的节点按照自增id顺序排列，而在发生时间的维度上时乱序的。</p>
+<p><img src="../2020/09/redis_time_event-1024x836.png" alt="">
+<strong>文件事件可以看作I/O引起的事件</strong>，客户端发送命令会让服务端产生一个读I/O，对应一个读事件；同样当客户端等待服务端消息的时候需要变得可写，让服务端写入内容，因此会对应一个写事件。<code>AE_READABLE</code>事件会在客户端建立连接、发送命令或其他连接变得可读的时候发生，而<code>AE_WRITABLE</code>事件则会在客户端连接变得可写的时候发生。</p>
+<p><img src="../2020/09/redis_file_event_happen-1024x512.png" alt="">
+文件事件的结构简单很多，<code>aeFileEvent</code>记录了这是一个可读事件还是可写事件，对应的处理方法，以及用户数据。</p>
+<p><img src="../2020/09/redis_file_event-1024x529.png" alt="">
+如果同时发生了两种事件，Redis会优先处理<code>AE_READABLE</code>事件。</p>
+<h3 id="aeprocessevents">aeProcessEvents<a href="#aeprocessevents" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p><strong><code>aeProcessEvents()</code>方法处理已经发生和即将发生的各种事件</strong>。</p>
+<p><img src="../2020/09/redis_aeProcessEvents-945x1024.png" alt="">
+在<code>aeMain()</code>循环进入<code>aeProcessEvents()</code>后，Redis首先检查下一次的时间事件会在什么时候发生，在还没有时间事件发生的这段时间内，可以调用多路复用的API <code>aeApiPoll()</code>阻塞并等待文件事件的发生。如果没有文件事件发生，那么超时后返回0，否则返回已发生的文件事件数量<code>numevents</code>。</p>
+<p>在有文件事件可处理的情况下，Redis会调用<code>AE_READABLE</code>事件的<code>rfileProc</code>方法以及<code>AE_WRITABLE</code>事件的<code>wfileProc</code>方法进行处理：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">invert</span> <span class="o">&amp;&amp;</span> <span class="n">fe</span><span class="o">-&gt;</span><span class="n">mask</span> <span class="o">&amp;</span> <span class="n">mask</span> <span class="o">&amp;</span> <span class="n">AE_READABLE</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">fe</span><span class="o">-&gt;</span><span class="n">rfileProc</span><span class="p">(</span><span class="n">eventLoop</span><span class="p">,</span><span class="n">fd</span><span class="p">,</span><span class="n">fe</span><span class="o">-&gt;</span><span class="n">clientData</span><span class="p">,</span><span class="n">mask</span><span class="p">);</span>
+                <span class="n">fired</span><span class="o">++</span><span class="p">;</span>
+                <span class="n">fe</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">eventLoop</span><span class="o">-&gt;</span><span class="n">events</span><span class="p">[</span><span class="n">fd</span><span class="p">];</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">fe</span><span class="o">-&gt;</span><span class="n">mask</span> <span class="o">&amp;</span> <span class="n">mask</span> <span class="o">&amp;</span> <span class="n">AE_WRITABLE</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">fired</span> <span class="o">||</span> <span class="n">fe</span><span class="o">-&gt;</span><span class="n">wfileProc</span> <span class="o">!=</span> <span class="n">fe</span><span class="o">-&gt;</span><span class="n">rfileProc</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">fe</span><span class="o">-&gt;</span><span class="n">wfileProc</span><span class="p">(</span><span class="n">eventLoop</span><span class="p">,</span><span class="n">fd</span><span class="p">,</span><span class="n">fe</span><span class="o">-&gt;</span><span class="n">clientData</span><span class="p">,</span><span class="n">mask</span><span class="p">);</span>
+                    <span class="n">fired</span><span class="o">++</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+<span class="p">...</span>
+
+</code></pre></div><p>在完成前面的处理后，Redis会继续调用<code>processTimeEvents()</code>处理时间事件。遍历整个时间事件链表，如果此时已经过了一段时间（阻塞等待或处理文件事件耗时），有时间事件发生，那么就调用对应时间事件的<code>timeProc</code>方法，将所有已经过时的时间事件处理掉：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">te</span><span class="o">-&gt;</span><span class="n">when</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">=</span> <span class="n">now</span><span class="p">)</span> <span class="p">{</span>
+            <span class="p">...</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="n">te</span><span class="o">-&gt;</span><span class="n">timeProc</span><span class="p">(</span><span class="n">eventLoop</span><span class="p">,</span> <span class="n">id</span><span class="p">,</span> <span class="n">te</span><span class="o">-&gt;</span><span class="n">clientData</span><span class="p">);</span>
+            <span class="p">...</span>
+            <span class="n">processed</span><span class="o">++</span><span class="p">;</span>
+            <span class="p">...</span>
+        <span class="p">}</span>
+<span class="p">...</span>
+
+</code></pre></div><p>如果执行了文件事件之后还没有到最近的时间事件发生点，那么本次<code>aeMain()</code>循环中将没有时间事件被执行，进入下一次循环。</p>
+<h2 id="命令执行前后发生了什么">命令执行前后发生了什么<a href="#命令执行前后发生了什么" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>在客户端连接上Redis的时候，通过执行<code>connSetReadHandler(conn, readQueryFromClient)</code>，设置了当读事件发生时，使用<code>readQueryFromClient()</code>作为读事件的Handler。</p>
+<p>在收到客户端的命令请求时，Redis进行一些检查和统计后，调用<code>read()</code>方法将连接中的数据读取进<code>client.querybuf</code>消息缓冲区中：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">readQueryFromClient</span><span class="p">(</span><span class="n">connection</span> <span class="o">*</span><span class="n">conn</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">...</span>
+    <span class="n">nread</span> <span class="o">=</span> <span class="n">connRead</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">conn</span><span class="p">,</span> <span class="n">c</span><span class="o">-&gt;</span><span class="n">querybuf</span><span class="o">+</span><span class="n">qblen</span><span class="p">,</span> <span class="n">readlen</span><span class="p">);</span>
+    <span class="p">...</span>
+
+
+<span class="k">static</span> <span class="kr">inline</span> <span class="kt">int</span> <span class="n">connRead</span><span class="p">(</span><span class="n">connection</span> <span class="o">*</span><span class="n">conn</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">buf_len</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">conn</span><span class="o">-&gt;</span><span class="n">type</span><span class="o">-&gt;</span><span class="n">read</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">buf_len</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">connSocketRead</span><span class="p">(</span><span class="n">connection</span> <span class="o">*</span><span class="n">conn</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">buf_len</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">conn</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">buf_len</span><span class="p">);</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+
+</code></pre></div><p>然后进入<code>processInputBuffer(c)</code>开始读取输入缓冲区中的消息，最后进入<code>processCommand(c)</code>开始处理输入的命令。</p>
+<p>在命令执行得到结果后，首先会存放在<code>client.buf</code>中，并且调用调用<code>addReply(client *c, robj *obj)</code>方法，将这个<code>client</code>对象追加到<code>server.clients_pending_write</code>列表中。此时当次的命令，或者说<code>AE_READABLE</code>事件就已经基本处理完毕了，除了一些额外的统计数据、后处理以外，不会再进行发送响应消息的动作。</p>
+<p><img src="../2020/09/redis_result_to_reply-904x1024.png" alt="">
+在当前<code>aeProcessEvents()</code>方法结束后，进入<strong>下一次的循环</strong>，第二次循环调用I/O多路复用接口等待文件事件发生前，Redis会检查<code>server.clients_pending_write</code>是否有客户端需要进行回复，若有，遍历指向各个待回复客户端的<code>server.clients_pending_write</code>列表，逐个将客户端从中删除，并将待回复的内容通过<code>writeToClient(c,0)</code>回复出去</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="nf">writeToClient</span><span class="p">(</span><span class="n">client</span> <span class="o">*</span><span class="n">c</span><span class="p">,</span> <span class="kt">int</span> <span class="n">handler_installed</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">...</span>
+    <span class="n">nwritten</span> <span class="o">=</span> <span class="n">connWrite</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">conn</span><span class="p">,</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">buf</span><span class="o">+</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">sentlen</span><span class="p">,</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">bufpos</span><span class="o">-</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">sentlen</span><span class="p">);</span>
+    <span class="p">...</span>
+
+<span class="k">static</span> <span class="kr">inline</span> <span class="kt">int</span> <span class="n">connWrite</span><span class="p">(</span><span class="n">connection</span> <span class="o">*</span><span class="n">conn</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">data_len</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">conn</span><span class="o">-&gt;</span><span class="n">type</span><span class="o">-&gt;</span><span class="n">write</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">data_len</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">connSocketWrite</span><span class="p">(</span><span class="n">connection</span> <span class="o">*</span><span class="n">conn</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">data_len</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">write</span><span class="p">(</span><span class="n">conn</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">data_len</span><span class="p">);</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+
+</code></pre></div><h1 id="threaded-io模型">Threaded I/O模型<a href="#threaded-io模型" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<h2 id="io问题与threaded-io的引入">I/O问题与Threaded I/O的引入<a href="#io问题与threaded-io的引入" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>如果要说Redis会有什么性能问题，那么从I/O角度，由于它没有像其他Database一样使用磁盘，所以不存在磁盘I/O的问题。在数据进入缓冲区前及从缓冲区写至Socket时，存在一定的网络I/O，特别是写I/O对性能影响比较大。以往我们会考虑做管道化来减小网络I/O的开销，或者将Redis部署成Redis集群来提升性能。</p>
+<p>在Redis 6.0之后，由于Threaded I/O的引入，Redis开始支持对网络读写的线程化，让更多的线程参与进这部分动作中，同时保持命令的单线程执行。这样的改动从某种程度上说可以既提升性能，但又避免将命令执行线程化而需要引入锁或者其他方式解决并行执行的竞态问题。</p>
+<h2 id="threaded-io在做什么">Threaded I/O在做什么<a href="#threaded-io在做什么" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>在老版本的实现中，Redis将不同client的命令执行结果保存在各自的<code>client.buf</code>中，然后把待回复的<code>client</code>存放在一个列表里，最后在事件循环中逐个将<code>buf</code>的内容写至对应Socket。对应在新版本中，Redis使用多个线程完成这部分操作。</p>
+<p><img src="../2020/09/redis_prepare_thread_io-1024x1024.png" alt="">
+对读操作，Redis同样地为<code>server</code>对象新增了一个<code>clients_pending_read</code>属性，当读事件来临时，判断是否满足线程化读的条件，如果满足，那么执行延迟读操作，将这个<code>client</code>对象添加到<code>server.clients_pending_read</code>列表中。和写操作一样，留到下一次事件循环时使用多个线程完成读操作。</p>
+<p><img src="../2020/09/redis_before_sleep-1024x811.png" alt=""></p>
+<h1 id="threaded-io的实现与限制">Threaded I/O的实现与限制<a href="#threaded-io的实现与限制" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<h2 id="init阶段">Init阶段<a href="#init阶段" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>在Redis启动时，如果满足对应参数配置，会进行I/O线程初始化的操作。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">initThreadedIO</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">server</span><span class="p">.</span><span class="n">io_threads_active</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">server</span><span class="p">.</span><span class="n">io_threads_num</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">server</span><span class="p">.</span><span class="n">io_threads_num</span> <span class="o">&gt;</span> <span class="n">IO_THREADS_MAX_NUM</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">serverLog</span><span class="p">(</span><span class="n">LL_WARNING</span><span class="p">,</span><span class="s">&#34;Fatal: too many I/O threads configured. &#34;</span>
+                             <span class="s">&#34;The maximum number is %d.&#34;</span><span class="p">,</span> <span class="n">IO_THREADS_MAX_NUM</span><span class="p">);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">...</span>
+
+</code></pre></div><p>Redis会进行一些常规检查，配置数是否符合开启多线程I/O的要求。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">server</span><span class="p">.</span><span class="n">io_threads_num</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">io_threads_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">listCreate</span><span class="p">();</span>
+<span class="p">...</span>
+
+</code></pre></div><p>创建一个长度为线程数的<code>io_threads_list</code>列表，列表的每个元素都是另一个列表L，L将会用来存放对应线程待处理的多个<code>client</code>对象。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+<span class="p">...</span>
+
+</code></pre></div><p>对于主线程，初始化操作到这里就结束了。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+        <span class="n">pthread_t</span> <span class="n">tid</span><span class="p">;</span>
+        <span class="n">pthread_mutex_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">io_threads_mutex</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="nb">NULL</span><span class="p">);</span>
+        <span class="n">io_threads_pending</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">io_threads_mutex</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span> <span class="cm">/* Thread will be stopped. */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="n">IOThreadMain</span><span class="p">,(</span><span class="kt">void</span><span class="o">*</span><span class="p">)(</span><span class="kt">long</span><span class="p">)</span><span class="n">i</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">serverLog</span><span class="p">(</span><span class="n">LL_WARNING</span><span class="p">,</span><span class="s">&#34;Fatal: Can&#39;t initialize IO thread.&#34;</span><span class="p">);</span>
+            <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="n">io_threads</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">tid</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="p">...</span>
+
+</code></pre></div><p><code>io_threads_mutex</code>是一个互斥锁列表，<code>io_threads_mutex[i]</code>即第<code>i</code>个线程的锁，用于后续阻塞I/O线程操作，初始化之后将其暂时锁定。然后再对每个线程执行创建操作，<code>tid</code>即其指针，保存至<code>io_threads</code>列表中。新的线程会一直执行<code>IOThreadMain</code>方法，我们将它放到最后讲解。</p>
+<h2 id="readswrites">Reads/Writes<a href="#readswrites" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>多线程的读写主要在<code>handleClientsWithPendingReadsUsingThreads()</code>和<code>handleClientsWithPendingWritesUsingThreads()</code>中完成，因为两者几乎是对称的，所以这里只对读操作进行讲解，有兴趣的同学可以检查一下写操作有什么不同的地方以及为什么。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="nf">handleClientsWithPendingReadsUsingThreads</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">server</span><span class="p">.</span><span class="n">io_threads_active</span> <span class="o">||</span> <span class="o">!</span><span class="n">server</span><span class="p">.</span><span class="n">io_threads_do_reads</span><span class="p">)</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">processed</span> <span class="o">=</span> <span class="n">listLength</span><span class="p">(</span><span class="n">server</span><span class="p">.</span><span class="n">clients_pending_read</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">processed</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">tio_debug</span><span class="p">)</span> <span class="n">printf</span><span class="p">(</span><span class="s">&#34;%d TOTAL READ pending clients</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">processed</span><span class="p">);</span>
+<span class="p">...</span>
+
+</code></pre></div><p>同样，Redis会进行常规检查，是否启用线程化读写并且启用线程化读（只开启前者则只有写操作是线程化），以及是否有等待读取的客户端。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+    <span class="n">listIter</span> <span class="n">li</span><span class="p">;</span>
+    <span class="n">listNode</span> <span class="o">*</span><span class="n">ln</span><span class="p">;</span>
+    <span class="n">listRewind</span><span class="p">(</span><span class="n">server</span><span class="p">.</span><span class="n">clients_pending_read</span><span class="p">,</span><span class="o">&amp;</span><span class="n">li</span><span class="p">);</span>
+    <span class="kt">int</span> <span class="n">item_id</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">while</span><span class="p">((</span><span class="n">ln</span> <span class="o">=</span> <span class="n">listNext</span><span class="p">(</span><span class="o">&amp;</span><span class="n">li</span><span class="p">)))</span> <span class="p">{</span>
+        <span class="n">client</span> <span class="o">*</span><span class="n">c</span> <span class="o">=</span> <span class="n">listNodeValue</span><span class="p">(</span><span class="n">ln</span><span class="p">);</span>
+        <span class="kt">int</span> <span class="n">target_id</span> <span class="o">=</span> <span class="n">item_id</span> <span class="o">%</span> <span class="n">server</span><span class="p">.</span><span class="n">io_threads_num</span><span class="p">;</span>
+        <span class="n">listAddNodeTail</span><span class="p">(</span><span class="n">io_threads_list</span><span class="p">[</span><span class="n">target_id</span><span class="p">],</span><span class="n">c</span><span class="p">);</span>
+        <span class="n">item_id</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">...</span>
+
+</code></pre></div><p>这里将<code>server.clients_pending_read</code>的列表转化为方便遍历的链表，然后将列表的每个节点（<code>*client</code>对象）以类似Round-Robin的方式分配个各个线程，线程执行各个client的读写顺序并不需要保证，命令抵达的先后顺序已经由<code>server.clients_pending_read/write</code>列表记录，后续也会按这个顺序执行。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+    <span class="n">io_threads_op</span> <span class="o">=</span> <span class="n">IO_THREADS_OP_READ</span><span class="p">;</span>
+<span class="p">...</span>
+
+</code></pre></div><p>设置状态标记，标识当前处于多线程读的状态。由于标记的存在，Redis的Threaded I/O瞬时只能处于读或写的状态，不能部分线程读，部分写。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">j</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">server</span><span class="p">.</span><span class="n">io_threads_num</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">listLength</span><span class="p">(</span><span class="n">io_threads_list</span><span class="p">[</span><span class="n">j</span><span class="p">]);</span>
+        <span class="n">io_threads_pending</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">...</span>
+
+</code></pre></div><p>为每个线程记录下各自需要处理的客户端数量。当不同线程读取到自己的pending长度不为0时，就会开始进行处理。注意<code>j</code>从1开始，意味着``的主线程的pending长度一直为0，因为主线程马上要在这个方法中同步完成自己的任务，不需要知道等待的任务数。</p>
+<p><img src="../2020/09/redis_tio_variables-945x1024.png" alt=""></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+    <span class="n">listRewind</span><span class="p">(</span><span class="n">io_threads_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="o">&amp;</span><span class="n">li</span><span class="p">);</span>
+    <span class="k">while</span><span class="p">((</span><span class="n">ln</span> <span class="o">=</span> <span class="n">listNext</span><span class="p">(</span><span class="o">&amp;</span><span class="n">li</span><span class="p">)))</span> <span class="p">{</span>
+        <span class="n">client</span> <span class="o">*</span><span class="n">c</span> <span class="o">=</span> <span class="n">listNodeValue</span><span class="p">(</span><span class="n">ln</span><span class="p">);</span>
+        <span class="n">readQueryFromClient</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">conn</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">listEmpty</span><span class="p">(</span><span class="n">io_threads_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+<span class="p">...</span>
+
+</code></pre></div><p>主线程此时将自己要处理的client处理完。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">pending</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">j</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">server</span><span class="p">.</span><span class="n">io_threads_num</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
+            <span class="n">pending</span> <span class="o">+=</span> <span class="n">io_threads_pending</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pending</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">tio_debug</span><span class="p">)</span> <span class="n">printf</span><span class="p">(</span><span class="s">&#34;I/O READ All threads finshed</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+<span class="p">...</span>
+
+</code></pre></div><p>陷入循环等待，<code>pending</code>等于各个线程剩余任务数之和，当所有线程都没有任务的时候，本轮I/O处理结束。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">listLength</span><span class="p">(</span><span class="n">server</span><span class="p">.</span><span class="n">clients_pending_read</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">ln</span> <span class="o">=</span> <span class="n">listFirst</span><span class="p">(</span><span class="n">server</span><span class="p">.</span><span class="n">clients_pending_read</span><span class="p">);</span>
+        <span class="n">client</span> <span class="o">*</span><span class="n">c</span> <span class="o">=</span> <span class="n">listNodeValue</span><span class="p">(</span><span class="n">ln</span><span class="p">);</span>
+        <span class="n">c</span><span class="o">-&gt;</span><span class="n">flags</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">CLIENT_PENDING_READ</span><span class="p">;</span>
+        <span class="n">listDelNode</span><span class="p">(</span><span class="n">server</span><span class="p">.</span><span class="n">clients_pending_read</span><span class="p">,</span><span class="n">ln</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">CLIENT_PENDING_COMMAND</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">c</span><span class="o">-&gt;</span><span class="n">flags</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">CLIENT_PENDING_COMMAND</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">processCommandAndResetClient</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="n">C_ERR</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="n">processInputBuffer</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">...</span>
+
+</code></pre></div><p>我们已经在各自线程中将<code>conn</code>中的内容读取至对应client的<code>client.querybuf</code>输入缓冲区中，所以可以遍历<code>server.clients_pending_read</code>列表，串行地进行命令执行操作，同时将<code>client</code>从列表中移除。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+    <span class="n">server</span><span class="p">.</span><span class="n">stat_io_reads_processed</span> <span class="o">+=</span> <span class="n">processed</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="n">processed</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div><p>处理完成，将处理的数量加到统计属性上，然后返回。</p>
+<h2 id="iothreadmain">IOThreadMain<a href="#iothreadmain" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>前面还有每个线程具体的工作内容没有解释，它们会一直陷在<code>IOThreadMain</code>的循环中，等待执行读写的时机。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="o">*</span><span class="nf">IOThreadMain</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">myid</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="n">id</span> <span class="o">=</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">myid</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">thdname</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span>
+
+    <span class="n">snprintf</span><span class="p">(</span><span class="n">thdname</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">thdname</span><span class="p">),</span> <span class="s">&#34;io_thd_%ld&#34;</span><span class="p">,</span> <span class="n">id</span><span class="p">);</span>
+    <span class="n">redis_set_thread_title</span><span class="p">(</span><span class="n">thdname</span><span class="p">);</span>
+    <span class="n">redisSetCpuAffinity</span><span class="p">(</span><span class="n">server</span><span class="p">.</span><span class="n">server_cpulist</span><span class="p">);</span>
+<span class="p">...</span>
+
+</code></pre></div><p>照常执行一些初始化内容。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="mi">1000000</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">io_threads_pending</span><span class="p">[</span><span class="n">id</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">io_threads_pending</span><span class="p">[</span><span class="n">id</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">io_threads_mutex</span><span class="p">[</span><span class="n">id</span><span class="p">]);</span>
+            <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">io_threads_mutex</span><span class="p">[</span><span class="n">id</span><span class="p">]);</span>
+            <span class="k">continue</span><span class="p">;</span>
+        <span class="p">}</span>
+
+
+        <span class="n">serverAssert</span><span class="p">(</span><span class="n">io_threads_pending</span><span class="p">[</span><span class="n">id</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">tio_debug</span><span class="p">)</span> <span class="n">printf</span><span class="p">(</span><span class="s">&#34;[%ld] %d to handle</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">id</span><span class="p">,</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">listLength</span><span class="p">(</span><span class="n">io_threads_list</span><span class="p">[</span><span class="n">id</span><span class="p">]));</span>
+<span class="p">...</span>
+
+</code></pre></div><p>线程会检测自己的待处理的client列表长度，当等待队列长度大于0时往下执行，否则会到死循环起点。</p>
+<p>这里利用互斥锁，让主线程有机会加锁，使得I/O线程卡在执行<code>pthread_mutex_lock()</code>，达到让I/O线程停止工作的效果。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+        <span class="n">listIter</span> <span class="n">li</span><span class="p">;</span>
+        <span class="n">listNode</span> <span class="o">*</span><span class="n">ln</span><span class="p">;</span>
+        <span class="n">listRewind</span><span class="p">(</span><span class="n">io_threads_list</span><span class="p">[</span><span class="n">id</span><span class="p">],</span><span class="o">&amp;</span><span class="n">li</span><span class="p">);</span>
+        <span class="k">while</span><span class="p">((</span><span class="n">ln</span> <span class="o">=</span> <span class="n">listNext</span><span class="p">(</span><span class="o">&amp;</span><span class="n">li</span><span class="p">)))</span> <span class="p">{</span>
+            <span class="n">client</span> <span class="o">*</span><span class="n">c</span> <span class="o">=</span> <span class="n">listNodeValue</span><span class="p">(</span><span class="n">ln</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">io_threads_op</span> <span class="o">==</span> <span class="n">IO_THREADS_OP_WRITE</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">writeToClient</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">io_threads_op</span> <span class="o">==</span> <span class="n">IO_THREADS_OP_READ</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">readQueryFromClient</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">conn</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">serverPanic</span><span class="p">(</span><span class="s">&#34;io_threads_op value is unknown&#34;</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+<span class="p">...</span>
+
+</code></pre></div><p>将<code>io_threads_list[i]</code>的客户端列表转化为方便遍历的链表，逐个遍历，借助<code>io_threads_op</code>标志判断当前是要执行多线程读还是多线程写，完成对自己要处理的客户端的操作。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="p">...</span>
+        <span class="n">listEmpty</span><span class="p">(</span><span class="n">io_threads_list</span><span class="p">[</span><span class="n">id</span><span class="p">]);</span>
+        <span class="n">io_threads_pending</span><span class="p">[</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">tio_debug</span><span class="p">)</span> <span class="n">printf</span><span class="p">(</span><span class="s">&#34;[%ld] Done</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">id</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div><p>清空自己要处理的客户端列表，并且将自己的待处理数量修改为0，结束本轮操作。</p>
+<h2 id="limitation">Limitation<a href="#limitation" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>通过查看代码，使用上Threaded I/O的启用受以下条件影响：</p>
+<ul>
+<li>配置项<code>io-threads</code>需要大于1，否则会继续使用单线程操作读写I/O</li>
+<li>配置项<code>io-threads-do-reads</code>控制读I/O是否使用线程化</li>
+<li>对于延迟读取，由<code>postponeClientRead()</code>方法控制。方法中除了配置要求外，还需要当前client不能是主从模型的角色，也不能处于已经等待下次事件循环线程化读取（<code>CLIENT_PENDING_READ</code>）的状态。在这个方法中<code>client</code>对象会被添加到等待队列中，并且将client的状态改为<code>CLIENT_PENDING_READ</code>。</li>
+<li>对于多线程写I/O，由<code>handleClientsWithPendingWritesUsingThreads()</code>中的<code>stopThreadedIOIfNeeded()</code>方法加以限制。除了对应配置项要满足要求外，<code>server.clients_pending_write</code>的长度需要大于等于配置线程数的两倍，例如配置使用6线程，当写队列长度小于12时会继续使用单线程I/O。</li>
+<li>I/O线程在<code>initThreadedIO()</code>被创建前，互斥锁处于加锁状态，因此线程不能进行实际的任务处理。<code>server</code>对象的<code>io_threads_active</code>属性默认会处于关闭状态，在进行首次多线程写之前才会被开启。这意味着服务启动后的读操作仍然会使用单线程读，产生执行结果到写的pending list中，在第二次循环中，服务判断是否有配置启用TIO，将<code>server.io_threads_active</code>属性打开，然后进行多线程写操作，从下一次循环开始TIO才能被作用于读操作上。上一点说过写I/O会有配置和队列长度判定，在判定不需要TIO写时，会重新把<code>server.io_threads_active</code>关闭，意味着尽管你已经在配置文件里面打开TIO读，但是Redis仍然会根据负载时不时跳过使用它。</li>
+</ul>
+<h1 id="性能测试">性能测试<a href="#性能测试" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>我们编译了unstable版本的Redis进行性能测试，测试工具为Redis自带的redis-benchmark，统计输出的RPS值作为参考。</p>
+<pre tabindex="0"><code>Server实例: AWS / m5.2xlarge / 8 vCPU / 32 GB
+Benchmark Client实例: AWS / m5.2xlarge / 8 vCPU / 32 GB
+Command: redis-benchmark -h 172.xx.xx.62 -p 6379 -c 100 -d 256 -t get,set -n 10000000 --threads 8
+
+</code></pre><h2 id="threaded-io-off-vs-threaded-io-on">Threaded I/O off vs. Threaded I/O on<a href="#threaded-io-off-vs-threaded-io-on" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>我们对比了原有的单线程I/O以及开启2线程/4线程的Threaded I/O时的表现，结果如图所示。</p>
+<p><img src="../2020/09/redis_tio_performance-945x1024.png" alt="">
+在开启<code>io-threads-do-reads</code>选项的情况下，Threaded I/O作用于读操作，也能让性能有进一步提升，但是没有将写I/O线程化提升明显。另外我们还尝试使用了大体积Payload（<code>-d 8192</code>）进行测试，得出结果的提升百分比并没有太大差异。</p>
+<h2 id="threaded-io-vs-redis-cluster">Threaded I/O vs. Redis Cluster<a href="#threaded-io-vs-redis-cluster" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>以往开发者会通过在单台实例上部署Redis Cluster来尝试让Redis使用上更多的CPU资源，我们也尝试对比了一下这种情景下的表现。</p>
+<p><img src="../2020/09/redis_tio_vs_cluster-1024x683.png" alt="">
+在新版本中，redis-benchmark也得到了更新，开始支持对Redis Cluster的测试，通过开启<code>--cluster</code>参数即可检测集群模式和配置。我们在这一组对比测试中看到单实例构建集群的强大性能，在实际测试中，3个进程的CPU使用率均在80%-90%，说明仍有提升的空间。当改用测试参数<code>-c 512</code>时，集群能够跑出超过40万RPS的成绩。尽管测试与实际使用会有所区别，并且我们在构建集群的时候选择了不附带Slave，但是仍然能看出来在几种模型中，构建Cluster能真正使用上多线程进行网络I/O、命令执行，对性能的提升也是最大的。</p>
+<h1 id="总结与思考">总结与思考<a href="#总结与思考" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>Redis 6.0引入的Threaded I/O，将Socket读写延迟和线程化，在网络I/O的方向上给Redis带来了一定的性能提升，并且使用门槛比较低，用户无需做太多的变更，即可在不影响业务的情况下白嫖空闲的线程资源。</p>
+<p>另一方面，从测试结果上看，这部分的提升可能还难以让处于Redis 5甚至Redis 3版本的用户有足够的动力进行升级，特别是考虑到很多业务场景中Redis的性能并没有差到成为瓶颈，而且新版本的福利也未经过大规模验证，势必会影响到企业级应用中更多用户关注的服务稳定性。同时，TIO的提升对比集群性能似乎还有一定的差距，这可能更加会让原本就处于集群架构的企业用户忽略这个功能。</p>
+<p>但无论如何，用户肯定乐于见到更多的新功能、更多优化提升出现在Redis上。在保持一贯稳定性的前提下，本次的版本可以说是Redis从诞生至今最大的更新，不只有Threaded I/O，包括RESP3、ACLs和SSL，我们期待这些新Feature能够在更多的应用场景下得到推广、验证和使用，也希望未来的版本能够给用户带来更多的惊喜和更好的体验。</p>
+<h1 id="further-reading-understanding-redis">Further Reading: Understanding Redis<a href="#further-reading-understanding-redis" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>作为一位从来没有使用过C/类C语言的开发者，Redis简洁的代码和详尽的注释为我阅读和理解其实现提供了极大的帮助。在文末我想要分享一下自己学习Reids的一些途径、工具和方法。</p>
+<p><code>README.md</code>应该是我们了解Redis的入口，而不是全局搜索<code>main()</code>方法。请关注<code>Redis internals</code>小节下的内容，这里介绍了Redis的代码结构，Redis每个文件都是一个“general idea”，其中<code>server.c</code>和<code>network.c</code>的部分逻辑和代码在本文已经介绍过了，持久化相关的<code>aof.c</code>和<code>rdb.c</code>、数据库相关的<code>db.c</code>、Redis对象相关的<code>object.c</code>、复制相关的<code>replication.c</code>等都值得留意。其他包括Redis的命令是以什么样的形式编码的，也能在<code>README.md</code>中找到答案，这样可以方便我们进一步阅读代码时快速定位。</p>
+<p><a href="https://redis.io/documentation">Documentation主页</a>和<a href="https://github.com/redis/redis-doc">redis-doc repo</a>是Redis文档的集合处，请注意后者的<code>topics</code>目录下有非常多有趣的主题，我对“有趣”的定义是像这样的文章：</p>
+<ul>
+<li><a href="https://github.com/redis/redis-doc/blob/master/topics/cluster-spec.md">Redis Cluster Specification</a></li>
+<li><a href="https://github.com/redis/redis-doc/blob/master/topics/cluster-spec.md">Redis server-assisted client side caching</a></li>
+</ul>
+<p>作为开发者，在深入学习的阶段，这些内容能让大家从“使用”变为“了解”，然后发现Redis原来能做更多的事情。所以如果缺乏时间阅读和调试源码，将<code>topics</code>下的60多篇文档看一遍，大概是了解Redis最快的方法。</p>
+<p>最后，如果你能看到这里，大概也会对Redis的源码有那么一点兴趣。因为本身并不了解C语言，所以我大概率会选择借助一个IDE，在<code>main()</code>打上断点，然后流程的起点开始看，实际上我也确实是这么做的。另外几个代码的关键点，其实也在本文中出现过：</p>
+<ul>
+<li><code>main()</code>，起点</li>
+<li><code>initServer()</code>，初始化</li>
+<li><code>aeMain()</code>，事件循环</li>
+<li><code>readQueryFromClient()</code>，读事件的Handler</li>
+<li><code>processInputBuffer()</code>，命令处理的入口</li>
+</ul>
+<p>如果像本文一样想了解Network的内容，可以在<code>aeMain()</code>处打断点，然后关注中<code>network.c</code>中的方法；如果想关注具体命令相关的内容，可以在<code>processInputBuffer()</code>处打断点，然后关注<code>$command.c</code>或者类似文件中的方法，<code>README.md</code>文件里也已经介绍过命令方法的命名格式，定位非常容易。其余经常出现的其他动作，例如持久化、复制等，大概会出现在命令执行的前后，或者时间事件内，也可能在<code>beforeSleep()</code>中。<code>server.h</code>中定义的<code>redisServer</code>和<code>client</code>是Redis中两个非常重要的结构，在业务上很多内容都是转化为对它们的属性的相关操作，要特别留意。</p>
+<p>除此以外，Antirez曾经在<a href="https://www.youtube.com/user/antirez">Youtube</a>上发布过一些开发的录播视频，<a href="https://www.youtube.com/c/Redislabs/videos">RedisLab</a>则有一些相对冷门使用场景的实践介绍，这些会比上面的其他学习来得更轻松些，最大的难处可能就是听懂演讲者们的口音，特别是Antirez本人，万幸Youtube的字幕功能非常强大，能解决不少麻烦。</p>
+
+			</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 8739 字, 约 18 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-09-20 13:16 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#事件循环">事件循环</a>
+      <ul>
+        <li><a href="#main">main</a></li>
+        <li><a href="#两种事件">两种事件</a></li>
+        <li><a href="#aeprocessevents">aeProcessEvents</a></li>
+      </ul>
+    </li>
+    <li><a href="#命令执行前后发生了什么">命令执行前后发生了什么</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#io问题与threaded-io的引入">I/O问题与Threaded I/O的引入</a></li>
+    <li><a href="#threaded-io在做什么">Threaded I/O在做什么</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#init阶段">Init阶段</a></li>
+    <li><a href="#readswrites">Reads/Writes</a></li>
+    <li><a href="#iothreadmain">IOThreadMain</a></li>
+    <li><a href="#limitation">Limitation</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#threaded-io-off-vs-threaded-io-on">Threaded I/O off vs. Threaded I/O on</a></li>
+    <li><a href="#threaded-io-vs-redis-cluster">Threaded I/O vs. Redis Cluster</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

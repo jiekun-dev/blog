@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="KubeCon 2023 北美：可观测日小记">
+<meta itemprop="description" content="前言 CNCF 主办的 Observability Day 在 11 月 6 日与北美 KubeCon &#43; CloudNativeCon 同期举行。作为可观测性领域的新人，虽然因为时间关系没能到现场参加，但是主办方在活动当天就上传了录像，堪"><meta itemprop="datePublished" content="2023-11-25T12:30:00+08:00" />
+<meta itemprop="dateModified" content="2023-11-25T12:30:00+08:00" />
+<meta itemprop="wordCount" content="2639">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="KubeCon 2023 北美：可观测日小记" />
+<meta property="og:description" content="前言 CNCF 主办的 Observability Day 在 11 月 6 日与北美 KubeCon &#43; CloudNativeCon 同期举行。作为可观测性领域的新人，虽然因为时间关系没能到现场参加，但是主办方在活动当天就上传了录像，堪" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/kubecon-na-2023/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-11-25T12:30:00+08:00" />
+<meta property="article:modified_time" content="2023-11-25T12:30:00+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="KubeCon 2023 北美：可观测日小记"/>
+<meta name="twitter:description" content="前言 CNCF 主办的 Observability Day 在 11 月 6 日与北美 KubeCon &#43; CloudNativeCon 同期举行。作为可观测性领域的新人，虽然因为时间关系没能到现场参加，但是主办方在活动当天就上传了录像，堪"/>
+<title>KubeCon 2023 北美：可观测日小记</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fkubecon-na-2023%2f&amp;text=KubeCon%202023%20%e5%8c%97%e7%be%8e%ef%bc%9a%e5%8f%af%e8%a7%82%e6%b5%8b%e6%97%a5%e5%b0%8f%e8%ae%b0" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2fkubecon-na-2023%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=KubeCon%202023%20%e5%8c%97%e7%be%8e%ef%bc%9a%e5%8f%af%e8%a7%82%e6%b5%8b%e6%97%a5%e5%b0%8f%e8%ae%b0&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2fkubecon-na-2023%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fkubecon-na-2023%2f&amp;source=https://jiekun.dev&amp;title=KubeCon%202023%20%e5%8c%97%e7%be%8e%ef%bc%9a%e5%8f%af%e8%a7%82%e6%b5%8b%e6%97%a5%e5%b0%8f%e8%ae%b0&amp;summary=KubeCon%202023%20%e5%8c%97%e7%be%8e%ef%bc%9a%e5%8f%af%e8%a7%82%e6%b5%8b%e6%97%a5%e5%b0%8f%e8%ae%b0%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;KubeCon 2023 北美：可观测日小记&#34;,&#34;https://jiekun.dev/posts/kubecon-na-2023/&#34;,&#34;KubeCon 2023 北美：可观测日小记, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Nov 25, 2023</span></div>
+				<h1>KubeCon 2023 北美：可观测日小记</h1>
+			</header>
+			<div class="content">
+				<p><img src="../202311-kubecon-na/kubecon_co_event.png" alt=""></p>
+<h2 id="前言">前言<a href="#前言" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>CNCF 主办的 Observability Day 在 11 月 6 日与北美 KubeCon + CloudNativeCon 同期举行。作为可观测性领域的新人，虽然因为时间关系没能到现场参加，但是主办方在活动当天就上传了录像，堪称神速，所以有机会第一时间回看了这些分享，并且记录了少许工作相关的内容。</p>
+<h2 id="session-小记">Session 小记<a href="#session-小记" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h3 id="dynamic-sampling-in-practice---honeycomb">Dynamic Sampling in Practice - Honeycomb<a href="#dynamic-sampling-in-practice---honeycomb" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p><a href="https://www.bilibili.com/video/BV1hu4y187WE/?share_source=copy_web&amp;vd_source=6a34d69131ebaa81c8f8b005ccfbc86d">Video</a> | <a href="https://static.sched.com/hosted_files/colocatedeventsna2023/52/DynamicSampling_2023Nov06.pdf">Slides</a></p>
+<p>关于分布式追踪的采样方案，我在过往的 <a href="https://jiekun.dev/otel">博客</a> 中已经简单介绍过了。Honeycomb 是一家可观测性方向的服务提供商，因此他们产品的视角也是可观测性平台的视角。Kent Quirk 在这场分享中提出的问题是：</p>
+<blockquote>
+<p>What if your data isn&rsquo;t predictable?</p>
+</blockquote>
+<p>试想一下，如果我是公司内可观测性平台的维护者，有数千个服务接入了我的平台。如果我为他们<strong>统一配置规则</strong>，例如“采样所有耗时 &gt; 5 秒的 Trace”，那么：</p>
+<ol>
+<li>对于高性能、低延迟的服务，如网关，一次 Trace 如果超过 5 秒，系统可能早就崩溃了；</li>
+<li>对于离线服务，如大规模的计算作业，基本上所有 Trace 都超过 5 秒，采样上来的数据太多，把握不住重点。</li>
+</ol>
+<p>这个问题的关键点就是：维护者并不能知道所有服务的特点，也无法编写统一的规则。正如分享中提到：</p>
+<blockquote>
+<p>数据不可控带来的影响包括：</p>
+<ol>
+<li>系统过于复杂，难以编写统一规则；</li>
+<li>为了更好地采集数据，系统需要经常变更以满足新的数据形态、规律；</li>
+<li>采集上会遇到有突增流量、突增上报量；</li>
+<li>管理采样的人并不是管理数据、流量产生的人。</li>
+</ol>
+</blockquote>
+<p>因此，Kent Quirk 提出 <a href="https://docs.honeycomb.io/manage-data-volume/sampling/#tail-sampling">Dynamic Sampling</a>，下放决策权给应用服务。在 Honeycomb 上，维护者可以配置一些字段，应用服务按照实际情况填写，这些字段在采集上来之后组合成一个 Key，例如：</p>
+<ul>
+<li>http_code / sql_count / cache_count</li>
+</ul>
+<p>在正常处理流程中，这些 Key 对应的 Value 分布都是相对集中的，例如收集 10000 个 Trace 可能得到的结果：</p>
+<ul>
+<li>出现了 9700 次：http_code: 200 / sql_count: 0 / cache_count: 10</li>
+<li>出现了 293 次：http_code: 200 / sql_count: 10 / cache_count: 10</li>
+<li>出现了 7 次：http_code: 200 / sql_count: 5 / cache_count: 5</li>
+</ul>
+<p>依照不同 “组合” 的出现总次数，可以对其赋予不同的采集概率，例如出现次数最多的组合后续继续出现的话，仅采样 0.1%；第二多的组合则采样 10%，而出现次数最少的组合采样 100%，以此体现 Dynamic。</p>
+<p>Dynamic Sampling 是发生在尾部采样阶段的，它的理念，或者说与传统尾部采样策略的差异在于：传统策略依照错误、耗时、数量等等因素决定，其<strong>决定权本质上是控制在 Collector 的</strong>；而 Dynamic Sampling 在 Collector 侧配置的是字段名，这些字段应用服务需要按实际情况，也就是<strong>下放了决策权给应用</strong>。当然，读者也可以认为它是<a href="https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor">尾部采样</a>中的 <code>string_attribute</code> 的小变种，很多时候维护者也使用了 Attribute 中的内容来决定是否采样，只是这些逻辑并不为应用服务所知，现在只是让大家知道和填写而已。</p>
+<p>有趣的是，2023 年初曾经有一个 issue 提出了几乎相同的想法：<a href="https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/17874">#17874 New Component proposal: DeDuplicator processor / sampler</a>，只是当时原作者没有带来后续的实现。</p>
+<h3 id="monitoring-and-metadata---google">Monitoring and Metadata - Google<a href="#monitoring-and-metadata---google" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p><a href="https://www.bilibili.com/video/BV1xC4y177sE/?share_source=copy_web&amp;vd_source=6a34d69131ebaa81c8f8b005ccfbc86d">Video</a> | <a href="https://static.sched.com/hosted_files/colocatedeventsna2023/e0/kubecon%20talk%20ridwanmsharif%40.pptx">Slides</a></p>
+<p>这场分享的小标题是：<strong>Exploring approaches to attaching metadata to logs, metrics and traces</strong>。刚好最近也在和 Metrics 打交道，所以想看看能不能从中学到一些。</p>
+<blockquote>
+<p>可观测性三大支柱中的 Metadata，即 Label，生成姿势都是较为接近的，所以小记中以 Metric 为例。</p>
+</blockquote>
+<p>在应用服务视角，它们上报一个的 Metric 举例如下：</p>
+<pre tabindex="0"><code>http_requests_total{host=&quot;jiekun.dev&quot;, path=&quot;/posts/kubecon-na-2023&quot;, method=&quot;GET&quot;, status=&quot;200&quot;}
+</code></pre><p>在过去，我们可能会认为这里面的 Label 不多，其中 <code>host</code>、<code>method</code>、<code>status</code> 是比较固定的，而 <code>path</code> 可能会存在高基数问题。这个指标产生的时间线，也就是不同 Label 的组合数量，可能是：</p>
+<ul>
+<li>1 个 <code>host</code> x 1000 个 <code>path</code> x 2 个 <code>method</code> x 5 个 <code>status</code> = 10000</li>
+</ul>
+<p>看起来尚可接受对吗？</p>
+<p>在 Prometheus 服务端，这个 Metric 的真实样子可能是：</p>
+<pre tabindex="0"><code>http_requests_total{az=&quot;us-central-1a&quot;, service=&quot;blog&quot;, pod=&quot;blog-a3xdw&quot;, env=&quot;prod&quot;, host=&quot;jiekun.dev&quot;, path=&quot;/posts/kubecon-na-2023&quot;, method=&quot;GET&quot;, status=&quot;200&quot;}
+</code></pre><p>好吧，Metric 里还包含了许多基础设施相关的 Label，那似乎实际的时间线数量会是：</p>
+<ul>
+<li>10000 x 2 个 <code>az</code> x 1 个 <code>service</code> x 3 个 <code>pod</code> = 60000</li>
+</ul>
+<p>放大了 6 倍，似乎也还是可以接受，但是请不要忘记这只是个博文例子，在实际使用中，我们观察到的放大比例会非常高。</p>
+<p>下面的流程图更详细地展示了一个指标的不同 Label 是在哪里得到的。简单来说，在配置 Prometheus 的抓取后，Prometheus 需要通过服务发现找到需要抓取的 Service 或者 Pod，这个过程中就会得到第一部分的 Label，例如 cluster、service、pod 等等；而在实际抓取时，访问应用服务提供的接口可以获取到它暴露的 Metrics 和 Labels，并合并两部分内容。</p>
+<p><img src="../202311-kubecon-na/metric_labels.jpg" alt=""></p>
+<p>谈到这里，可以引出本小节的第一个结论：由于基础设施 Label 会进一步放大时间线数量，应用服务在提供 Metrics 的时候对高基数问题的估量应该更保守一些，毕竟谁也不想在查询时动不动就聚合几百万条时间线，既可能压垮 Prometheus，也让查询等待时间变长，体验变差。</p>
+<p>但是毕竟 Metrics 和 Label 还是由应用服务提供，可以认为是不可控的，平台方可以如何去管控呢？对于查询，一个简单有效的方法是：<strong>增加代理层，解析和校验 PromQL</strong>。</p>
+<p>我们团队在上周实现了这个事情，上线了 PromQL Proxy 应用，置于 Grafana 和 Thanos Query Frontend 之间，按照规则来拦截查询：</p>
+<ul>
+<li>特定 Metric 如果缺少特定 Label 则不放行；</li>
+<li>特定 Metric 查询时间区间超过阈值则不放行。</li>
+</ul>
+<p>一个示例的配置如下：</p>
+<pre tabindex="0"><code>promql-proxy:
+   - metric-name: istio_request_duration_milliseconds_*
+     and_labels: [cluster]
+     or_labels: [source_workload, destination_workload]
+     time_range: 7d
+     ...
+</code></pre><p>它要求用户在涉及形如 <code>istio_request_duration_milliseconds_*</code> 的指标查询时：</p>
+<ol>
+<li>必须携带 <code>cluster</code> label 筛选；</li>
+<li>至少携带 <code>source_workload</code> 或 <code>destination_workload</code> label 筛选；</li>
+<li>查询时间区间长度不能超过 7 天；</li>
+<li>&hellip;</li>
+</ol>
+<p><img src="../202311-kubecon-na/promql_proxy.jpg" alt=""></p>
+<p>静态配置只能用于事故后补救、拦截，阻止同样问题再次发生。那要防范于未然，我们计划将其与指标维度监测打通，在指标采集过程中也会感知高基数问题，并且动态地加入 PromQL Proxy 的拦截范围。</p>
+<h3 id="project-updates">Project Updates<a href="#project-updates" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p><a href="https://www.bilibili.com/video/BV1t94y1V7HJ/?share_source=copy_web&amp;vd_source=6a34d69131ebaa81c8f8b005ccfbc86d">Video</a> | Slides</p>
+<p>这个 Session 其实挺有趣而且介绍了很多新功能，但是考虑到信息集中对于当下缺少时间的人们非常重要，TL;DR：</p>
+<ul>
+<li>Prometheus：
+<ul>
+<li>Prometheus <a href="https://prometheus.io/docs/concepts/metric_types/#histogram">Native Histrogram</a> 是个值得关注的功能，今年的 3 次 KubeCon + CloudNativeCon 都出现了它的身影，它旨在提供相比传统固定分桶 Histrogram 更高精度、更动态的 Histrogram 实现，版本高于 v2.40 可以体验；</li>
+<li>把 Prometheus 升级到 <a href="https://github.com/prometheus/prometheus/releases/tag/v2.44.0">v2.44</a> 以上，内存减半；</li>
+<li><code>scrape_config_files</code> 告别把超长的配置写在同一个配置文件中；</li>
+<li>Prometheus OTLP receiver 现在对接收 OTLP metrics 提供实验性支持；</li>
+<li>Prometheus 3.0 正在路上；</li>
+</ul>
+</li>
+<li>OpenTelemetry：
+<ul>
+<li>Logging 模块到达 GA；</li>
+<li>OTLP 到达 1.0 版本，意味着它将变得更稳定、变更会更少，这对协议来说是非常重要的事情；</li>
+</ul>
+</li>
+<li>Fluentd &amp; Fluent Bit：受限于对日志领域了解，没办法对具体内容逐一分享，感兴趣的读者可以翻阅录像。但是整体听下来的感受就是，它们也在像 OpenTelemetry 一样打造工具，例如 Processor、Pipeline 的设计结构如出一辙。或许这也是高度模块化、插件化的项目中比较值得推广的实践。</li>
+</ul>
+<h2 id="总结">总结<a href="#总结" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>除了上面提到的 Session，可观测性领域在 2023 年其实还有很多代表性的亮点，特别是 eBPF。本次 KubeCon + CloudNativeCon Observability Day 稍微缺少了相关的内容，或许是因为演讲者都投稿到隔壁 <a href="https://colocatedeventsna2023.sched.com/overview/type/CiliumCon">CiliumCon</a> 去了。</p>
+<p>另外，也看到很多 Session 都在着重讲解成本问题，例如 FinOps、Prometheus 在过去一年怎样把内存减半等等。或许这也会是明年的一个工作方向，帮公司节约更多成本，或者在相近的成本下保持数据增长及组件健康 —— 就从 PromQL Proxy 开始吧。</p>
+
+			</div>
+
+<hr>
+<div class="related-posts thin">
+	<h2>See Also</h2>
+	<ul>
+	
+	<li><a href="/posts/otlp-remote-write/">OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?</a></li>
+	
+	<li><a href="/posts/churn-rate-in-victoriametrics/">社区报障案例：没有新的 Time Series，为什么 Churn Rate 升高？</a></li>
+	
+	<li><a href="/posts/troubleshooting-victoriametrics/">监控数据问题排查：我的指标去哪儿了？</a></li>
+	
+	<li><a href="/posts/one-to-watch-victoriametrics/">[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事</a></li>
+	
+	<li><a href="/posts/extending-go-application-with-interface/">用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例</a></li>
+	
+	</ul>
+</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 2639 字, 约 6 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2023-11-25 12:30 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#session-小记">Session 小记</a>
+      <ul>
+        <li><a href="#dynamic-sampling-in-practice---honeycomb">Dynamic Sampling in Practice - Honeycomb</a></li>
+        <li><a href="#monitoring-and-metadata---google">Monitoring and Metadata - Google</a></li>
+        <li><a href="#project-updates">Project Updates</a></li>
+      </ul>
+    </li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

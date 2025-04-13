@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="Redis有序集合的实现&amp;跳跃表源码学习">
+<meta itemprop="description" content="O(1)的skiplist成员查找？ 众所周知Redis中每种基本类型都有2种或以上的底层实现，一般谈到ZSET，我们会说它的实现是基于zip"><meta itemprop="datePublished" content="2019-08-31T04:49:01+00:00" />
+<meta itemprop="dateModified" content="2019-08-31T04:49:01+00:00" />
+<meta itemprop="wordCount" content="1931">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="Redis有序集合的实现&amp;跳跃表源码学习" />
+<meta property="og:description" content="O(1)的skiplist成员查找？ 众所周知Redis中每种基本类型都有2种或以上的底层实现，一般谈到ZSET，我们会说它的实现是基于zip" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2019-08-31-redis%E4%B8%ADzset%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8F%8A%E7%BB%93%E5%90%88%E6%BA%90%E7%A0%81%E7%9A%84%E8%B7%B3%E8%B7%83%E8%A1%A8%E7%BB%93%E6%9E%84%E5%AD%A6%E4%B9%A0/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2019-08-31T04:49:01+00:00" />
+<meta property="article:modified_time" content="2019-08-31T04:49:01+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Redis有序集合的实现&amp;跳跃表源码学习"/>
+<meta name="twitter:description" content="O(1)的skiplist成员查找？ 众所周知Redis中每种基本类型都有2种或以上的底层实现，一般谈到ZSET，我们会说它的实现是基于zip"/>
+<title>Redis有序集合的实现&amp;跳跃表源码学习</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2f2019-08-31-redis%25E4%25B8%25ADzset%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%25E5%258F%258A%25E7%25BB%2593%25E5%2590%2588%25E6%25BA%2590%25E7%25A0%2581%25E7%259A%2584%25E8%25B7%25B3%25E8%25B7%2583%25E8%25A1%25A8%25E7%25BB%2593%25E6%259E%2584%25E5%25AD%25A6%25E4%25B9%25A0%2f&amp;text=Redis%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e7%9a%84%e5%ae%9e%e7%8e%b0%26%e8%b7%b3%e8%b7%83%e8%a1%a8%e6%ba%90%e7%a0%81%e5%ad%a6%e4%b9%a0" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2f2019-08-31-redis%25E4%25B8%25ADzset%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%25E5%258F%258A%25E7%25BB%2593%25E5%2590%2588%25E6%25BA%2590%25E7%25A0%2581%25E7%259A%2584%25E8%25B7%25B3%25E8%25B7%2583%25E8%25A1%25A8%25E7%25BB%2593%25E6%259E%2584%25E5%25AD%25A6%25E4%25B9%25A0%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=Redis%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e7%9a%84%e5%ae%9e%e7%8e%b0%26%e8%b7%b3%e8%b7%83%e8%a1%a8%e6%ba%90%e7%a0%81%e5%ad%a6%e4%b9%a0&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2f2019-08-31-redis%25E4%25B8%25ADzset%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%25E5%258F%258A%25E7%25BB%2593%25E5%2590%2588%25E6%25BA%2590%25E7%25A0%2581%25E7%259A%2584%25E8%25B7%25B3%25E8%25B7%2583%25E8%25A1%25A8%25E7%25BB%2593%25E6%259E%2584%25E5%25AD%25A6%25E4%25B9%25A0%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2f2019-08-31-redis%25E4%25B8%25ADzset%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%25E5%258F%258A%25E7%25BB%2593%25E5%2590%2588%25E6%25BA%2590%25E7%25A0%2581%25E7%259A%2584%25E8%25B7%25B3%25E8%25B7%2583%25E8%25A1%25A8%25E7%25BB%2593%25E6%259E%2584%25E5%25AD%25A6%25E4%25B9%25A0%2f&amp;source=https://jiekun.dev&amp;title=Redis%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e7%9a%84%e5%ae%9e%e7%8e%b0%26%e8%b7%b3%e8%b7%83%e8%a1%a8%e6%ba%90%e7%a0%81%e5%ad%a6%e4%b9%a0&amp;summary=Redis%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e7%9a%84%e5%ae%9e%e7%8e%b0%26%e8%b7%b3%e8%b7%83%e8%a1%a8%e6%ba%90%e7%a0%81%e5%ad%a6%e4%b9%a0%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;Redis有序集合的实现\u0026跳跃表源码学习&#34;,&#34;https://jiekun.dev/posts/2019-08-31-redis%E4%B8%ADzset%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8F%8A%E7%BB%93%E5%90%88%E6%BA%90%E7%A0%81%E7%9A%84%E8%B7%B3%E8%B7%83%E8%A1%A8%E7%BB%93%E6%9E%84%E5%AD%A6%E4%B9%A0/&#34;,&#34;Redis有序集合的实现\u0026跳跃表源码学习, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Aug 31, 2019</span></div>
+				<h1>Redis有序集合的实现&amp;跳跃表源码学习</h1>
+			</header>
+			<div class="content">
+				<h2 id="o1的skiplist成员查找">O(1)的skiplist成员查找？<a href="#o1的skiplist成员查找" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>众所周知Redis中每种基本类型都有2种或以上的底层实现，一般谈到ZSET，我们会说它的实现是基于ziplist和skiplist的，这没有问题：</p>
+<ul>
+<li>当ZSET长度小于设定值（zset-max-ziplist-entries）或成员的长度小于设定值（zset-max-ziplist-value）时会使用ziplist的实现，否则使用skiplist实现</li>
+</ul>
+<p>但是当ZSET在使用skiplist实现的时候，它对成员的查找也是O(1)复杂度。根据skiplist的结构，要查找某一个成员必须对各个SkiplistNode进行遍历，因此复杂度为O(n)。所以在ZSET-skiplist的实现中查找成员并不是根据skiplist进行的，而是使用字典（dict）。</p>
+<p>先来看一下ZSET的结构源码，Redis5.0.5版本中数据结构的定义在redis/src/server.h中：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">zset</span> <span class="p">{</span>
+    <span class="n">dict</span> <span class="o">*</span><span class="n">dict</span><span class="p">;</span>
+    <span class="n">zskiplist</span> <span class="o">*</span><span class="n">zsl</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">zset</span><span class="p">;</span>
+
+</code></pre></div><p>可以看到一个ZSET结构使用了一个dict和一个zskiplist（特殊版本的skiplist），具体代码在SkipList小节中再叙述。ZSET的结构可以由下图来标识：</p>
+<p><img src="../2019/09/ZSET-skiplist.jpg" alt=""></p>
+<p>通过这样的结构，当ZSET需要进行成员查询的时候，可以根据dict查询，时间复杂度为O(1)；当ZSET需要进行范围查找的时候，根据skiplist结构可以实现平均O(logn)复杂度的查找。</p>
+<p>这两种结构单独使用来实现ZSET是可行的，但是dict在范围型操作的时候需要对字典保存的所有元素进行排序因此需要至少O(nlogn)的时间复杂度和额外O(n)的空间复杂度；在单独使用skiplist根据成员查找分值的时候就由O(1)时间复杂度上升到了O(logn)复杂度。因此Redis中选择同时使用dict和skiplist来实现ZSET类型。</p>
+<h4 id="skiplist的实现">SkipList的实现<a href="#skiplist的实现" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>下面来具体聊一下SkipList数据结构。<br>
+在Redis源码中找到跳跃表的相关定义，就在zset的上面几行，补充一些注释：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="cm">/* ZSETs use a specialized version of Skiplists */</span>
+<span class="cp"># 跳跃表节点（ZSET版）
+</span><span class="cp"></span><span class="k">typedef</span> <span class="k">struct</span> <span class="n">zskiplistNode</span> <span class="p">{</span>
+    <span class="cp"># 使用sds来存储成员名字
+</span><span class="cp"></span>    <span class="n">sds</span> <span class="n">ele</span><span class="p">;</span>
+    <span class="cp"># 浮点型分数
+</span><span class="cp"></span>    <span class="kt">double</span> <span class="n">score</span><span class="p">;</span>
+    <span class="cp"># 每个zskiplist节点都带有向前的指针
+</span><span class="cp"></span>    <span class="k">struct</span> <span class="n">zskiplistNode</span> <span class="o">*</span><span class="n">backward</span><span class="p">;</span>
+    <span class="cp"># zskiplist分层，每层中包含指向其他zskiplist节点的指针
+</span><span class="cp"></span>    <span class="k">struct</span> <span class="n">zskiplistLevel</span> <span class="p">{</span>
+        <span class="cp"># zskiplist节点指针
+</span><span class="cp"></span>        <span class="k">struct</span> <span class="n">zskiplistNode</span> <span class="o">*</span><span class="n">forward</span><span class="p">;</span>
+        <span class="cp"># 本层指向的下个节点离本节点的跨度
+</span><span class="cp"></span>        <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">span</span><span class="p">;</span>
+    <span class="p">}</span> <span class="n">level</span><span class="p">[];</span>
+<span class="p">}</span> <span class="n">zskiplistNode</span><span class="p">;</span>
+
+<span class="cp"># 跳跃表
+</span><span class="cp"></span><span class="k">typedef</span> <span class="k">struct</span> <span class="n">zskiplist</span> <span class="p">{</span>
+    <span class="cp"># 分别指向头尾的指针
+</span><span class="cp"></span>    <span class="k">struct</span> <span class="n">zskiplistNode</span> <span class="o">*</span><span class="n">header</span><span class="p">,</span> <span class="o">*</span><span class="n">tail</span><span class="p">;</span>
+    <span class="cp"># 长度 即跳跃表中包含的节点数目（头节点不算）
+</span><span class="cp"></span>    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">length</span><span class="p">;</span>
+    <span class="cp"># 层数 即跳跃表中各节点层数的最大值（头节点不算）
+</span><span class="cp"></span>    <span class="kt">int</span> <span class="n">level</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">zskiplist</span><span class="p">;</span>
+
+</code></pre></div><p>t的结构可以由下图来表示：</p>
+<p><img src="../2019/09/image-4.png" alt="">
+其中：</p>
+<ul>
+<li>头节点也是zskiplistNode因此也由对应的分数、向前指针、sds，只不过一般不使用，在图中没有表示出来。</li>
+<li>skiplist结构中level为5，因为在第三个节点中层数为5。</li>
+<li>skiplist结构中length为3，因为一共有头节点（不算在内），o1，o2，o3几个节点。</li>
+</ul>
+<p>借助ZSET的各种API，来看一下skiplist在实际中是怎么使用的。<br>
+下面代码出现在redis/src/t_zset.c中，实现的是zset的插入成员操作：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="cp"># 输入一个zset的skiplist、新成员的得分和名字
+</span><span class="cp"></span><span class="n">zskiplistNode</span> <span class="o">*</span><span class="nf">zslInsert</span><span class="p">(</span><span class="n">zskiplist</span> <span class="o">*</span><span class="n">zsl</span><span class="p">,</span> <span class="kt">double</span> <span class="n">score</span><span class="p">,</span> <span class="n">sds</span> <span class="n">ele</span><span class="p">)</span> <span class="p">{</span>    
+    <span class="n">zskiplistNode</span> <span class="o">*</span><span class="n">update</span><span class="p">[</span><span class="n">ZSKIPLIST_MAXLEVEL</span><span class="p">],</span> <span class="o">*</span><span class="n">x</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">rank</span><span class="p">[</span><span class="n">ZSKIPLIST_MAXLEVEL</span><span class="p">];</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">level</span><span class="p">;</span>
+
+    <span class="n">serverAssert</span><span class="p">(</span><span class="o">!</span><span class="n">isnan</span><span class="p">(</span><span class="n">score</span><span class="p">));</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">zsl</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">;</span>
+
+    <span class="cp"># 从头遍历跳跃表来查找当前元素应该插入在哪个节点之后
+</span><span class="cp"></span>    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="n">zsl</span><span class="o">-&gt;</span><span class="n">level</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+        <span class="cm">/* store rank that is crossed to reach the insert position */</span>
+        <span class="n">rank</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">==</span> <span class="p">(</span><span class="n">zsl</span><span class="o">-&gt;</span><span class="n">level</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">?</span> <span class="mi">0</span> <span class="o">:</span> <span class="n">rank</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">];</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">x</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">forward</span> <span class="o">&amp;&amp;</span>
+                <span class="cp"># 排名是由分数和sds名字共同决定的，同分数下按节点名排序
+</span><span class="cp"></span>                <span class="p">(</span><span class="n">x</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">forward</span><span class="o">-&gt;</span><span class="n">score</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">score</span> <span class="o">||</span>
+                    <span class="p">(</span><span class="n">x</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">forward</span><span class="o">-&gt;</span><span class="n">score</span> <span class="o">==</span> <span class="n">score</span> <span class="o">&amp;&amp;</span>
+                    <span class="n">sdscmp</span><span class="p">(</span><span class="n">x</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">forward</span><span class="o">-&gt;</span><span class="n">ele</span><span class="p">,</span><span class="n">ele</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="mi">0</span><span class="p">)))</span>
+        <span class="p">{</span>
+            <span class="cp"># 注意这一句，说明span是用来便于计算节点排名的
+</span><span class="cp"></span>            <span class="n">rank</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">x</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">span</span><span class="p">;</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">forward</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">update</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="cm">/* we assume the element is not already inside, since we allow duplicated
+</span><span class="cm">     * scores, reinserting the same element should never happen since the
+</span><span class="cm">     * caller of zslInsert() should test in the hash table if the element is
+</span><span class="cm">     * already inside or not. */</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="n">zslRandomLevel</span><span class="p">();</span>
+    <span class="cp"># 判断是否要重写头节点的level值
+</span><span class="cp"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">level</span> <span class="o">&gt;</span> <span class="n">zsl</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="n">zsl</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">level</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">rank</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="n">update</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">zsl</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">;</span>
+            <span class="n">update</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">span</span> <span class="o">=</span> <span class="n">zsl</span><span class="o">-&gt;</span><span class="n">length</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">zsl</span><span class="o">-&gt;</span><span class="n">level</span> <span class="o">=</span> <span class="n">level</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">zslCreateNode</span><span class="p">(</span><span class="n">level</span><span class="p">,</span><span class="n">score</span><span class="p">,</span><span class="n">ele</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">level</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">x</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">forward</span> <span class="o">=</span> <span class="n">update</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">forward</span><span class="p">;</span>
+        <span class="n">update</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">forward</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+
+        <span class="cm">/* update span covered by update[i] as x is inserted here */</span>
+        <span class="n">x</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">span</span> <span class="o">=</span> <span class="n">update</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">span</span> <span class="o">-</span> <span class="p">(</span><span class="n">rank</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">rank</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+        <span class="cp"># span实际就是zset两个成员之间的rank差值
+</span><span class="cp"></span>        <span class="n">update</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">span</span> <span class="o">=</span> <span class="p">(</span><span class="n">rank</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">rank</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="cm">/* increment span for untouched levels */</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="n">level</span><span class="p">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">zsl</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">update</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">span</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">x</span><span class="o">-&gt;</span><span class="n">backward</span> <span class="o">=</span> <span class="p">(</span><span class="n">update</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">zsl</span><span class="o">-&gt;</span><span class="n">header</span><span class="p">)</span> <span class="o">?</span> <span class="nb">NULL</span> <span class="o">:</span> <span class="n">update</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">x</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">forward</span><span class="p">)</span>
+        <span class="n">x</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">forward</span><span class="o">-&gt;</span><span class="n">backward</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+    <span class="k">else</span>
+        <span class="n">zsl</span><span class="o">-&gt;</span><span class="n">tail</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+    <span class="n">zsl</span><span class="o">-&gt;</span><span class="n">length</span><span class="o">++</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div><p>可以观察到：</p>
+<ul>
+<li>跳跃表的不同节点之间由指针和跨度关联</li>
+<li>跨度值实际上为这两个节点之间的排名差距，如上图中o1与o3的排名差正是o1指向o3的第4层的跨度值2，也可以等于o1至o2的跨度值1加上o2至o3的跨度值1</li>
+<li>排名取决于分数，同分情况下取决于名字</li>
+<li>插入节点的时候判断层数是否大于头节点的层数值，是否需要更新</li>
+<li>节点的层数是<code>zslRandomLevel()</code>生成的，根据命名每个节点的层数应该是随机的</li>
+<li>注释中提到了在新增元素的时候要在哈希表中判断是否为重复，zset是不允许重复的成员出现的（但是可以有同分成员）</li>
+</ul>
+
+			</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg><span class="category"><a href="https://jiekun.dev/categories/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/%E4%B8%AD%E9%97%B4%E4%BB%B6">消息队列/中间件</a></span></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 1931 字, 约 4 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2019-08-31 12:49 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		
+		<div id="comments" class="thin"></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="Paper Reading：HotRing——哈希冲突中热点数据高效读取方案">
+<meta itemprop="description" content="Paper Reading系列旨在分享著名Conference上发表的论文。FAST（USENIX Conference on File and Storage Technologies）是存储领域的顶会"><meta itemprop="datePublished" content="2021-03-13T16:39:07+08:00" />
+<meta itemprop="dateModified" content="2021-03-13T16:39:07+08:00" />
+<meta itemprop="wordCount" content="4066">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="Paper Reading：HotRing——哈希冲突中热点数据高效读取方案" />
+<meta property="og:description" content="Paper Reading系列旨在分享著名Conference上发表的论文。FAST（USENIX Conference on File and Storage Technologies）是存储领域的顶会" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/hotring/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-03-13T16:39:07+08:00" />
+<meta property="article:modified_time" content="2021-03-13T16:39:07+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Paper Reading：HotRing——哈希冲突中热点数据高效读取方案"/>
+<meta name="twitter:description" content="Paper Reading系列旨在分享著名Conference上发表的论文。FAST（USENIX Conference on File and Storage Technologies）是存储领域的顶会"/>
+<title>Paper Reading：HotRing——哈希冲突中热点数据高效读取方案</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fhotring%2f&amp;text=Paper%20Reading%ef%bc%9aHotRing%e2%80%94%e2%80%94%e5%93%88%e5%b8%8c%e5%86%b2%e7%aa%81%e4%b8%ad%e7%83%ad%e7%82%b9%e6%95%b0%e6%8d%ae%e9%ab%98%e6%95%88%e8%af%bb%e5%8f%96%e6%96%b9%e6%a1%88" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2fhotring%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=Paper%20Reading%ef%bc%9aHotRing%e2%80%94%e2%80%94%e5%93%88%e5%b8%8c%e5%86%b2%e7%aa%81%e4%b8%ad%e7%83%ad%e7%82%b9%e6%95%b0%e6%8d%ae%e9%ab%98%e6%95%88%e8%af%bb%e5%8f%96%e6%96%b9%e6%a1%88&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2fhotring%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fhotring%2f&amp;source=https://jiekun.dev&amp;title=Paper%20Reading%ef%bc%9aHotRing%e2%80%94%e2%80%94%e5%93%88%e5%b8%8c%e5%86%b2%e7%aa%81%e4%b8%ad%e7%83%ad%e7%82%b9%e6%95%b0%e6%8d%ae%e9%ab%98%e6%95%88%e8%af%bb%e5%8f%96%e6%96%b9%e6%a1%88&amp;summary=Paper%20Reading%ef%bc%9aHotRing%e2%80%94%e2%80%94%e5%93%88%e5%b8%8c%e5%86%b2%e7%aa%81%e4%b8%ad%e7%83%ad%e7%82%b9%e6%95%b0%e6%8d%ae%e9%ab%98%e6%95%88%e8%af%bb%e5%8f%96%e6%96%b9%e6%a1%88%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;Paper Reading：HotRing——哈希冲突中热点数据高效读取方案&#34;,&#34;https://jiekun.dev/posts/hotring/&#34;,&#34;Paper Reading：HotRing——哈希冲突中热点数据高效读取方案, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Mar 13, 2021</span></div>
+				<h1>Paper Reading：HotRing——哈希冲突中热点数据高效读取方案</h1>
+			</header>
+			<div class="content">
+				<blockquote>
+<p>Paper Reading系列旨在分享著名Conference上发表的论文。FAST（USENIX Conference on File and Storage Technologies）是存储领域的顶会之一，<a href="https://www.usenix.org/conference/fast20">第18届FAST</a>于美国Santa Clara举行。</p>
+</blockquote>
+<h2 id="关于paper">关于Paper<a href="#关于paper" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>《<strong>HotRing: A Hotsport-Aware In-Memory Key-Value Store</strong>》发表于2020年，主要研究的是使用链表结构解决哈希冲突时，访问热点数据存在一定额外开销的问题。论文提出的HotRing结构支持热点数据发现，并且可通过使环状链表的头部指针指向hot item，减少读取所需遍历的路径，达到提升访问效率的目的。</p>
+<h2 id="hash-collision简介">Hash Collision简介<a href="#hash-collision简介" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>当我们使用哈希表时，不可避免地会存在<strong>哈希冲突</strong>。我们将大量数据通过计算哈希值的方式放入相对较小的哈希表中，不同item得到的哈希值可能会是一致的。通常通过rehash扩大哈希表，可以降低哈希冲突的概率。但是哈希冲突仍然存在，也需要有对应的方法在出现冲突时让数据仍能正确读取到。</p>
+<p><img src="../202103-hotring/hotring_hash_collision.png" alt=""></p>
+<h3 id="collision解决方案">Collision解决方案<a href="#collision解决方案" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>当出现不同的item具有相同哈希值时，需要有合适的位置来存放多个item。这些item可以被安插在同一张哈希表的不同位置，也可以被放到哈希表之外的空间，而让哈希表保存外部空间的地址值。</p>
+<h4 id="open-addressing">Open Addressing<a href="#open-addressing" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p><strong>开放地址法</strong>是将冲突的item放在哈希表内的方案。使用开放地址法时，查找对应item的操作称为<strong>探测</strong>（Probing）。当期望写入的哈希位置已经存在其他item B时，可以将item A放至：</p>
+<ul>
+<li>相邻的空位——<strong>线性探测</strong></li>
+<li>间隔1、4、9、16的空位——<strong>平方探测</strong></li>
+<li>另一个的Hash方法计算的空位——<strong>二次哈希</strong></li>
+</ul>
+<p>开放地址法的查询终止条件为：探测到对应item或探测到空位。当探测到非目标item时，目标item可能在下一个位置，也可能不存在，因此需要继续探测。开放地址法要求哈希表比数据集更大，当负载因子处于高位时，对于冲突item的查询，遍历路径则会变得相对长，性能也会因此下降。因此开放地址法需要相当大的空间来存放哈希表。</p>
+<h4 id="collision-chain">Collision Chain<a href="#collision-chain" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p><strong>链表法</strong>将item存储在哈希表之外，每个哈希桶存放有指向链表头部的指针，通过顺序遍历链表确认查找的item是否存在。</p>
+<p>与开放地址法相比，链表法可以允许item数量大于哈希表。在负载因子增长的情况下，开放地址法的探测速度会显著变慢，而链表法仍能保持查询效率与长度挂钩地线性增长。</p>
+<p><img src="../202103-hotring/hotring_collision_solution.png" alt=""></p>
+<h2 id="hotring">HotRing<a href="#hotring" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>在实际使用场景中，经常会有大量item被放入哈希表，而其中只有极少数是热点数据。</p>
+<p>对于<strong>链表法</strong>的热点数据的访问，简化模型下需要查找的次数为：</p>
+<pre tabindex="0"><code>T = 1 + L / 2 
+  = 1 + (N / B) / 2
+</code></pre><p>其中<strong>L代表哈希桶对应的链表长度</strong>，<strong>N为总item数</strong>，<strong>B为哈希桶数量</strong>。</p>
+<p>如果可以让热点数据长期位于链表头部，访问的复杂度就可以贴近<code>O(1)</code>。但是对单链表的item位置调整，也就是类似于LRU/LFU的实现，操作上开销不低，并且实际上除了极少数hot item的位置，其余item的顺序其实并没有那么重要。设计一种代替链表的、贴合缓存使用场景的数据结构，通常会期望：</p>
+<ul>
+<li>能加速热点item的访问
+<ul>
+<li>能及时发现热点</li>
+<li>能以较低的额外开销将热点移至便于访问的位置</li>
+</ul>
+</li>
+<li>能支持并发场景下操作</li>
+<li>高效率Rehash</li>
+<li>&hellip;</li>
+</ul>
+<p>针对这类场景和需求，HotRing结构应运而生。</p>
+<h3 id="设计概览">设计概览<a href="#设计概览" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>HotRing是一个环状的链表结构。在加速热点数据的访问上，HotRing让哈希表中的头指针始终指向hot item或能高效访问多个hot item的位置。比起调整链表中item位置，修改头指针更加高效简洁。为了能够发现热点数据，每个item也需要能够存储相关的统计信息，例如访问次数。通过额外的后台线程来分析统计值，可以在热点发生变化时及时对头指针进行调整。</p>
+<p><img src="../202103-hotring/hotring_overview.png" alt=""></p>
+<h3 id="具体实现">具体实现<a href="#具体实现" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<h4 id="数据查找">数据查找<a href="#数据查找" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>若环状链表数据没有任何顺序，确认item不存在的复杂度为O(n)，从时间效率上看可以再优化。HotRing选择在写入时略微增加开销，让环状链表保持顺序性，从而查找时就能更快定位或结束遍历。</p>
+<p>对于目标元素<code>item(k)</code>结束查找的标志可以是：</p>
+<ul>
+<li>item存在，则满足：</li>
+</ul>
+<pre tabindex="0"><code>item(k) = item(i)
+</code></pre><ul>
+<li>若不满足上式，且满足下列任一条件时，说明item不存在：</li>
+</ul>
+<pre tabindex="0"><code>item(i-1) &lt; item(k)   &lt; item(i)    或
+item(k)   &lt; item(i)   &lt; item(i-1)  或
+item(i)   &lt; item(i-1) &lt; item(k) 
+</code></pre><p><img src="../202103-hotring/hotring_search.png" alt=""></p>
+<p>而为了减少对字符串的字典序比较，HotRing为每个item都增加了一个tag，即<code>item(k) = (tag(k), key(k))</code>。</p>
+<p>通过这种设计，无需遍历链表中所有元素即可提前终止遍历，平均情况下查找item数可以达到<code>(n/2) + 1</code>。实际上，因为头部指针位置的优化，大多数查找能够更早定位到hot item而结束。</p>
+<h4 id="热点发现">热点发现<a href="#热点发现" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>实际场景中，由于hot item一直在变，因此需要能准确、及时发现hot item的机制，我们也可以从这两个方面来定性评定发现算法的优劣：</p>
+<ul>
+<li><strong>准确性</strong>：头指针指向hot item的比例</li>
+<li><strong>及时性</strong>：多少延迟之后头指针可以指向hot item</li>
+</ul>
+<p>HotRing设计了两种方案来实现热点发现，分别是<strong>随机策略</strong>和<strong>统计样本策略</strong>。</p>
+<p><strong>随机策略</strong>非常简单，HotRing周期性地将头指针指向本次查询到的item。默认周期为5，即每5次查询到item时，若头指针已经指向该item，则不发生调整；否则将头指针指向item。这个方案巧妙之处在于，hot item的访问概率远大于cold item，利用这点,无需任何统计信息即可实现热点发现。</p>
+<p>当然，这个方案在环中存在多个hot item时表现并不好，同时准确率也比另一种策略要低。另外，当整体系统压力较小、热点分散的情景下，随机策略的准确性也会进一步降低，头指针需要频繁发生变更。因此我们还需要另一种能够对多热点优化、准确率更高的方案。</p>
+<p><img src="../202103-hotring/hotring_head_selection.png" alt=""></p>
+<p><strong>统计样本策略</strong>，顾名思义需要一定的数据样本。HotRing的头指针带有15bit的Total Counter，而环中每个item带有14bit的Counter，Total Counter表示对该环的总命中次数，item的Counter则代表该item的命中次数。</p>
+<p>HotRing周期性地进行样本分析，每次分析起始时，Total Counter和Counter均为0，在一定时间后，根据Total Counter和每个item的Counter值决定使用哪个item作为头节点。</p>
+<p><img src="../202103-hotring/hotring_head_optimizing.png" alt=""></p>
+<p>如上图公式所示，<code>ni</code>表示<code>item(i)</code>采样期间的的访问次数，<code>N</code>代表总访问次数，<code>(i-t) mod k</code>代表从头节点<code>item(t)</code>出发访问到<code>item(i)</code>所需遍历的长度，因此<code>Wt</code>即为<strong>该环状链表遍历长度的加权平均值</strong>，该值越小说明头节点的选择越优异。</p>
+<p>统计样本策略更加准确，同时也能使用于多个hot item的场景，但是经常进行分析也会有一定的开销。因此，优化的周期策略是每隔R次查询时先判断本次fetch到的item是否为头指针指向的item，若是，则hot item很可能没有发生变化；反之则有必要发起新的一轮样本统计。</p>
+<p><strong>热点继承</strong>是指hot item发生变更时应该如何处理。HotRing使用的思路也非常简单，如果头节点发生了更新，最近更新的item理应有更大可能性被读取到，因此头指针直接指向这个新的item；而当头节点被删除时，头指针直接指向下一个item，后续依赖热点发现的策略作进一步调整。</p>
+<h4 id="无锁rehash">无锁Rehash<a href="#无锁rehash" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<p>当哈希表需要扩容时，由于哈希槽的增加，环状链表也需要将item分配到新的环中。和传统的rehash不同，HotRing决定rehash的条件是查找所需的平均内存访问次数，而非哈希表负载因子，这种方案能够和hot item分布情况相结合，减少rehash次数。HotRing的rehash分为3个阶段：<strong>初始化</strong>、<strong>分裂</strong>、<strong>清理</strong>。</p>
+<p>在<strong>初始化</strong>阶段，HotRing创建一个后台线程，这个线程会新建一个原有哈希表<strong>2倍大小的新哈希表</strong>。这里重新描述一下哈希表和tag的关系，在计算一个item的哈希值时，值的前k位用作哈希表定位，后t位作为tag。因此，当哈希表扩容2倍，需要占用k+1位哈希值，tag值则缩小为t-1位。通过这个关系，环状链表在扩容时可根据tag值一分为二：原有tag值t位，因此范围为<code>range = 2^t</code>，扩容后范围为<code>2^(t-1)</code>，因此正好可以按<code>[0, range/2)</code>和<code>[range/2, range)</code>划分为两个新的环，对应新哈希表上两个slot。</p>
+<p>初始化线程还会创建一个rehash节点，其中包含两个子rehash item。每个rehash item有不同的tag，例如<code>0</code>和<code>range/2</code>，后续可以作为两个新环的临时头节点（最后将被清理）。在rehash时，新哈希表的对应槽上的头指针指向这两个rehash item。同时rehash item上也有对应的标志位，表示其不包含键值对，只作为rehash过程中的头节点使用。</p>
+<p><img src="../202103-hotring/hotring_rehash.png" alt=""></p>
+<p>在<strong>分裂</strong>阶段，rehash线程将两个rehash item放入环中，它们将会作为tag范围和遍历的边界，当Insert操作完成，新的哈希表就会生效。由于没有item的复制和迁移，整个过程大部分操作都是通过无锁的CAS完成的，开销会相对较低。在清理阶段之前，查找操作以新的rehash item为起点，最多需要遍历半个环。</p>
+<p>最后<strong>清理</strong>阶段，在这个阶段，rehash线程需要确认所有的旧哈希表访问都已经结束，进而先删除旧哈希表，然后清理所有的rehash节点。要注意这个阶段，旧哈希表的访问会阻塞rehash线程进入下一步操作，但是不影响主线程进行读写。</p>
+<h2 id="总结">总结<a href="#总结" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>HotRing适应的场景是热点高度集中的哈希表访问。在此情形下，HotRing的设计有如下特点：</p>
+<ul>
+<li>将热点数据排列在链表最靠前位置，缩短访问路径</li>
+<li>环状链表设计，实现上一特点只需要头指针变更，无需item移动</li>
+<li>结合场景特点，实现简单有效的随机策略和适应性强、路径优化更好的统计样本策略来处理热点数据、热点漂移</li>
+<li>使用原子的CAS操作避免引入锁机制</li>
+<li>巧妙的环状链表rehash思路，无数据迁移成本，rehash过程中不阻塞读写</li>
+</ul>
+<p>HotRing和其他的哈希冲突解决方案相比，有多个特点是结合特定场景和数据分布而落地的，在一定条件下的测试结果表明其提升非常明显，并且热点数据大都能够在两次内存访问内检索到。其中对环状数据结构的设计及其配套的随机、采样思路对高性能的业务场景设计都有不少参考价值。</p>
+<h2 id="references">References<a href="#references" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p><a href="https://www.usenix.org/system/files/fast20-chen_jiqiang.pdf">[1] J Chen, HotRing: A Hotspot-Aware In-Memory Key-Value Store. In FAST &lsquo;20.</a></p>
+
+			</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 4066 字, 约 9 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2021-03-13 16:39 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#关于paper">关于Paper</a></li>
+    <li><a href="#hash-collision简介">Hash Collision简介</a>
+      <ul>
+        <li><a href="#collision解决方案">Collision解决方案</a></li>
+      </ul>
+    </li>
+    <li><a href="#hotring">HotRing</a>
+      <ul>
+        <li><a href="#设计概览">设计概览</a></li>
+        <li><a href="#具体实现">具体实现</a></li>
+      </ul>
+    </li>
+    <li><a href="#总结">总结</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

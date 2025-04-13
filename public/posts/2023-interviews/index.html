@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="写在 2023 年初的后端社招面试经历（四年经验）：字节 米哈游 富途 猿辅导">
+<meta itemprop="description" content="目录 背景 面试准备 面试 字节跳动 米哈游 富途牛牛 猿辅导 总结 一些推荐 1. 背景 距离上一次面试已经过去快 3 年了，又碰上 2022 年互联网行业大动荡，很多企业都做出"><meta itemprop="datePublished" content="2023-02-26T13:28:22+08:00" />
+<meta itemprop="dateModified" content="2023-02-26T13:28:22+08:00" />
+<meta itemprop="wordCount" content="7312">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="写在 2023 年初的后端社招面试经历（四年经验）：字节 米哈游 富途 猿辅导" />
+<meta property="og:description" content="目录 背景 面试准备 面试 字节跳动 米哈游 富途牛牛 猿辅导 总结 一些推荐 1. 背景 距离上一次面试已经过去快 3 年了，又碰上 2022 年互联网行业大动荡，很多企业都做出" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/2023-interviews/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-02-26T13:28:22+08:00" />
+<meta property="article:modified_time" content="2023-02-26T13:28:22+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="写在 2023 年初的后端社招面试经历（四年经验）：字节 米哈游 富途 猿辅导"/>
+<meta name="twitter:description" content="目录 背景 面试准备 面试 字节跳动 米哈游 富途牛牛 猿辅导 总结 一些推荐 1. 背景 距离上一次面试已经过去快 3 年了，又碰上 2022 年互联网行业大动荡，很多企业都做出"/>
+<title>写在 2023 年初的后端社招面试经历（四年经验）：字节 米哈游 富途 猿辅导</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2f2023-interviews%2f&amp;text=%e5%86%99%e5%9c%a8%202023%20%e5%b9%b4%e5%88%9d%e7%9a%84%e5%90%8e%e7%ab%af%e7%a4%be%e6%8b%9b%e9%9d%a2%e8%af%95%e7%bb%8f%e5%8e%86%ef%bc%88%e5%9b%9b%e5%b9%b4%e7%bb%8f%e9%aa%8c%ef%bc%89%ef%bc%9a%e5%ad%97%e8%8a%82%20%e7%b1%b3%e5%93%88%e6%b8%b8%20%e5%af%8c%e9%80%94%20%e7%8c%bf%e8%be%85%e5%af%bc" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2f2023-interviews%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=%e5%86%99%e5%9c%a8%202023%20%e5%b9%b4%e5%88%9d%e7%9a%84%e5%90%8e%e7%ab%af%e7%a4%be%e6%8b%9b%e9%9d%a2%e8%af%95%e7%bb%8f%e5%8e%86%ef%bc%88%e5%9b%9b%e5%b9%b4%e7%bb%8f%e9%aa%8c%ef%bc%89%ef%bc%9a%e5%ad%97%e8%8a%82%20%e7%b1%b3%e5%93%88%e6%b8%b8%20%e5%af%8c%e9%80%94%20%e7%8c%bf%e8%be%85%e5%af%bc&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2f2023-interviews%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2f2023-interviews%2f&amp;source=https://jiekun.dev&amp;title=%e5%86%99%e5%9c%a8%202023%20%e5%b9%b4%e5%88%9d%e7%9a%84%e5%90%8e%e7%ab%af%e7%a4%be%e6%8b%9b%e9%9d%a2%e8%af%95%e7%bb%8f%e5%8e%86%ef%bc%88%e5%9b%9b%e5%b9%b4%e7%bb%8f%e9%aa%8c%ef%bc%89%ef%bc%9a%e5%ad%97%e8%8a%82%20%e7%b1%b3%e5%93%88%e6%b8%b8%20%e5%af%8c%e9%80%94%20%e7%8c%bf%e8%be%85%e5%af%bc&amp;summary=%e5%86%99%e5%9c%a8%202023%20%e5%b9%b4%e5%88%9d%e7%9a%84%e5%90%8e%e7%ab%af%e7%a4%be%e6%8b%9b%e9%9d%a2%e8%af%95%e7%bb%8f%e5%8e%86%ef%bc%88%e5%9b%9b%e5%b9%b4%e7%bb%8f%e9%aa%8c%ef%bc%89%ef%bc%9a%e5%ad%97%e8%8a%82%20%e7%b1%b3%e5%93%88%e6%b8%b8%20%e5%af%8c%e9%80%94%20%e7%8c%bf%e8%be%85%e5%af%bc%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;写在 2023 年初的后端社招面试经历（四年经验）：字节 米哈游 富途 猿辅导&#34;,&#34;https://jiekun.dev/posts/2023-interviews/&#34;,&#34;写在 2023 年初的后端社招面试经历（四年经验）：字节 米哈游 富途 猿辅导, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Feb 26, 2023</span></div>
+				<h1>写在 2023 年初的后端社招面试经历（四年经验）：字节 米哈游 富途 猿辅导</h1>
+			</header>
+			<div class="content">
+				<h2 id="目录">目录<a href="#目录" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<ol>
+<li><a href="#1-%E8%83%8C%E6%99%AF">背景</a></li>
+<li><a href="#2-%E9%9D%A2%E8%AF%95%E5%87%86%E5%A4%87">面试准备</a></li>
+<li><a href="#3-%E9%9D%A2%E8%AF%95">面试</a>
+<ul>
+<li><a href="#31-%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E5%9B%BD%E9%99%85%E5%8C%96%E7%94%B5%E5%95%86">字节跳动</a></li>
+<li><a href="#32-%E7%B1%B3%E5%93%88%E6%B8%B8">米哈游</a></li>
+<li><a href="#33-%E5%AF%8C%E9%80%94%E7%89%9B%E7%89%9B%E4%BA%92%E8%81%94%E7%BD%91-%E5%9F%BA%E7%A1%80%E6%8E%A5%E5%85%A5">富途牛牛</a></li>
+<li><a href="#34-%E7%8C%BF%E8%BE%85%E5%AF%BC%E5%A4%A7%E7%9B%91%E6%8E%A7-%E6%97%A5%E5%BF%97">猿辅导</a></li>
+</ul>
+</li>
+<li><a href="#4-%E6%80%BB%E7%BB%93">总结</a></li>
+<li><a href="#5-%E4%B8%80%E4%BA%9B%E6%8E%A8%E8%8D%90">一些推荐</a></li>
+</ol>
+<h2 id="1-背景">1. 背景<a href="#1-背景" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>距离上一次<a href="https://jiekun.dev/posts/2020-03-28-shopee%E9%9D%A2%E8%AF%95%E5%A4%8D%E7%9B%98/">面试</a>已经过去快 3 年了，又碰上 2022 年互联网行业大动荡，很多企业都做出了裁员决定。身为互联网人要时刻关注自身成长，所以会对 “跟面试官切磋” 这种事情比较感兴趣，其实也是一种打探行情的手段：</p>
+<ul>
+<li>3 年间自己的技术是线性成长、指数成长还是对数成长，跟同龄人相比如何？</li>
+<li>当前求职是买方市场还是卖方市场？</li>
+</ul>
+<p>因此收集这两个信息是我面试<strong>最初的目的</strong>，当然整个过程很长，<strong>最终的选择</strong>也会受很多事情影响。</p>
+<h2 id="2-面试准备">2. 面试准备<a href="#2-面试准备" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>毕业之后我在两家公司工作过，触及的业务包括营销数据分析、供应链物流、社媒广告投放等。每个领域包含的内容都比较多，除非是手上正在负责，其它内容想回忆起来是相当难的。因此在简历撰写上，<strong>尽量将业务转化为技术模型</strong>，好处在于：</p>
+<ol>
+<li>让面试官能更多地从技术角度切入谈某项业务；</li>
+<li>求职方向更灵活，没做过这项业务的面试官也有问题可问；</li>
+<li>减少自己复习过往业务的时间（<strong>摆烂</strong>）。</li>
+</ol>
+<p>正常来说简历准备好之后，要有具体的专业知识做支撑。考虑到工作年限不长，所以仍是以基础为准，对接触一线业务的后端来说计算机网络、数据库、操作系统三大块是一定绕不开的，在此之上搭建分布式、微服务架构、服务治理等知识框架。最后补充对工作项目的思考，例如做的项目在业界中是否有竞争对手、大家的方案横向对比有什么优劣点，自己的创新点在哪里等等。</p>
+<p><strong>但是</strong>面试准备是服务于我的面试目的的，基于<strong>评估自身技术水平</strong>的想法，我最终也没有拿起课本，而是决定看看在 “<strong>不刻意准备</strong>”（<strong>摆烂</strong>）的情况下能表达到什么程度。个人不认为裸面（again，<strong>摆烂</strong>）是个好的、值得推广的实践，这导致在面试的时候很多问题（例如：是否了解 Kafka、是否了解一致性哈希）我选择直接回答 “不会”、“没了解过” 来避免 follow up questions，但是在一些特殊背景下确实可以更真实反映出自身的水平。</p>
+<p>当然，面试中有一些比较 “硬” 的条件要求（算法题咱说的就是你）是须要有所积累的。因为本身不擅长算法，解新题其实会需要一定的时间，所以我选择反复写 Top 100 Like 的老题目来保持手感。
+<img src="../202302-2023-interviews/leetcode.png" alt=""></p>
+<p>最后关于求职方向的选择，更多是出于个人偏好，不具备什么可参考性。对我来说，由于未来倾向于换到云原生相关的赛道，那自然是以基础架构相关的岗位为主。但是找到 100% 符合目标的职位其实是很难的，而且所谓的 “云原生”、“基础架构” 本身就是个非常大的范围，其中细分方向、职能无数。征询了一些朋友的意见，最后也是尽可能地往目标方向靠拢即可。</p>
+<h2 id="3-面试">3. 面试<a href="#3-面试" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>求职过程中，有一些公司是直接拒掉了简历的，一方面是简历比较普通，其次也可能确实没有招人的需求。这也是符合预期的，平时大家开发的时候 <a href="https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/">Liveness Probes</a> 也会有失败，说明（简历）该回炉重造了。Anyways，最终进入面试流程的有 4 家，如果只对其中某一家感兴趣的话可以从导航目录直接跳过去。</p>
+<p>在面试过程中我都会进行录音，这是个很有收益的事情，过往面试中我观察到有些同学会自认为回答得 “尚可”，殊不知很多细节只是在脑中形成思路，在表述上则是断断续续。任何细节的缺失在面试官听来都可能导致理解上的差异，最终予以不够好的评价。面试后听录音重新 Review 面试，可以从面试官的角度听自己的回答，也方便整理面试经历。</p>
+<h3 id="31-字节跳动国际化电商">3.1 字节跳动（国际化电商）<a href="#31-字节跳动国际化电商" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>字节的面试流程是组内面试官-&gt;组外面试官(交叉面)-&gt;组内面试官，当然因为菜的原因没继续走到第三面。两位面试官都很感兴趣所做的业务，聊业务的比重也是 4 家中最多的。另外字节的面试的时候有个小插曲，二面刚好是疫情爆发最严重的时候，顶着发烧面试也算是一次独特的经历吧。</p>
+<p>详细记录：<a href="https://jiekun.dev/posts/2022-bytedance-interview/">写在 2022 年末的字节跳动面试复盘</a></p>
+<h4 id="一面摘录">一面摘录<a href="#一面摘录" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<ul>
+<li>了解索引下推吗？什么情况下会下推到引擎去处理？
+<ul>
+<li>通过某个索引没办法按顺序地覆盖所有的查询条件，但是仍然可以利用索引内存在的字段（尽管不是有序的，需要扫描）去进一步过滤；</li>
+<li>举例：idx(a,b,c,d)，查询条件为 a=? and b=? and d=?，发生下推减少回表数量；</li>
+</ul>
+</li>
+<li>什么场景下索引会失效？
+<ul>
+<li>场景有很多，但是如果我是一个引擎，我关注的不是什么情况会失效，而是走什么路径所花费的随机 I/O 和顺序 I/O 最少，如果走某个索引花费的随机 I/O 比从聚簇索引（顺序）查（成本）都还要高，那还不如直接去全表扫描；</li>
+<li>典型例子：捞超过全表 30% 的数据；</li>
+</ul>
+</li>
+<li>有没有具体一点的例子？
+<ul>
+<li>还是刚刚提到的例子，比如说我要按照 update_time 去做范围查询，捞很多的数据，即使 update_time 有索引，也会选择全表扫描；</li>
+</ul>
+</li>
+<li>WHERE id NOT IN (?, ?, ?) 会走索引吗？
+<ul>
+<li>还是要看成本；</li>
+<li>举例：id 字段只包含 3 个值，1、2、3，3 只有几行，而 1、2 各有 100w 行，如果查询条件是 NOT IN (1, 2) 会走索引，如果查询条件是 NOT IN (3) 不会走索引。</li>
+</ul>
+</li>
+</ul>
+<p>反问环节</p>
+<ul>
+<li>团队里面大约有多少个仓库、部署了多少服务（大致规模）？</li>
+<li>这些项目会做单元测试吗，或者说平时的自测、代码质量保障是通过什么方式做的？
+<ul>
+<li>工具类的库会写单测；</li>
+<li>自动化测试会由流量回放平台，QA 执行常用的用例；</li>
+</ul>
+</li>
+<li>整个流量回放都是 QA 负责的吗？
+<ul>
+<li>后端需要在代码里面做配合；</li>
+</ul>
+</li>
+<li>一个业务迭代版本是怎么安排时间发布的呢，比如说是每周固定发布还是说测试完成后的几天发布？
+<ul>
+<li>按双月来排期，产品拟定优先级， 研发扣除 oncall 等时间分配任务；</li>
+</ul>
+</li>
+<li>oncall 那周安排多少时间精力做 oncall 和其它问题？
+<ul>
+<li>80% 时间在 oncall，剩下的时间会看情况修复一下线上和其他的小问题；</li>
+</ul>
+</li>
+<li>前面很多问题都没有答对，面试官的建议？</li>
+</ul>
+<h4 id="二面摘录">二面摘录<a href="#二面摘录" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<ul>
+<li>这种（短链接服务）场景里面写入（创建短链）耗时长可否容忍？
+<ul>
+<li>一定程度上是 OK 的因为创建短链的请求比访问短链的请求少很多，容忍度更高；</li>
+</ul>
+</li>
+<li>在这个大量 KV 数据读写的场景，为什么不考虑直接使用 KV 存储或者 Redis 来支撑？
+<ul>
+<li>考虑过，但是短链服务本质上更需要背后收集到的访问数据来体现业务价值，而访问数据的聚合分析需要数仓，公司内没有很好的 KV 存储到数仓的支持，不想当小白鼠；</li>
+</ul>
+</li>
+<li>为何不考虑数据仓库提供 HBase 来支持读写，节约掉 MySQL / KV 存储同步到数仓的过程？
+<ul>
+<li>嗯，好像是个可考虑的想法，但是不太了解 HBase；</li>
+</ul>
+</li>
+<li>能说一下 LevelDB 的存储结构吗？
+<ul>
+<li>内心：完了写上简历了但又没复习，啥都不记得了；</li>
+</ul>
+</li>
+<li>算法：定义 Redis 跳跃表的结构，再实现一版它的插入方法。
+<ul>
+<li>内心：orz。</li>
+</ul>
+</li>
+</ul>
+<p>反问</p>
+<ul>
+<li>在字节的技术人对于公司的基础架构的满意程度如何？
+<ul>
+<li>该有的都有；</li>
+</ul>
+</li>
+<li>外出参加技术会议、交流在字节里机会是否丰富？</li>
+<li>前面很多问题都没有答对，面试官的建议？</li>
+</ul>
+<h3 id="32-米哈游">3.2 米哈游<a href="#32-米哈游" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>整体来说面试问题都很基础和简单，能不能通过的话（如果没特意复习）就靠平时的积累了。Golang 岗位里对数据结构的提问非常频繁，个人认为对 <code>map</code>、<code>sync.Map</code>、<code>context</code>
+等的熟悉程度应该达到能完整记忆每个结构体字段的水准。</p>
+<p>详细记录：<a href="https://jiekun.dev/posts/2023-mihoyo-interview/">2023 年初的米哈游面试复盘</a></p>
+<h4 id="一面摘录-1">一面摘录<a href="#一面摘录-1" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<ul>
+<li>
+<p>Go 里面使用 Map 时应注意问题和数据结构？</p>
+<ul>
+<li>可以通过定义 value 为 struct 来节约内存；</li>
+<li>哈希分桶的结构，用哈希值的高八位和低八位分别来做桶内定位的依据和分桶的依据等；</li>
+</ul>
+</li>
+<li>
+<p>Map 扩容是怎么做的？</p>
+<ul>
+<li>依照 Redis 渐进式 rehash 的思路说了一版；</li>
+</ul>
+</li>
+<li>
+<p>Map 的 panic 能被 recover 掉吗？了解 panic 和 recover 的机制吗？</p>
+<ul>
+<li>不懂，但是实际上是不可以的，具体原因可以看看 Map 并发读写的时候抛出的是什么，是不是普通的 panic；</li>
+</ul>
+</li>
+<li>
+<p>Map 怎么知道自己处于竞争状态？是 Go 编码实现的还是底层硬件实现的？</p>
+<ul>
+<li>通过结构体中的标记位实现的，可能是通过 CAS 操作的；</li>
+</ul>
+</li>
+<li>
+<p>CAS 具体是怎么实现的呢？</p>
+</li>
+<li>
+<p>并发使用 Map 除了加锁还有什么其他方案吗？</p>
+</li>
+<li>
+<p>有对比过 sync.Map 和加锁的区别吗？</p>
+</li>
+<li>
+<p>说一下（Redis）分布式锁的实现？</p>
+<ul>
+<li>setnx / 唯一 value / ttl</li>
+</ul>
+</li>
+<li>
+<p>基于 Redis 的分布式锁会有什么问题？</p>
+<ul>
+<li>主从模型下同步不保证一致会导致锁失效</li>
+</ul>
+</li>
+<li>
+<p>Redis 分布式锁超时可以超时时间设长一点可以吗？不可以的话需要怎么解决？</p>
+<ul>
+<li>不根本解决问题，可以考虑旁路的 goroutine 不断自旋续期</li>
+</ul>
+</li>
+<li>
+<p>对 Redis 锁续期这个怎么实现呢？</p>
+</li>
+<li>
+<p>日常在用的 Redis 集群都是什么架构？在主从模式和 Redis Cluster 中分布式锁会有什么问题？</p>
+</li>
+</ul>
+<p>反问</p>
+<ul>
+<li>Golang 在米哈游的使用场景？</li>
+<li>项目组的一些细节，代码组织、管理形式等是怎样的？</li>
+<li>项目质量的保障手段有哪些，单元测试覆盖率要求如何？</li>
+<li>测试的同学主要以白盒测试还是黑盒测试为主？</li>
+<li>前面很多问题都没有答对，面试官的建议？</li>
+</ul>
+<h3 id="33-富途牛牛互联网-基础接入">3.3 富途牛牛（互联网-基础/接入）<a href="#33-富途牛牛互联网-基础接入" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>4 家中富途牛牛问的基础知识是最多的，给我印象很深刻的是跟每位面试官的沟通都（提）很（示）顺（很）畅（多），那因为一些不熟悉的知识点我基本是依靠同类的工具去类比和猜想，面试官很愿意听我的这些猜想，有些思路上和所问的实现确实是不同的，面试官会提出来那（正确实现中）某某问题是如何（在我提出的实现中）解决的，引导我慢慢靠近或者推导出正确实现。</p>
+<p>我认为作为面试官，这些应该是标配培训的能力，但是实际上在面试中能见到的甚少，一是面试时间有限，二是作为面试官一天面试很多人，耐心难免也会有消磨，这都是可以理解的。所以实际上能做到如此的话，对面试者确实会是非常好的体验。</p>
+<p>详细记录：<a href="https://jiekun.dev/posts/2023-futu-interview/">2023 年初的富途牛牛面试复盘</a></p>
+<h4 id="一面摘录-2">一面摘录<a href="#一面摘录-2" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<ul>
+<li>问一段代码输出结果？</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">test1</span><span class="p">())</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">test2</span><span class="p">())</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">test3</span><span class="p">())</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">test4</span><span class="p">())</span>
+
+	<span class="k">return</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">test1</span><span class="p">()</span> <span class="p">(</span><span class="nx">v</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span>
+	<span class="k">return</span> <span class="nx">v</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">test2</span><span class="p">()</span> <span class="p">(</span><span class="nx">v</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span>
+	<span class="p">}()</span>
+	<span class="k">return</span> <span class="mi">3</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">test3</span><span class="p">()</span> <span class="p">(</span><span class="nx">v</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span>
+	<span class="nx">v</span> <span class="p">=</span> <span class="mi">3</span>
+	<span class="k">return</span> <span class="mi">4</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">test4</span><span class="p">()</span> <span class="p">(</span><span class="nx">v</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">(</span><span class="nx">n</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">n</span><span class="p">)</span>
+	<span class="p">}(</span><span class="nx">v</span><span class="p">)</span>
+	<span class="k">return</span> <span class="mi">5</span>
+<span class="p">}</span>
+</code></pre></div><ul>
+<li>Golang 标准库中 map 的底层数据结构是什么样子的？</li>
+<li>Map 的查询时间复杂度如何分析？</li>
+<li>极端情况下有很多哈希冲突，Golang 标准库如何去避免最坏的查询时间复杂度？</li>
+<li>Golang map Rehash 的策略是怎样的？什么时机会发生 Rehash？</li>
+<li>Rehash 具体会影响什么？哈希结果会受到什么影响？</li>
+<li>Rehash 过程中存放在旧桶的元素如何迁移？</li>
+<li>并发环境共享同一个 map 是安全的吗？
+<ul>
+<li>panic</li>
+</ul>
+</li>
+<li>如果并发环境想要用这种哈希容器有什么方案？
+<ul>
+<li>sync.Mutex / sync.RWMutex</li>
+<li>sync.Map</li>
+</ul>
+</li>
+<li>加锁存在什么问题呢？</li>
+<li>sync.Map 比加锁的方案好在哪里，它的底层数据结构是怎样的？
+<ul>
+<li>缓存 + map 组成的结构</li>
+<li>底层 map 的操作依然是加锁的，但是读的时候使用上缓存可以增加并发性能</li>
+</ul>
+</li>
+<li>sync.Map 的 Load() 方法流程？</li>
+<li>sync.Map Store() 如何保持缓存层和底层 Map 数据是相同的? 是不是每次执行修改都需要去加锁？
+<ul>
+<li>或许是通过加锁和 CAS 保证的？（面试官：它下面还有一些 tricky 的思路，面试结束可以再去看看）</li>
+</ul>
+</li>
+<li>channel 被 close 操作之后进行读和写会有什么问题？</li>
+<li>未被初始化的 channel 进行读写会有什么问题？</li>
+<li>channel 底层数据结构是怎样的，尝试用结构体来表述一下？</li>
+</ul>
+<p>反问</p>
+<ul>
+<li>了解面试部门的基本情况？</li>
+<li>部门内微服务的数量？每个研发大概会负责多少服务的开发工作？</li>
+<li>C++ 和 Golang 在团队内的使用场景和比例？</li>
+<li>研发对开发质量的保障是如何完成的，测试和覆盖率是否有要求？</li>
+<li>研发和测试的人员配置比例？</li>
+<li>前面很多问题都没有答对，面试官的建议？</li>
+</ul>
+<h4 id="二面摘录-1">二面摘录<a href="#二面摘录-1" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<ul>
+<li>
+<p>如果做一个翻译服务，翻译能力来自于供应商，如何从技术上对几家（A、B、C）供应商作出评估？</p>
+</li>
+<li>
+<p>如果几家都要接入，且各家之间的翻译能力都各有优劣，那应该如何去搭建这个服务的框架？</p>
+<ul>
+<li>调度器</li>
+<li>数据采集 / 反馈机制，帮助调度器更好地工作</li>
+<li>可扩展性，固化供应商的接入标准，方便未来扩展更多供应商选择</li>
+</ul>
+</li>
+<li>
+<p>除了回答的这些方面，一个服务的设计还需要注意什么？</p>
+<ul>
+<li>正常服务应该提供的网关，包括鉴权、限流、多租户</li>
+<li>提供给外部的服务需要注意 SLA，SLA 则围绕日志、监控、Tracing 做文章</li>
+</ul>
+</li>
+<li>
+<p>一副扑克牌中随机取 5 张，取到顺子的概率是多少？</p>
+<ul>
+<li>Hint 1：一种花色有多少种顺子？9 种</li>
+<li>Hint 2：一个顺子有 5 张牌，有多少种组合可能？4 ^ 5 种</li>
+<li>Hint 3：分子已经知道了，分母怎么表示，n 张取 m 张怎么表示？</li>
+</ul>
+</li>
+</ul>
+<p>反问</p>
+<ul>
+<li>项目基本都是微服务 &amp; Kubernetes 这套方案吗？</li>
+<li>研发跟基础设施打交道能到什么样的深度，例如能使用 Kubernetes 的那些内容，中间件的使用权限上有什么样的管控？</li>
+<li>正常业务的 CI/CD 里面都做了/集成了多少测试或检查？</li>
+<li>业务的研发能在 Kubernetes 上具体写哪些东西呢，例如 sidecar、operator 等等？
+<ul>
+<li>有专门的团队去做，但是还在起步阶段，大家都可以贡献；</li>
+</ul>
+</li>
+</ul>
+<h4 id="三面摘录">三面摘录<a href="#三面摘录" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<ul>
+<li>
+<p>数据库迁移的原因是什么？</p>
+</li>
+<li>
+<p>完成迁移之后 DB 成本降低多少？</p>
+</li>
+<li>
+<p>迁移过程中双读双写具体是什么样的方案？</p>
+</li>
+<li>
+<p>双写过程中只写成功了其中一个 DB，返回给用户报错，那是否会存在脏数据呢？</p>
+</li>
+<li>
+<p>双读具体是什么方案，其中一个读成功了就返回还是要两个都读成功才可以？</p>
+</li>
+<li>
+<p>HTTP 流量的录制工具主要是做什么用呢？</p>
+</li>
+<li>
+<p>HTTP 流量录制会涉及到一些登陆态的处理吗？</p>
+</li>
+<li>
+<p>掷骰子，游戏规则：希望结果尽可能大，如果对第一次的结果不满意可以掷第二次，但是第一次结果就作废了，以第二次的结果为准。这个掷骰子结果的数学期望是多少呢？</p>
+<ul>
+<li>Hint 1：如果第一次扔到 6，还考虑扔第二次吗？如果第一次扔到 1 考虑吗？</li>
+<li>Hint 2：那什么情况考虑扔第二次，什么情况不考虑？</li>
+</ul>
+</li>
+<li>
+<p>输入两个整数 a 和 b，输出他们相除的结果，如果有循环小数用括号表示。如：</p>
+<ul>
+<li>a=-1，b=2，输出 &ldquo;-0.5&rdquo;</li>
+<li>a=1，b=3，输出 &ldquo;0.(3)&rdquo;</li>
+<li>a=10，b=80，输出 &ldquo;0.125&rdquo;</li>
+<li>a=-100，b=10，输出 &ldquo;-10&rdquo;</li>
+</ul>
+</li>
+</ul>
+<p>三面反问</p>
+<ul>
+<li>一、二、三轮的面试官都是团队中的什么角色呢？</li>
+<li>组织架构中小组、中心的概念和规模？</li>
+<li>作为管理者如果看到团队中的技术氛围比较欠缺，会考虑什么样的手段（去提升）呢？</li>
+<li>在已有组件能支撑业务的情况下，如何看待 Member 提出的一些组件的升级或引入呢？</li>
+<li>对于 CI/CD 这块，可能不会直接产生业务影响（例如更高的订单量），在公司的现状如何，以及如何看待将时间投入在这上面呢？</li>
+<li>前面很多问题都没有答对，面试官的建议？</li>
+</ul>
+<h3 id="34-猿辅导大监控-日志">3.4 猿辅导（大监控-日志）<a href="#34-猿辅导大监控-日志" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>其实最初有一点点惊讶原来猿辅导在国家一些政策影响下仍在继续活跃。由于投递的是更贴近基础设施的岗位，很多问题能听得出来都是从基础架构工程师的角度发问的。另外它们家的面试有一个比较印象深刻的点就是，每位面试官都喜欢问：“你觉得 XXXXX”，例如 “你觉得哪些项目挑战最大”、“你觉得这里面最难的点在哪里”。不过作为投递里面唯一完全没接触过的领域，他们问的很多问题我都非常有兴趣继续探讨下去，也是少有的关注简历上<a href="https://gist.github.com/jiekun/ac4387b613e91c2d4142df35614cab34"><strong>CDC同步方案</strong></a>的团队。</p>
+<p>详细记录：<a href="https://jiekun.dev/posts/2023-yuanfudao-interview/">2023 年初的猿辅导面试复盘</a></p>
+<h4 id="一面摘录-3">一面摘录<a href="#一面摘录-3" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<ul>
+<li>为什么存储要从 TiDB 迁移到 MySQL？</li>
+<li>迁移过程中有遇到过什么问题或者有难度的挑战吗？</li>
+<li>说下这些问题（双写一致性、迁移前后数据核对）怎么解决的吧？</li>
+<li>设计不锁表、数据版本不回绕的数据迁移方案具体是要解决怎样的问题呢？</li>
+<li>怎么理解可观测性（Observability）？</li>
+<li>Redis 有看过源码吗，贡献过什么 Feature？</li>
+<li>Redis 6 里面的 Threaded I/O 是想解决什么问题？</li>
+<li>讲一下 WiscKey 论文，想解决的是什么场景问题？ KV 分离能解决写放大的问题吗？</li>
+</ul>
+<p>写代码</p>
+<ul>
+<li>一个有序数组，按某个位置进行旋转，如 [1,2,3,4,5] 变成 [3,4,5,1,2]，在这个旋转后的数组中查找给定值；</li>
+</ul>
+<p>反问</p>
+<ul>
+<li>部门里面目前在负责那些日志相关的事情，例如是要搭建日志平台，或者现有日志平台的运维方，还是负责使用方的接入？</li>
+<li>现在日志的体量大约是多少 PB，每天有多少日志需要采集收录？</li>
+<li>日志的采集现在是怎么做的呢？</li>
+<li>职位 OnCall 的情况如何？</li>
+<li>这个日志平台还未正式上线的话，以往业务团队是怎么查询的呢？</li>
+</ul>
+<h4 id="二面摘录-2">二面摘录<a href="#二面摘录-2" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<ul>
+<li>短链接唯一 ID 设计这块挑战是什么？</li>
+<li>针对相同长链接，会生成相同的还是不同的短链接，（两种方案分别是）怎么实现的？</li>
+<li>数据迁移的过程中遇到什么问题？</li>
+<li>为什么要为这些业务设计 ClickHouse 的存储？OLAP 和离线数仓的差别在哪里？</li>
+<li>讲一下 Trace 的数据模型，什么是 Span，Trace ID 和 Span ID 是怎么设计的？</li>
+<li>Metrics 的数据模型有了解吗？</li>
+<li>LSM-Tree 和 B+ Tree 的本质区别是什么呢？</li>
+<li>LSM-Tree 有很多实现，能不能用 B+ Tree 作为其中的一种方案呢？用 B+ Tree 代替原来的 SSTable 有什么好处呢？</li>
+</ul>
+<p>写代码</p>
+<ul>
+<li>用一个环形链表实现一个队列，新元素进入时可能需要扩容，但是不需要考虑缩容；</li>
+</ul>
+<p>反问</p>
+<ul>
+<li>面试的职位未来是专注日志方向的吗？</li>
+<li>对可观测性 SaaS 平台的时间规划是怎样的，何时会希望推出产品，交付使用？</li>
+<li>这套 SaaS 平台面向的用户是内部用户还是外部用户呢？</li>
+<li>职位 Go 和 Java 都需要，Go 语言在团队里面是怎样发挥作用的呢，具体支撑哪些功能，平台还是底层实现？</li>
+</ul>
+<h4 id="三面摘录-1">三面摘录<a href="#三面摘录-1" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h4>
+<ul>
+<li>数据库迁移，双写阶段有写入失败时怎样处理？</li>
+<li>双写的几个阶段的目标分别是什么，某些阶段能不能省略不做？</li>
+<li>还有其他项目觉得比较有挑战的吗？</li>
+<li>讲解一下做过的可观测性方向的事情？</li>
+<li>监控和 Trace 是怎么做联动的？</li>
+</ul>
+<p>写代码</p>
+<ul>
+<li>用两个栈对数据进行排序，例如第一个栈中当前有 [1,3,4,2,6,9,7]，第二个栈为 []，利用这两个数据结构把数据排序，尽可能少申请空间或者使用额外的数据结构；</li>
+</ul>
+<p>反问</p>
+<ul>
+<li>目前公司内可观测性，例如 Trace 和日志建设的完善程度如何？</li>
+<li>部署架构中都用了哪些 Agent 来辅助可观测性信息的采集，各是做什么的？</li>
+<li>除了 Kubernetes 还在用哪些容器调度管理的方案，没有能迁移的原因（想借此评估一下对统一可观测性架构设计的影响和难度）？</li>
+</ul>
+<h2 id="4-总结">4. 总结<a href="#4-总结" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>整体来说面试没有出现想象中的地狱难度，几乎所有的面试官都很有耐心交流。但是被问到这么多的基础问题确实有一点点出乎意料，正常以为会是项目 &amp; 基础各占 50% 的比例。不过或许这也是好事情，个人非常赞同基础扎实但业务薄弱的工程师 &gt; 对业务有不错理解但基础不扎实（或比较远离一线开发、代码生疏）的工程师。另外其实计算机基础确确实实有在我的日常开发中帮到过我（quick question：你有在实际工作、排查问题中找过 <code>TIME_WAIT</code> 的网络连接吗？）。</p>
+<p>然后回到最初面试的目的，是为了回答下面两个问题：</p>
+<ul>
+<li>3 年间自己的技术是线性成长、指数成长还是对数成长，跟同龄人相比如何？</li>
+</ul>
+<blockquote>
+<p>是有成长的，但是没有那么理想，可能更介于线性成长和对数成长之间；</p>
+</blockquote>
+<ul>
+<li>当前求职是买方市场还是卖方市场？</li>
+</ul>
+<blockquote>
+<p>哈哈</p>
+</blockquote>
+<h2 id="5-一些推荐">5. 一些推荐<a href="#5-一些推荐" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>关于面试我认为下面的材料很大程度帮到过我，所以也会推荐给在看本文的你，或者要求职的同学。</p>
+<p><strong>USENIX</strong>：<a href="https://www.usenix.org/conferences">https://www.usenix.org/conferences</a></p>
+<blockquote>
+<p>如果想树立一些属于自己的亮点，一个捷径是了解面试官不懂的知识~~（不是）~~。关心前沿的学术和工业论文非常简单有效，USENIX 上覆盖了很多基础方向，例如计算机网络、操作系统、存储、分布式、安全，以及按职能划分的 SRE 等等。除了 USENIX 上的以外，如果有你关注方向的其他顶会那当然也是可以的，例如我以前会去看看 VLDB 和 SIGMOD 上的论文了解 KV 存储的一些新知识和研究方向。</p>
+</blockquote>
+<p><strong>操作系统导论</strong>：<a href="https://book.douban.com/subject/33463930/">https://book.douban.com/subject/33463930/</a></p>
+<blockquote>
+<p>一本很有意思的操作系统的入门书，可以写写里面代码了解一下 Linux 的 API，对于进程和内存相关的讲解让我印象非常深刻。</p>
+</blockquote>
+<p><strong>Go程序员面试笔试宝典</strong>：<a href="https://book.douban.com/subject/35871233/">https://book.douban.com/subject/35871233/</a></p>
+<blockquote>
+<p>首先声明一点这个书没帮到我面试，因为在面试前我没什么时间看它&hellip;正常来说我也不会推荐这种速食读物（手动狗头），但是结合面试遇到的提问来看，我认为它会对急着在一两个月内找到工作的同学很帮助。不过无论如何，程序员的学习是不建议走捷径的，如果对 Golang 感兴趣的话，有很多更好的替代品，包括 <a href="https://draveness.me">Draveness</a> 老师、<a href="https://research.swtch.com/">Russ Cox</a> 的博客等等。</p>
+</blockquote>
+
+			</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 7312 字, 约 15 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2023-02-26 13:28 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#目录">目录</a></li>
+    <li><a href="#1-背景">1. 背景</a></li>
+    <li><a href="#2-面试准备">2. 面试准备</a></li>
+    <li><a href="#3-面试">3. 面试</a>
+      <ul>
+        <li><a href="#31-字节跳动国际化电商">3.1 字节跳动（国际化电商）</a></li>
+        <li><a href="#32-米哈游">3.2 米哈游</a></li>
+        <li><a href="#33-富途牛牛互联网-基础接入">3.3 富途牛牛（互联网-基础/接入）</a></li>
+        <li><a href="#34-猿辅导大监控-日志">3.4 猿辅导（大监控-日志）</a></li>
+      </ul>
+    </li>
+    <li><a href="#4-总结">4. 总结</a></li>
+    <li><a href="#5-一些推荐">5. 一些推荐</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

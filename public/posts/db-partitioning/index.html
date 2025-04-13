@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="业务核心数据库架构演变——权衡取舍的艺术">
+<meta itemprop="description" content="Shopee供应链 Logistics Channel Service 项目（下称LCS）是物流履约链路上的最后一环，连接Shopee物流订单与第三方物流服务（3rd Party Logistics，"><meta itemprop="datePublished" content="2020-12-21T22:49:07+08:00" />
+<meta itemprop="dateModified" content="2020-12-21T22:49:07+08:00" />
+<meta itemprop="wordCount" content="6176">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="业务核心数据库架构演变——权衡取舍的艺术" />
+<meta property="og:description" content="Shopee供应链 Logistics Channel Service 项目（下称LCS）是物流履约链路上的最后一环，连接Shopee物流订单与第三方物流服务（3rd Party Logistics，" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/db-partitioning/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-12-21T22:49:07+08:00" />
+<meta property="article:modified_time" content="2020-12-21T22:49:07+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="业务核心数据库架构演变——权衡取舍的艺术"/>
+<meta name="twitter:description" content="Shopee供应链 Logistics Channel Service 项目（下称LCS）是物流履约链路上的最后一环，连接Shopee物流订单与第三方物流服务（3rd Party Logistics，"/>
+<title>业务核心数据库架构演变——权衡取舍的艺术</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fdb-partitioning%2f&amp;text=%e4%b8%9a%e5%8a%a1%e6%a0%b8%e5%bf%83%e6%95%b0%e6%8d%ae%e5%ba%93%e6%9e%b6%e6%9e%84%e6%bc%94%e5%8f%98%e2%80%94%e2%80%94%e6%9d%83%e8%a1%a1%e5%8f%96%e8%88%8d%e7%9a%84%e8%89%ba%e6%9c%af" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2fdb-partitioning%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=%e4%b8%9a%e5%8a%a1%e6%a0%b8%e5%bf%83%e6%95%b0%e6%8d%ae%e5%ba%93%e6%9e%b6%e6%9e%84%e6%bc%94%e5%8f%98%e2%80%94%e2%80%94%e6%9d%83%e8%a1%a1%e5%8f%96%e8%88%8d%e7%9a%84%e8%89%ba%e6%9c%af&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2fdb-partitioning%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fdb-partitioning%2f&amp;source=https://jiekun.dev&amp;title=%e4%b8%9a%e5%8a%a1%e6%a0%b8%e5%bf%83%e6%95%b0%e6%8d%ae%e5%ba%93%e6%9e%b6%e6%9e%84%e6%bc%94%e5%8f%98%e2%80%94%e2%80%94%e6%9d%83%e8%a1%a1%e5%8f%96%e8%88%8d%e7%9a%84%e8%89%ba%e6%9c%af&amp;summary=%e4%b8%9a%e5%8a%a1%e6%a0%b8%e5%bf%83%e6%95%b0%e6%8d%ae%e5%ba%93%e6%9e%b6%e6%9e%84%e6%bc%94%e5%8f%98%e2%80%94%e2%80%94%e6%9d%83%e8%a1%a1%e5%8f%96%e8%88%8d%e7%9a%84%e8%89%ba%e6%9c%af%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;业务核心数据库架构演变——权衡取舍的艺术&#34;,&#34;https://jiekun.dev/posts/db-partitioning/&#34;,&#34;业务核心数据库架构演变——权衡取舍的艺术, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Dec 21, 2020</span></div>
+				<h1>业务核心数据库架构演变——权衡取舍的艺术</h1>
+			</header>
+			<div class="content">
+				<blockquote>
+<p>Shopee供应链 Logistics Channel Service 项目（下称LCS）是物流履约链路上的最后一环，连接Shopee物流订单与第三方物流服务（3rd Party Logistics，下称 3PL ），几乎所有与 3PL 的交互都会收拢到LCS服务中。</p>
+<p>从 2019 年 9 月至今，随着上游系统拆分迁移，越来越多 3PL 进入 LCS 负责范围；并且由于电商业务在 2020 年的飞速发展，系统每月的订单量也在陡增，对数据库的要求和压力随之而来，在短短 1 年内，数据库架构跟随业务增长进行了多次调整。</p>
+<p>本文简要回顾了 LCS 诞生至今的数据库架构变化，并介绍项目组在 2020 年末落地的分库实践，梳理落地过程中踩过的坑和总结的经验、教训和思考。</p>
+<p>新方案实践的过程中，有遇到常规库表拆分中共有的问题，也有针对项目场景的“特色”问题，解决问题更多是权衡取舍的过程，在没有完美解决方案的情况下，需要结合业务特性来分析和选择最有利的方式处理。</p>
+</blockquote>
+<h1 id="introduction">Introduction<a href="#introduction" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<h2 id="项目起源">项目起源<a href="#项目起源" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>LCS 是一个基于 Python Django 框架的项目，业务核心是物流订单的履约过程，包括连接上游和第三方物流服务的创建订单、轨迹与运费更新。在部署上，LCS 依据业务所在的市场（印尼、马来西亚、新加坡等）不同，应用层分市场部署，并使用各自市场对应的数据库。在项目起步初期，这些不同市场的数据库共用同一套物理集群，共享内存和磁盘空间，在资源上看，是足以应付初期流量的。</p>
+<p><img src="../202012-db-partition/lcs_db_single_cluster.png" alt=""></p>
+<p>随着业务的铺开，共用集群的问题慢慢体现了出来。地区与地区之间存在业务差异，订单数量、订单轨迹比例不同，依赖物理集群自身的资源调度不能满足我们的需要，很多时候：</p>
+<ul>
+<li>订单量大的地区的数据库读写影响了订单量少的地区的 I/O 资源</li>
+<li>轨迹推送 RPS 远比下单高，大量的轨迹信息读写影响了核心的下单流程</li>
+</ul>
+<p>在尽量不影响业务的情况下，我们先选择了将热点地区的数据库拆分到单独的物理集群上，独占资源，保证自身服务稳定的同时，也减少了对其他地区服务的影响。在这个过程中，由于不同市场使用的是不同的逻辑库，所以切换没有任何的业务改动，在 DBA 的协助下，可以非常迅速地完成这个操作。</p>
+<p><img src="../202012-db-partition/lcs_db_multi_cluster.png" alt=""></p>
+<p>面对轨迹推送更高 RPS 的问题，我们使用了临时表和消息队列进行削峰，让解析轨迹并绑定到对应订单上的过程延迟发生，整个处理操作更加平滑。问题在于临时表是设计在业务 MySQL 库中的，业务上，轨迹更新可以缓冲，但是 MySQL 受到的压力并没有减少。</p>
+<p>因此，在前面的物理集群拆分后，我们又启用了 TiDB 存放临时轨迹数据，尽量降低对 MySQL 的 <code>INSERT</code> 和 <code>DELETE</code> 操作数量，这样做的好处在于能减少由于写操作带来的频繁页分裂与合并，有利于查询性能，以及写操作引起的主从延迟。</p>
+<p><img src="../202012-db-partition/lcs_db_with_tidb.png" alt=""></p>
+<h2 id="面临挑战">面临挑战<a href="#面临挑战" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>尽管已经做了两次拆分和调整，但是随着订单量的持续上涨，又由于物流订单中的信息繁杂，尤其上游早期未加以限制的各种收发货地址、名称、联系方式，以及跨国运输业务所需要的详细的商品细节，再加上物流轨迹的描述信息，让每个订单的<strong>文本类型数据非常多</strong>，数据库表的<strong>体积</strong>容易暴涨。</p>
+<p>根据 2020 年下半年的数据统计，印尼地区的 MySQL 集群磁盘使用量在短短数个月内已经突破 30%，并且随着上游流量灰度至本服务的比例上涨，每个月的增量都比以往更大。在灰度结束后，又迎来了下半年几个重要的促销活动时间节点——双9、双11、双12，数据体积进一步增长，仅通过日常的数据清理与数据库压缩已经没有办法维持集群磁盘空间的未来使用了。</p>
+<h1 id="evolution">Evolution<a href="#evolution" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>DBA 团队在历次集群调整的过程中，都一再强调了数据增速过快，磁盘空间规划和使用的问题。而业务产品团队也提出运营数据相关的需求，历史物流订单的数据在未来没有办法直接删除，而需要归档用于统计分析。这也推动了业务研发团队要尽快输出方案，应对更大的单量和不同的产品需求。</p>
+<h2 id="设计目标">设计目标<a href="#设计目标" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>在当前设计下，每个地区使用单个数据库，由于单库的数据体积暴涨，因此将各地区的数据库进行分库势在必行。我们期望新的架构可以：</p>
+<ul>
+<li><strong>承载未来较长一段时间的数据存储需求</strong>。因为硬件资源有限，很多时候变动并不容易实施，而且重新调整架构也是让 DBA 和业务研发人员非常痛苦的一件事情；</li>
+<li><strong>同样稳定可靠</strong>。对核心业务链路上的项目而言，稳定性是最重要的；</li>
+<li><strong>保留合理的可扩展性</strong>。重新调整架构很难，但不代表当前架构下不能做业务无感知的横向扩展；</li>
+<li><strong>便于进行数据归档</strong>。来自产品团队的需求，数据也是支撑未来业务设计的核心因素。</li>
+</ul>
+<h2 id="方案设计">方案设计<a href="#方案设计" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h3 id="分库模型">分库模型<a href="#分库模型" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>在最初的设计中，我们期望新的分库模型能够很容易完成数据归档的操作，例如可以从一个较粗的粒度将历史数据转移到归档机器上。因此第一个诞生的想法是设计<strong>按月份拆分的数据库</strong>。当前的单库设计——所有的数据都落在不同的哈希分表中，要将历史数据捞出来进行转移是非常麻烦的：</p>
+<ul>
+<li>DBA 团队不会访问和维护数据库中的数据，因此业务侧要自己完成归档操作；</li>
+<li>访问和迁移指定时间范围的数据，意味着所有哈希分表的 B+ 树需要发生大量的页合并操作，不利于线上业务的性能。</li>
+</ul>
+<p>因此，按月分库的想法初衷是想把可以进行归档的数据集中在一起，不管是业务侧想办法迁移，还是 DBA 能够提供数据库维度的操作，都能简化一定的操作成本。</p>
+<p><img src="../202012-db-partition/lcs_db_time_partitioning.png" alt=""></p>
+<p>然而，没有十全十美的方案，如果想要按月份拆分，当月内的数据就会落到同一个数据库中，在未来不可避免会存在各个库的数据量不均匀，热点数据集中等问题。并且随着单月数据量的增大，未来再来处理单库体积，例如将单月的数据再做哈希分库，数据库的结构就变得更为复杂了。</p>
+<p>所以，第二个较为容易实施的划分方案自然是一开始就<strong>直接按照哈希分库</strong>，让数据均匀地落到不同的分库中去。但这样又有和单库做数据归档一样的问题——库表均按哈希划分，数据均匀分布，没有较粗的粒度可以定位出历史数据，需要依赖应用层一点一点做迁移。</p>
+<p><img src="../202012-db-partition/lcs_db_hash_partitioning.png" alt=""></p>
+<p>这时，我们需要考虑在两种方案之间做一定的权衡，选取更适合当前和未来业务的方案：</p>
+<ul>
+<li><strong>支撑未来业务</strong>：两种方案都降低了单库的数据量，但是按时间分库会在业务进一步增长后，单库体积继续难以管控；哈希分库会更加均匀；</li>
+<li><strong>稳定性</strong>：从部署和使用上，两种方案的稳定性影响因素都比较类似。但是以时间分库可能需要 DBA 团队的手动维护，包括如何持续未来各个月份的数据库等。我们会更倾向于使用人工操作次数少的方案，哈希分库在搭建完成、交付后更可靠；</li>
+<li><strong>可扩展性</strong>：按时间分库比较难继续做拆分，例如在未来改成时间+哈希的方案，但是会显著增加复杂度；哈希分库可以考虑直接增加“<code>% base</code>”的数值，业务调整更小、更容易落地；</li>
+<li><strong>数据归档</strong>：哈希分库不好处理归档数据，归档操作粒度太细，有应用层的操作开销，引入大量的数据行<code>DELETE</code>操作，并且不加以控制资源使用量会影响线上业务；按时间分库如果有DBA支持，可以更方便地完成数据归档，操作难度大幅降低。</li>
+</ul>
+<p>结合各方面的考量，我们<strong>最终选择了哈希分库的方案</strong>，通过牺牲数据归档操作的便捷性，期望能让业务应用在未来相对更稳定可靠。</p>
+<h3 id="应用部署架构拆分">应用部署架构拆分<a href="#应用部署架构拆分" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>在确认分库的模型后，我们又遇到了另一个问题：受限于资源，想要给每个地区市场搭建多套物理集群，让每个哈希的分库都能独享机器，目前机房的剩余数量已经没办法支持。按照单个 MySQL 集群 1 主多从的搭配，n 个地区市场、每个市场 m 个哈希分库，一共需要 <code>(1 master + s slave) × n × m</code> 台物理机，成本是非常高昂的。所以 DBA 团队能够交付到给业务团队的集群数只有 n 套，也就是 n 个地区市场均为独立集群，该市场上的 m 个哈希分库共用一套集群。</p>
+<p>由于 Python 应用的特点，各个 Pyhton 进程都持有各自的连接池，因此，业务侧持有的数据库连接数为：</p>
+<ul>
+<li><strong>单进程连接数 * 进程数 * 机器数</strong>。</li>
+</ul>
+<p>而由于机器资源的问题，不同的 m 个哈希分库又落在了同一套物理集群上，对主库的机器而言，连接数上限变成了：</p>
+<ul>
+<li><strong>单进程连接数 * 进程数 * 机器数 * 数据库数</strong>。</li>
+</ul>
+<p><img src="../202012-db-partition/lcs_db_connections.png" alt=""></p>
+<p>依照当前的业务量进行计算，维持现有架构直连新分库集群将会超过机器设置的连接数上限，而且本身大量的连接数对服务而言也是非常不利的。因此业务侧需要想办法降低连接数峰值，否则新的数据库集群将无法使用。</p>
+<p>改造可以从计算的公式入手，降低 4 个参数中的任意一个都能提供我们想要的效果。其中：</p>
+<ul>
+<li>数据库数是依据业务数据，从保证未来单库数据体积不超过一定值计算得出的，因此不能再继续调低；</li>
+<li>进程数和连接池连接数的配置是依照业务请求量调整的，降低的话会让单机的请求处理能力下降。</li>
+</ul>
+<p>所以我们尝试在<strong>机器数量</strong>上做改变。由于<strong>处理下单和处理轨迹推送更新的服务没有分离</strong>，且<strong>轨迹流量是订单流量的数倍</strong>，因此该服务使用了较多的机器数量同时支撑下单与轨迹更新。但是轨迹流量是暂存 TiDB 而不访问 MySQL 的，如果可以服务分开部署，<strong>老服务只负责下单访问 MySQL，新服务轨迹更新只访问 TiDB</strong>，那么需要访问 MySQL 的机器数量就可以大幅降低。以印尼地区为例，轨迹请求数量为下单请求的 9 倍，参考这个比例，并考虑一定冗余机器数保护核心的下单业务流程，我们在 Nginx 代理层<strong>将不同类型的接口划分至了不同服务</strong>。</p>
+<p>拆分后，处理下单等服务的<strong>机器数量降低到原来的 25%</strong>，相应地，在连接数计算结果上，数值也缩小至 <strong>1/4</strong>。</p>
+<p><img src="../202012-db-partition/lcs_db_connections_with_different_app.png" alt=""></p>
+<p>当然，造成连接数过高的原因有很多，解决方案也有很多，例如用 Golang 将项目重构（减少服务进程数）、在应用层和数据库集群之间再搭建一套服务用来统一管理连接、使用分库的中间件等。目前对 LCS 项目而言，重构的开销会比较大，其他的方案也需要单独设计和推动，<strong>应用架构拆分</strong>可能是较为可靠且<strong>最容易落地的方案之一</strong>。</p>
+<h2 id="业务改造">业务改造<a href="#业务改造" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>确认数据库架构方案之后，应用层需要进行调整的内容主要包括：</p>
+<ul>
+<li>分库依据规则；</li>
+<li>应用数据路由；</li>
+<li>跨库操作补偿。</li>
+</ul>
+<h3 id="分库依据与路由规则">分库依据与路由规则<a href="#分库依据与路由规则" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>为了避免数据迁移，让新数据库架构能够平滑、可灰度地上线，我们圈定了部分表作为划分进分库的范围，这部分表的<strong>新增数据将会在新分库集群上进行读写，而老数据会在原数据库读写</strong>。</p>
+<p>业务团队梳理了对应范围表的读写模型，因为<strong>都依照其中的订单 ID 进行读写</strong>，毫无疑问<strong>订单 ID 可以作为分库的依据</strong>。因为数据库路由由应用层管理，只需要对订单 ID 稍加改造，加入一些标志信息，让应用层能区分开：</p>
+<ul>
+<li>订单 ID 应该在原数据库还是新的哈希分库；</li>
+<li>订单 ID 应该落在第几个哈希分库。</li>
+</ul>
+<p>调整框架内的数据库路由规则比较繁杂，包括将每类表的管理类重写，因为涉及的表比较多，所以也改动了大量的代码，这部分不一一赘述。</p>
+<h3 id="跨库一致性补偿">跨库一致性补偿<a href="#跨库一致性补偿" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>由于只圈定了部分表到分库中，那么这部分表<strong>与原数据库表的交互就丢失了事务可行性</strong>，也就是没办法依赖数据库的事务保证它们一致了。 MySQL 提供了 XA 跨库事务操作，但是在实际使用中，使用 XA 跨库事务有很大的性能开销，并且也需要开发者有对应的知识储备来正确操作。</p>
+<p>因此，最终应用层的方案是增加一套检查机制，使得不同库表的操作如果发生异常，也能在异步的检查任务执行完成后，恢复（回退/清理）到一致的状态。</p>
+<p>以下单流程为例，我们有以下表落在了不同数据库，但需要严格保持一致：</p>
+<ul>
+<li>订单表：在分库中，存有订单 ID 和订单对应 3PL 物流单号信息（通过订单单号获取订单信息，包括 3PL 物流单号）；</li>
+<li>反查表：在旧库中，存有 3PL 物流单号信息和对应订单单号信息（通过 3PL 物流单号查订单单号）。</li>
+</ul>
+<blockquote>
+<p>由于分库依据是订单 ID ，所以反查表的查询模式（按 3PL 物流单号查询）让它没有办法放在分库中，只有带订单 ID 的查询才能在分库集群上正确被路由，否则需要遍历所有分库获取数据。</p>
+</blockquote>
+<p>为了保持反查表和订单表数据的一致，我们在旧库中新增了一个检查表（Checker），这样 Checker 与反查表能使用事务特性，保证如果反查表需要发生变更，会有对应的 Checker 被记录下来。</p>
+<p>反查表操作结束后，应用层继续操作订单表，如果操作失败，此时<strong>反查表和订单表就会出现数据不一致的情况</strong>。应用层有定期执行的<strong>异步任务</strong>，通过检查 Checker 信息，<strong>对比当前订单表和反查表是否一致</strong>，如果不一致，则通过<strong>修改反查表记录让它们回到一致的状态</strong>。</p>
+<p><img src="../202012-db-partition/lcs_db_distributed_data_consistency.png" alt=""></p>
+<p>以上图为例，<code>mapping</code> 与 <code>order_info</code> 数据在不同数据库中，通过单库事务保证 <code>mapping</code> 数据与 <code>check_log</code> 数据同时存在，若后续 <code>order_info</code> 数据执行异常，后台任务延迟获取到 <code>check_log</code> 后，对比 <code>mapping</code> 与 <code>order_info</code> 数据，选择是否要对 <code>mapping</code> 进行清理。</p>
+<p><strong>Checker 扮演的角色相当于 InnoDB 中的 undo log</strong>，如果事务执行失败，参照其中的内容进行回退或类似的操作，保证最终一致性。</p>
+<p>应用层实现数据一致性补偿，是最初提出几个不同方案的其中之一，缺点是一致性需要在后台任务执行后才能保证，异常情况下涉及的表会出现短暂不一致的情况。若在各个分库中都设置对应的反查表，同样可以继续保留数据库事务的可行性，但是因为查询条件不同，需要额外遍历所有分库进行查询的开销。以上思路，包括不使用 XA 事务，都是出于不同业务场景、实践成本下的权衡取舍结果。</p>
+<h2 id="发布维护">发布维护<a href="#发布维护" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h3 id="灰度发布">灰度发布<a href="#灰度发布" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>应用架构、数据库架构的调整，在项目上都引入了非常多的新内容，因此灰度发布需要检查的内容也非常多。</p>
+<p>应用架构将部分流量划分到了新部署的服务中去，在上线需要谨慎验证<strong>新服务的各种中间件连通性，流量处理结果是否与原服务一致</strong>，并且轨迹信息数据的发起端在第三方，任何的请求丢失都可能影响到重量和运费计算等核心指标。因为路由划分依赖 Nginx，在发布时我们提前部署好应用层的服务，并让 Devops 团队协助，在 Nginx 节点上按比例让新路由配置逐步生效进行灰度。</p>
+<p>数据库架构的调整后，SQL 查询落入新分库集群或是老集群应用层的订单 ID 控制，因此灰度也由应用层实施。在代码全部发布完后，应用层通过配置开关管理订单 ID 规则，在满足特定条件（如特定机器 IP、比例和时间等）时才产生新分库规则的订单 ID，其余订单仍保持使用旧订单 ID。观察灰度订单的完整履约结果，确认无误后再慢慢扩大灰度比例。</p>
+<h3 id="数据归档">数据归档<a href="#数据归档" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>前面提到过，这套设计方案下，数据按照时间进行归档会比较困难，需要操作表中的具体数据。归档过程中大量 <code>UPDATE</code> 和 <code>DELETE</code> 产生的磁盘 I/O 会对业务性能表现产生影响。</p>
+<p>当前业务中只需保留最近6个月的数据，因此我们需要将创建时间在 6 个月前的订单筛选出来、写入至归档库、删除业务库数据。研发团队在设计后台归档任务的时候尽可能<strong>避免集中迁移</strong>，理论上只要迁移速度等同于下单写入的QPS即可维持平衡，因此将任务设计成每分钟执行，对数据库的压力能控制在可接受范围内。</p>
+<h3 id="无迁移扩容">无迁移扩容<a href="#无迁移扩容" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h3>
+<p>通常在数据库扩容时，我们需要将原有数据进行迁移，让其平均分布在各个新数据库中。但有了归档基础后，我们可以发现在预留充足时间的情况下，数据库的逻辑扩容无需进行数据迁移。</p>
+<p>以数据库数量从 16 个扩至 64 个为例，通过修改订单 ID 规则，让新订单根据 <code>% 64</code>求路由，老订单继续使用 <code>% 16</code>，那么每个数据库的数据增长速度为总订单量增速的 1/64，是原来 1/16 的 25%。在<strong>增速减缓，归档迁出速度不变</strong>的情况下，原有的 16 个数据库中数据量会逐步从总订单量的 1/16 降低至 1/64，而新增的 48 个数据库数据量也会从 0 增长至 1/64。</p>
+<p><img src="../202012-db-partition/lcs_db_scale_without_rebalancing.png" alt=""></p>
+<p>通过这种无数据迁移（Rebalance）的扩容，可以避免实施双写方案的复杂性和不确定性，且手动操作和人工检查双写正确性的环节更少；代价则是<strong>无法在扩容后马上降低原有数据库的压力</strong>，因为仍有大量老订单读写落在老数据库中，<strong>压力需要随时间缓慢降低</strong>。在监控机制完善且业务增长有一定规律的情况下，我们可以综合这些因素，预留足够多的时间进行扩容、接受缓慢的数据重平衡。</p>
+<h1 id="conclusion">Conclusion<a href="#conclusion" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h1>
+<p>除非有完美的解决方案，每一次的架构调整背后都是综合考量和权衡取舍的结果。本文中介绍了 LCS 项目在上线一年以来数据库架构演变过程的重要节点，以及在 2020 年末进行的分库改造实践、踩坑和总结思考。在新项目架构设计过程中，通常人们都会想设计一套未来数年都能稳定可用的系统，但是由于各种因素的限制，一些方案或是初期成本过高（尽管能减少未来的变更），或是较为激进、不可控，都会影响到最终实施和落地难度，而被排除在外。</p>
+<p>架构设计是基于当前、考虑未来、平衡成本的任务，多个方面相互制约，未必都有最优解。在存在短板时能取长补短的系统架构才更有利于快速的业务发展。</p>
+
+			</div>
+
+<hr>
+<div class="related-posts thin">
+	<h2>See Also</h2>
+	<ul>
+	
+	<li><a href="/posts/join-algorithm/">我的Join查询是如何得出结果的？</a></li>
+	
+	<li><a href="/posts/b_tree_page_split/">InnoDB中的B树与分裂</a></li>
+	
+	</ul>
+</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 6176 字, 约 13 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-12-21 22:49 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#项目起源">项目起源</a></li>
+    <li><a href="#面临挑战">面临挑战</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#设计目标">设计目标</a></li>
+    <li><a href="#方案设计">方案设计</a>
+      <ul>
+        <li><a href="#分库模型">分库模型</a></li>
+        <li><a href="#应用部署架构拆分">应用部署架构拆分</a></li>
+      </ul>
+    </li>
+    <li><a href="#业务改造">业务改造</a>
+      <ul>
+        <li><a href="#分库依据与路由规则">分库依据与路由规则</a></li>
+        <li><a href="#跨库一致性补偿">跨库一致性补偿</a></li>
+      </ul>
+    </li>
+    <li><a href="#发布维护">发布维护</a>
+      <ul>
+        <li><a href="#灰度发布">灰度发布</a></li>
+        <li><a href="#数据归档">数据归档</a></li>
+        <li><a href="#无迁移扩容">无迁移扩容</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

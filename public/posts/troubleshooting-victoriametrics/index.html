@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="监控数据问题排查：我的指标去哪儿了？">
+<meta itemprop="description" content="Medium This blog post is also available in English: Troubleshooting Time Series Database: Where Did My Metrics Go? 问题 复杂的现代应用离不开可观测性，而指标监控是可观测性中非常重要的一环。最常见的指标监控采集、处理、存储"><meta itemprop="datePublished" content="2024-07-18T15:12:00+08:00" />
+<meta itemprop="dateModified" content="2024-07-18T15:12:00+08:00" />
+<meta itemprop="wordCount" content="1750">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="监控数据问题排查：我的指标去哪儿了？" />
+<meta property="og:description" content="Medium This blog post is also available in English: Troubleshooting Time Series Database: Where Did My Metrics Go? 问题 复杂的现代应用离不开可观测性，而指标监控是可观测性中非常重要的一环。最常见的指标监控采集、处理、存储" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/troubleshooting-victoriametrics/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2024-07-18T15:12:00+08:00" />
+<meta property="article:modified_time" content="2024-07-18T15:12:00+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="监控数据问题排查：我的指标去哪儿了？"/>
+<meta name="twitter:description" content="Medium This blog post is also available in English: Troubleshooting Time Series Database: Where Did My Metrics Go? 问题 复杂的现代应用离不开可观测性，而指标监控是可观测性中非常重要的一环。最常见的指标监控采集、处理、存储"/>
+<title>监控数据问题排查：我的指标去哪儿了？</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2ftroubleshooting-victoriametrics%2f&amp;text=%e7%9b%91%e6%8e%a7%e6%95%b0%e6%8d%ae%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%ef%bc%9a%e6%88%91%e7%9a%84%e6%8c%87%e6%a0%87%e5%8e%bb%e5%93%aa%e5%84%bf%e4%ba%86%ef%bc%9f" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2ftroubleshooting-victoriametrics%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=%e7%9b%91%e6%8e%a7%e6%95%b0%e6%8d%ae%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%ef%bc%9a%e6%88%91%e7%9a%84%e6%8c%87%e6%a0%87%e5%8e%bb%e5%93%aa%e5%84%bf%e4%ba%86%ef%bc%9f&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2ftroubleshooting-victoriametrics%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2ftroubleshooting-victoriametrics%2f&amp;source=https://jiekun.dev&amp;title=%e7%9b%91%e6%8e%a7%e6%95%b0%e6%8d%ae%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%ef%bc%9a%e6%88%91%e7%9a%84%e6%8c%87%e6%a0%87%e5%8e%bb%e5%93%aa%e5%84%bf%e4%ba%86%ef%bc%9f&amp;summary=%e7%9b%91%e6%8e%a7%e6%95%b0%e6%8d%ae%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5%ef%bc%9a%e6%88%91%e7%9a%84%e6%8c%87%e6%a0%87%e5%8e%bb%e5%93%aa%e5%84%bf%e4%ba%86%ef%bc%9f%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;监控数据问题排查：我的指标去哪儿了？&#34;,&#34;https://jiekun.dev/posts/troubleshooting-victoriametrics/&#34;,&#34;监控数据问题排查：我的指标去哪儿了？, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Jul 18, 2024</span></div>
+				<h1>监控数据问题排查：我的指标去哪儿了？</h1>
+			</header>
+			<div class="content">
+				
+    <aside class="admonition note">
+        <div class="admonition-title">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></div><b>Medium</b>
+        </div>
+        <div class="admonition-content"><p>This blog post is also available in <strong>English</strong>:</p>
+<ul>
+<li><a href="">Troubleshooting Time Series Database: Where Did My Metrics Go?</a></li>
+</ul>
+</div>
+    </aside>
+<h2 id="问题">问题<a href="#问题" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>复杂的现代应用离不开可观测性，而指标监控是可观测性中非常重要的一环。最常见的指标监控采集、处理、存储、展示流程可以概括为下图：</p>
+<p><img src="../202407-troubleshooting-tsdb/pipeline.png" alt=""></p>
+<p>如果它出了问题，例如，我们经常被用户问道：“<strong>我已经在应用中记录了指标，为什么我的指标不能在 Grafana 上查到？</strong>”，应该怎么进行排查呢？今天我们以 VictoriaMetrics 为例，借助其内置的工具排查一下这个问题。当然，你可以在 Prometheus 上套用一样的排查思路，他们是高度兼容的。</p>
+<h2 id="数据采集">数据采集<a href="#数据采集" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>数据采集通常问题只出现在这 3 处：应用、vmagent、它们之间的网络。</p>
+<p>对应用来说，首先应该检查监控指标是否有正常暴露，可以通过访问指标的 HTTP 接口（如 <code> curl http://IP:Port/metrics</code>）查看，如果一切正常，你应该能看到如下的内容：</p>
+<pre tabindex="0"><code># HELP go_gc_duration_seconds A summary of the pause duration of garbage collection cycles.
+# TYPE go_gc_duration_seconds summary
+go_gc_duration_seconds{quantile=&quot;0&quot;} 0
+go_gc_duration_seconds{quantile=&quot;0.25&quot;} 0
+go_gc_duration_seconds{quantile=&quot;0.5&quot;} 0
+go_gc_duration_seconds{quantile=&quot;0.75&quot;} 0
+go_gc_duration_seconds{quantile=&quot;1&quot;} 0
+go_gc_duration_seconds_sum 0
+go_gc_duration_seconds_count 0
+# HELP go_goroutines Number of goroutines that currently exist.
+# TYPE go_goroutines gauge
+go_goroutines 7
+# HELP go_info Information about the Go environment.
+# TYPE go_info gauge
+go_info{version=&quot;go1.22.5&quot;} 1
+...
+</code></pre><p>如果你没能看到这些监控数据，则需要对应用进行调试，通常可以参考 <a href="https://prometheus.io/docs/instrumenting/clientlibs/">Prometheus SDK 的文档</a>，或者这个简单的 <a href="https://gist.github.com/jiekun/57114fb9552b6d180bca50cc36882be9">Go 语言示例</a>。</p>
+<p>好，那么应用一切正常后，我们要检查 vmagent 是否进行了数据采集。vmagent 提供了非常方便的 WebUI（如 <code>http://&lt;vmagent&gt;:8429/</code>）来协助，从 <code>target</code> 页面可以找到所有采集任务，正常情况下，它应该像这样：</p>
+<p><img src="../202407-troubleshooting-tsdb/vmagent_1.gif" alt=""></p>
+<p>到这一步，最常见的问题可能是：</p>
+<ol>
+<li>找不到对应的 Target（无论它是 Healthy 还是 Unhealthy 的）；</li>
+<li>对应的 Target 处在 Unhealthy 状态。</li>
+</ol>
+<p>如果没有找到 Target，它可能没有被服务发现，也可能是在服务发现后被 Relabeling Rule 所丢弃，vmagent 自带的 <a href="https://docs.victoriametrics.com/vmagent/index.html#relabel-debug">Relabel Debug</a> 功能可以有效地帮助你确认问题（见下图）。</p>
+<p><img src="../202407-troubleshooting-tsdb/vmagent_2.gif" alt=""></p>
+<p>如果对应 Target 处在 Unhealthy，原因可能是：</p>
+<ul>
+<li>vmagent 与应用间的网络不通；</li>
+<li>应用暴露的指标过于庞大导致访问超时。</li>
+</ul>
+<p>通常你可以在 vmagent 的 WebUI 上观察到具体的错误原因：</p>
+<p><img src="../202407-troubleshooting-tsdb/vmagent_3.png" alt=""></p>
+<p>我常常建议用户<strong>从 vmagent 所在的环境</strong>（例如 vmagent 所在的 Container / Pod / Node）手动访问抓取目标，观察网络情况是否与错误原因相匹配，如果匹配，则需要对网络问题进行（<code>iptables</code> / Kubernetes <code>Service</code> / &hellip;）调试。</p>
+<h2 id="数据传输">数据传输<a href="#数据传输" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>当你没能在数据采集端找到问题时，你一定会想，数据是否真的发送到了存储端（VictoriaMetrics Single-Node / Cluster）。</p>
+<p>首先考虑的是 vmagent 的 Remote Write 是否正常，我们需要借助一些 vmagent 暴露的指标来观察，以下截图来自于 VictoriaMetrics 提供的 <a href="https://grafana.com/grafana/dashboards/12683"><strong>Grafana Dashboard</strong></a>，它描述了对每个 Remote-Write Target 的数据传输情况：</p>
+<p><img src="../202407-troubleshooting-tsdb/vmagent_4.png" alt=""></p>
+<p>如果你还没有配置 VictoriaMetrics Grafana Dashboard，也可以尝试以下语句：</p>
+<pre tabindex="0"><code>sum(rate(vmagent_remotewrite_requests_total{}[1m])) by(url, status_code) &gt; 0
+sum(rate(vmagent_remotewrite_conn_bytes_written_total{}[1m]))&gt; 0
+</code></pre>
+    <aside class="admonition note">
+        <div class="admonition-title">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></div><b>Grafana Dashboard</b>
+        </div>
+        <div class="admonition-content">我仍然建议在搭建好 VictoriaMetrics 后第一时间导入 Grafana Dashboard，因为它上面包含针对 VictoriaMetrics 各个组件的监控指标，可以最大程度减少定位问题所需的时间。本文后续提及的监控指标也会基于 Grafana Dashboard 进行介绍。</div>
+    </aside>
+<p>另一个可能出现在 vmagent 侧的问题是 Remote Write 队列堵塞，同样，可以通过观察 <code>vmagent_remotewrite_pending_data_bytes</code> 指标发现：</p>
+<p><img src="../202407-troubleshooting-tsdb/vmagent_5.png" alt=""></p>
+<p>这种情况会导致 vmagent 采集的数据无法及时发往 Remote Write Target，因此用户不能马上查询到他们的指标。可能原因包括：</p>
+<ol>
+<li>Remote Write Target 性能不足以支撑当前的数据摄取；</li>
+<li>vmagent 与 Remote Write Target 之间的网络带宽不足。</li>
+</ol>
+<p>其中，第一种情况可以很容易通过 vmstorage 暴露的指标观察，通常 Slow Insert 应该维持在 10% 以内：</p>
+<pre tabindex="0"><code>max(
+    rate(vm_slow_row_inserts_total{}[1m]) 
+    / rate(vm_rows_added_to_storage_total{}[1m])
+)
+</code></pre><p>我同样推荐直接在 Grafana Dashboard 上将它可视化，这些指标已经集成在了 VictoriaMetrics Cluster 的 <a href="https://grafana.com/grafana/dashboards/11176">Dashboard</a> 中：</p>
+<p><img src="../202407-troubleshooting-tsdb/vmcluster_1.png" alt=""></p>
+<p>如果没有从 VictoriaMetrics Cluster 的监控中发现太多问题，那么或许可以考虑第二种情况，也就是网络带宽是否充足了。</p>
+<h2 id="数据查询">数据查询<a href="#数据查询" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>假设前面的步骤都没有发现问题，那么恭喜你，数据很有可能已经存储在了 TSDB 中。这时，数据查询不到结果通常是因为 PromQL/MetricsQL、变量等问题引起的。</p>
+<p>在 VictoriaMetrics Cluster 中，首先建议从最底层的 vmselect 对 vmstorage 进行查询，并去除语句中的所有变量和函数，例如：</p>
+<pre tabindex="0"><code>// 原始语句
+rate(vm_slow_row_inserts_total{job=~&quot;$job_storage&quot;}[$__rate_interval]) 
+
+// 排查时所用语句
+vm_slow_row_inserts_total
+</code></pre><p>这样可以确保你的 TSDB 中已经存有了这个指标，然后可以逐步将 Label 条件、变量、函数加上，检查是哪一步的查询结果不符合预期。</p>
+<p>如果都没有问题，那原因应该出在更上层的查询路径中，例如 <code>Grafana -&gt; vmauth -&gt; vmselect_level_1 -&gt; ... vmselect_level_n -&gt; vmstorage</code>，这时应该逐层向上排查。</p>
+<h2 id="总结">总结<a href="#总结" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>通过上面的介绍，相信你已经对在指标监控体系中排查问题有了一定的思路。我将这些思路总结成了一张图，希望方便你记忆。</p>
+<p><img src="../202407-troubleshooting-tsdb/conclusion.png" alt=""></p>
+<p>由于篇幅有限，本文能覆盖的内容不过是日常问题中的冰山一角。如果你有遇到更复杂的问题，我推荐：</p>
+<ol>
+<li>善用对 VictoriaMetrics 的监控，<a href="https://grafana.com/orgs/victoriametrics/dashboards"><strong>Grafana Dashboard</strong></a> 是你最好的工具；</li>
+<li>来到 <a href="https://github.com/VictoriaMetrics/VictoriaMetrics"><strong>VictoriaMetrics 的社区</strong></a>进行提问，我们很乐意解答用户的问题和实现新的功能。</li>
+</ol>
+
+			</div>
+
+<hr>
+<div class="related-posts thin">
+	<h2>See Also</h2>
+	<ul>
+	
+	<li><a href="/posts/otlp-remote-write/">OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?</a></li>
+	
+	<li><a href="/posts/churn-rate-in-victoriametrics/">社区报障案例：没有新的 Time Series，为什么 Churn Rate 升高？</a></li>
+	
+	<li><a href="/posts/one-to-watch-victoriametrics/">[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事</a></li>
+	
+	<li><a href="/posts/extending-go-application-with-interface/">用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例</a></li>
+	
+	<li><a href="/posts/vmselect-data-structures/">VictoriaMetrics 中的持久化数据结构 (Part 2): vmselect</a></li>
+	
+	</ul>
+</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 1750 字, 约 4 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2024-07-18 15:12 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#问题">问题</a></li>
+    <li><a href="#数据采集">数据采集</a></li>
+    <li><a href="#数据传输">数据传输</a></li>
+    <li><a href="#数据查询">数据查询</a></li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

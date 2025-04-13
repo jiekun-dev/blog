@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jiekun&#39;s Blog</title>
+    <link>https://jiekun.dev/</link>
+    <description>Recent content on Jiekun&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Fri, 21 Mar 2025 21:48:21 +0800</lastBuildDate><atom:link href="https://jiekun.dev/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>2024 Annual Review: My New Role At VictoriaMetrics</title>
+      <link>https://jiekun.dev/posts/2024-summary/</link>
+      <pubDate>Fri, 21 Mar 2025 21:48:21 +0800</pubDate>
+      
+      <guid>https://jiekun.dev/posts/2024-summary/</guid>
+      <description>Context  This blog post is written before my trip to KubeCon London. Exactly one year ago, I met with the VictoriaMetrics team in Paris for the first time. So, this review is about what I have been doing during this past year and how these things have changed my life.  Contributing Without Pull Requests: Learning by Supporting At first, I didn&amp;rsquo;t know much about VictoriaMetrics. We were using Prometheus and Thanos, well-recognized metrics monitoring solutions.</description>
+    </item>
+    
+    <item>
+      <title>OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?</title>
+      <link>https://jiekun.dev/posts/otlp-remote-write/</link>
+      <pubDate>Sat, 21 Dec 2024 01:22:23 +0800</pubDate>
+      
+      <guid>https://jiekun.dev/posts/otlp-remote-write/</guid>
+      <description>Medium This blog post is also available in English: OpenTelemetry, Prometheus, and More: Which Is Better for Metrics Collection and Propagation? Prometheus and Remote Write Prometheus 是云原生指标监控领域的事实标准。它的工作模式很简单：应用提供 /metrics HTTP API，以文本格式暴露指</description>
+    </item>
+    
+    <item>
+      <title>社区报障案例：没有新的 Time Series，为什么 Churn Rate 升高？</title>
+      <link>https://jiekun.dev/posts/churn-rate-in-victoriametrics/</link>
+      <pubDate>Sat, 03 Aug 2024 14:59:00 +0800</pubDate>
+      
+      <guid>https://jiekun.dev/posts/churn-rate-in-victoriametrics/</guid>
+      <description>Medium This blog post is also available in English: Question From Community: High Churn Rate Without New Time Series? 上周，我在 Slack 看到一位用户求助： 我的 VictoriaMetrics 集群在每天 0 点都有很高的 Churn Rate。但是当我开启 -logNewSe</description>
+    </item>
+    
+    <item>
+      <title>监控数据问题排查：我的指标去哪儿了？</title>
+      <link>https://jiekun.dev/posts/troubleshooting-victoriametrics/</link>
+      <pubDate>Thu, 18 Jul 2024 15:12:00 +0800</pubDate>
+      
+      <guid>https://jiekun.dev/posts/troubleshooting-victoriametrics/</guid>
+      <description>Medium This blog post is also available in English: Troubleshooting Time Series Database: Where Did My Metrics Go? 问题 复杂的现代应用离不开可观测性，而指标监控是可观测性中非常重要的一环。最常见的指标监控采集、处理、存储</description>
+    </item>
+    
+    <item>
+      <title>[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事</title>
+      <link>https://jiekun.dev/posts/one-to-watch-victoriametrics/</link>
+      <pubDate>Sun, 23 Jun 2024 15:32:11 +0800</pubDate>
+      
+      <guid>https://jiekun.dev/posts/one-to-watch-victoriametrics/</guid>
+      <description>Medium This blog post is originally posted by The Stack on: One to Watch: VictoriaMetrics - The story of a startup from Ukraine 这是一个初创公司追寻成功的故事，虽然不管从哪个方面看，这个故事都耳熟能详： 一群聪明人有一个填补</description>
+    </item>
+    
+    <item>
+      <title>用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例</title>
+      <link>https://jiekun.dev/posts/extending-go-application-with-interface/</link>
+      <pubDate>Tue, 21 May 2024 23:16:21 +0800</pubDate>
+      
+      <guid>https://jiekun.dev/posts/extending-go-application-with-interface/</guid>
+      <description>Medium This blog post is also available in English: Extending Go Application with Interface: Implementing Redis Caching for VictoriaMetrics VictoriaMetrics 的缓存问题 VictoriaMetrics 是一个 Metrics 监控的解决方案，它由几个关键组件构成： vmagent 负责数据采集，并发往 vminsert； vminsert</description>
+    </item>
+    
+    <item>
+      <title>VictoriaMetrics 中的持久化数据结构 (Part 2): vmselect</title>
+      <link>https://jiekun.dev/posts/vmselect-data-structures/</link>
+      <pubDate>Wed, 15 May 2024 23:37:23 +0800</pubDate>
+      
+      <guid>https://jiekun.dev/posts/vmselect-data-structures/</guid>
+      <description>Medium This blog post is also available in English: Persistent Data Structures in VictoriaMetrics (Part 2): vmselect Series Introduction VictoriaMetrics 是一个开源的高性能时序数据库，作为 Prometheus 及其长期存储方案（如：Thanos、Cortex）的平替，有很多</description>
+    </item>
+    
+    <item>
+      <title>VictoriaMetrics 中的持久化数据结构 (Part 1): vmagent</title>
+      <link>https://jiekun.dev/posts/vmagent-data-structures/</link>
+      <pubDate>Fri, 03 May 2024 11:33:36 +0800</pubDate>
+      
+      <guid>https://jiekun.dev/posts/vmagent-data-structures/</guid>
+      <description>Medium This blog post is also available in English: Persistent Data Structures in VictoriaMetrics (Part 1): vmagent Series Introduction VictoriaMetrics 是一个开源的高性能时序数据库，作为 Prometheus 及其长期存储方案（如：Thanos、Cortex）的平替，有很多</description>
+    </item>
+    
+    <item>
+      <title>GOPS 见闻：虎牙的监控指标管理经验与延伸思考</title>
+      <link>https://jiekun.dev/posts/playing-with-high-cardinality/</link>
+      <pubDate>Sat, 27 Apr 2024 19:43:32 +0800</pubDate>
+      
+      <guid>https://jiekun.dev/posts/playing-with-high-cardinality/</guid>
+      <description>Medium This blog post is also available in English: Rethinking Huya’s Journey: Leveraging OpenTelemetry and VictoriaMetrics for Monitoring 上周在深圳参加了 GOPS 大会，来自虎牙的同学分享了他们在监控指标标准化和管理方面的实践，核心要点在于</description>
+    </item>
+    
+    <item>
+      <title>KubeCon 欧洲 2024: 云原生在浪漫之都 | 舞台之上</title>
+      <link>https://jiekun.dev/posts/kubecon-eu-2024-ii/</link>
+      <pubDate>Sat, 23 Mar 2024 03:06:00 +0100</pubDate>
+      
+      <guid>https://jiekun.dev/posts/kubecon-eu-2024-ii/</guid>
+      <description>Medium This blog post is also available in English: KubeCon Europe 2024: Cloud Native In La Ville-Lumière | In The Spotlight 现在是法国巴黎时间周六凌晨，KubeCon + CloudNativeCon Europe 2024 —— 至今 CNCF 主办的规模最大</description>
+    </item>
+    
+  </channel>
+</rss>

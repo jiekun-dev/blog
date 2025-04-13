@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="技术内幕: 构建 Go 语言的动态插装 Agent">
+<meta itemprop="description" content="TL;DR 我们在 Sqreen （译注：一家安全公司）一直致力于让的安全保护透明无感、接入平滑。最近，我们发布了 Sqreen for Go，它可以在不需要任何代码改动的情况下检测和"><meta itemprop="datePublished" content="2023-06-04T13:58:25+08:00" />
+<meta itemprop="dateModified" content="2023-06-04T13:58:25+08:00" />
+<meta itemprop="wordCount" content="4123">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="技术内幕: 构建 Go 语言的动态插装 Agent" />
+<meta property="og:description" content="TL;DR 我们在 Sqreen （译注：一家安全公司）一直致力于让的安全保护透明无感、接入平滑。最近，我们发布了 Sqreen for Go，它可以在不需要任何代码改动的情况下检测和" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/dynamic_instrumentation_agent/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-06-04T13:58:25+08:00" />
+<meta property="article:modified_time" content="2023-06-04T13:58:25+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="技术内幕: 构建 Go 语言的动态插装 Agent"/>
+<meta name="twitter:description" content="TL;DR 我们在 Sqreen （译注：一家安全公司）一直致力于让的安全保护透明无感、接入平滑。最近，我们发布了 Sqreen for Go，它可以在不需要任何代码改动的情况下检测和"/>
+<title>技术内幕: 构建 Go 语言的动态插装 Agent</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fdynamic_instrumentation_agent%2f&amp;text=%e6%8a%80%e6%9c%af%e5%86%85%e5%b9%95%3a%20%e6%9e%84%e5%bb%ba%20Go%20%e8%af%ad%e8%a8%80%e7%9a%84%e5%8a%a8%e6%80%81%e6%8f%92%e8%a3%85%20Agent" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2fdynamic_instrumentation_agent%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=%e6%8a%80%e6%9c%af%e5%86%85%e5%b9%95%3a%20%e6%9e%84%e5%bb%ba%20Go%20%e8%af%ad%e8%a8%80%e7%9a%84%e5%8a%a8%e6%80%81%e6%8f%92%e8%a3%85%20Agent&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2fdynamic_instrumentation_agent%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fdynamic_instrumentation_agent%2f&amp;source=https://jiekun.dev&amp;title=%e6%8a%80%e6%9c%af%e5%86%85%e5%b9%95%3a%20%e6%9e%84%e5%bb%ba%20Go%20%e8%af%ad%e8%a8%80%e7%9a%84%e5%8a%a8%e6%80%81%e6%8f%92%e8%a3%85%20Agent&amp;summary=%e6%8a%80%e6%9c%af%e5%86%85%e5%b9%95%3a%20%e6%9e%84%e5%bb%ba%20Go%20%e8%af%ad%e8%a8%80%e7%9a%84%e5%8a%a8%e6%80%81%e6%8f%92%e8%a3%85%20Agent%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;技术内幕: 构建 Go 语言的动态插装 Agent&#34;,&#34;https://jiekun.dev/posts/dynamic_instrumentation_agent/&#34;,&#34;技术内幕: 构建 Go 语言的动态插装 Agent, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Jun 4, 2023</span></div>
+				<h1>技术内幕: 构建 Go 语言的动态插装 Agent</h1>
+			</header>
+			<div class="content">
+				<h2 id="tldr">TL;DR<a href="#tldr" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>我们在 Sqreen （译注：一家安全公司）一直致力于让的安全保护透明无感、接入平滑。最近，我们发布了 <a href="http://blog.sqreen.com/rasp-for-go">Sqreen for Go</a>，它可以在不需要任何代码改动的情况下检测和阻止 Go 应用中的安全问题。为了实现这一点，我们利用了动态插装（dynamic instrumentation）在运行时向程序中插入额外的安全逻辑。作为我们<a href="https://blog.sqreen.com/tag/dynamic-instrumentation/">动态插装系列</a>的最新发文，这篇文章将要讨论动态插装，Sqreen 的 Go Agent，以及我们是如何把他们结合在一起的。</p>
+<p>这种检测和保护是基于 microagent 的，microagent 是一个从运行的程序中获取数据，并与外部组件通信以报告统计信息或特定数据的组件。这里描述的 的，microagent 是一个 Go 包，它与 Sqreen 的后端服务通信。它专门设计用于安全地插装到生产系统中，因此我们用了精妙的（sophisticated）方法来最大化其稳定性，同时让它对性能的影响尽可能小。</p>
+<p><img src="../202306-dynamic-instrumentation-agent/microagent.gif" alt=""></p>
+<blockquote>
+<p>运行中的 Go 程序与 Sqreen 概览：Agent 协程自动启动，并根据我们面板中的配置对程序进行插装。</p>
+</blockquote>
+<p>Sqreen 的动态插装有很多优点：</p>
+<ul>
+<li>不需要对应用代码进行修改，因此安装简易便捷；</li>
+<li>完整覆盖程序堆栈，包括所有第三方库、标准库和语言的运行时；</li>
+<li>安全逻辑可以由中心化的配置面板控制和更新，不需要重新部署运行中的应用。</li>
+</ul>
+<p>Agent 可以主要分为三个部分：</p>
+<ol>
+<li>插装引擎，处理让函数（function）增加额外业务逻辑的底层机制；</li>
+<li>安全规则引擎，通过调用插装引擎来为函数增加安全防护逻辑。它遵循由 Sqreen 后端下发的高级（high-level）逻辑描述，例如保护 SQL 语句受到 SQL 注入攻击等；</li>
+<li>数据记录机制，异步收集安全防护的数据，并定期发送到 Sqreen 后端。</li>
+</ol>
+<p>接下来的章节详细介绍了我们如何在 Go 语言中解决这个非常有挑战的问题。Go 语言中的标准库 <code>database/sql</code> 将被用作 SQL 注入工具防护组件的示例。</p>
+<h2 id="插装-go-代码">插装 Go 代码<a href="#插装-go-代码" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>运行时插装在动态语言中有广泛的使用，通常称为 Monkey Patching。但是 Go 是一门强类型的静态语言，用它构建的代码由 Go 编译器变异成包含二进制机器码的程序文件：</p>
+<p><img src="../202306-dynamic-instrumentation-agent/compile.jpg" alt=""></p>
+<p>在运行时，操作系统和硬件加载并执行这个二进制程序文件：</p>
+<p><img src="../202306-dynamic-instrumentation-agent/execute.jpg" alt=""></p>
+<p>因此，运行中的 Go 程序其实就是一个运行中的二进制程序。我们通常认为，运行时插装去修改它的二进制代码是不安全、有风险的，在生产环境某些场景中甚至是不可能的。</p>
+<h2 id="选择正确的插装方案">选择正确的插装方案<a href="#选择正确的插装方案" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>前面的讨论已经告诉我们所有能做插装的地方了：由开发者手动使用的工具进行源码级别的插装，到针对运行中的程序的硬件级别的插装。这意味着我们有很多方案可以选择。而对于 Sqreen 来说，就是要选择最适合 Sqreen Agent 场景的方案：</p>
+<ul>
+<li>对开发者友好：易于开发和部署；</li>
+<li>适用于生产环境：能将安全防护应用于运行中的程序，高效，可靠且安全。</li>
+</ul>
+<p>由此可得出以下的表格：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">插装类型</th>
+<th style="text-align:center">静态插装</th>
+<th style="text-align:center">静态插装</th>
+<th style="text-align:center">静态插装</th>
+<th style="text-align:center">动态插装</th>
+<th style="text-align:center">动态插装</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">插装位置</td>
+<td style="text-align:center">源代码</td>
+<td style="text-align:center">编译器</td>
+<td style="text-align:center">二进制程序文件</td>
+<td style="text-align:center">运行中的程序</td>
+<td style="text-align:center">运行中的程序</td>
+</tr>
+<tr>
+<td style="text-align:center">插装技术</td>
+<td style="text-align:center">源代码插装</td>
+<td style="text-align:center">钩子函数（探针）插装</td>
+<td style="text-align:center">二进制程序文件插装</td>
+<td style="text-align:center">二进制程序代码插装</td>
+<td style="text-align:center">基于 Trap 的插装</td>
+</tr>
+<tr>
+<td style="text-align:center">开发者友好</td>
+<td style="text-align:center">否</td>
+<td style="text-align:center">是</td>
+<td style="text-align:center">是</td>
+<td style="text-align:center">是</td>
+<td style="text-align:center">是</td>
+</tr>
+<tr>
+<td style="text-align:center">适用生产环境</td>
+<td style="text-align:center">是</td>
+<td style="text-align:center">是</td>
+<td style="text-align:center">否</td>
+<td style="text-align:center">否</td>
+<td style="text-align:center">否</td>
+</tr>
+</tbody>
+</table>
+<p>长话短说，我们选择编译时插装技术：</p>
+<ul>
+<li>它对生产环境没有影响，因为它只在开发环境完成；</li>
+<li>它由编译器自动、透明地完成；</li>
+<li>它完全在用户空间完成，不需要往返操作系统（内核）；</li>
+<li>它具有可移植性，因为它不依赖操作系统或者硬件支持。</li>
+</ul>
+<p>而其他的插装技术：</p>
+<ul>
+<li>二进制层面的插装很难在生产环境做到安全可靠；</li>
+<li>基于 Trap 的技术（例如用户空间探针）较为低效，因为需要硬件中断。同时它也不具备可移植性，且需要不安全的执行权限；</li>
+<li>源代码插装对于开发者来说很难管理，并且只能处理应用程序代码范围的插装。</li>
+</ul>
+<p>基于以上的分析，我们决定使用编译时插装的技术来为 Go 语言程序添加运行时插装能力。</p>
+<h2 id="钩子策略hooking-strategy">钩子策略（Hooking strategy）<a href="#钩子策略hooking-strategy" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>我们需要编译器为 Go 程序中的函数添加插装钩子点位（hook points），以便让 Sqreen 的 microagent 监控和保护函数执行。例如，我们想在 SQL 执行函数添加钩子，检测函数参数中的 SQL 语句是否存在注入情况，并在检测到（注入）攻击时中止函数调用。</p>
+<p>为此，我们的钩子策略允许我们通过以下方式监控和保护函数的执行：</p>
+<ul>
+<li>读取函数参数，监控甚至检测攻击；</li>
+<li>可以立即返回，以安全地中止函数调用，防止发生攻击。</li>
+</ul>
+<p><img src="../202306-dynamic-instrumentation-agent/hook.webp" alt=""></p>
+<blockquote>
+<p>SQL 执行函数钩子启用时，SQL 注入保护的示例：当语句中检测到注入时，函数需要马上中止，返回一个不为 <code>nil</code> 的错误。</p>
+</blockquote>
+<p>以下代码段展示了一个被插装的 Go 函数，它使用了之前描述的钩子策略：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// 这是一个函数的示例，返回给定参数的json序列化结果。
+</span><span class="c1">//
+</span><span class="c1">// 该函数插装了一个演示的钩子，监控函数调用，以实现保护
+</span><span class="c1">// 控制流程，并在必要时中止调用。
+</span><span class="c1">//
+</span><span class="c1">// 为此，以下插装代码块由两部分组成:
+</span><span class="c1">//
+</span><span class="c1">// 1. The prolog: 它是插装的起点，挂钩在正常代码执行之前，
+</span><span class="c1">//    对应其输入参数。它会返回一个布尔值和 epilog 钩子，
+</span><span class="c1">//    当函数调用必须中止时布尔值为 true。
+</span><span class="c1">//
+</span><span class="c1">// 2. The epilog: 它是由 prelog 返回的函数，用于挂钩在函
+</span><span class="c1">//    数返回时以及对应函数返回值。它由 defer 执行，以保证在
+</span><span class="c1">//    任何返回情况下均会执行到。
+</span><span class="c1">//
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">myInstrumentedFunction</span><span class="p">(</span><span class="nx">a</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="nx">result</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// 插装代码段
+</span><span class="c1"></span>	<span class="p">{</span>
+		<span class="c1">// prelog 钩子启用。
+</span><span class="c1"></span>		<span class="c1">// 注意这个示例不是线程安全的，但我们的实际实现中加载函数值
+</span><span class="c1"></span>		<span class="c1">// 是原子（atomically）的。
+</span><span class="c1"></span>		<span class="k">if</span> <span class="nx">myInstrumentedFunctionHook</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="c1">// 用函数参数调用 prelog 钩子，并检查返回值
+</span><span class="c1"></span>			<span class="nx">epilog</span><span class="p">,</span> <span class="nx">abort</span> <span class="o">:=</span> <span class="nf">myInstrumentedFunctionHook</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+			
+			<span class="c1">// 不管 abort 值如何，epilog 方法总会由 defer 执行以
+</span><span class="c1"></span>			<span class="c1">// 观测所有返回情况。
+</span><span class="c1"></span>			<span class="k">if</span> <span class="nx">epilog</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+				<span class="k">defer</span> <span class="nf">epilog</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">result</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">err</span><span class="p">)</span>
+				
+			<span class="p">}</span>
+			
+			<span class="c1">// 如果 abort 值为 true，则立即从函数中返回。返回前可能
+</span><span class="c1"></span>			<span class="c1">// 执行 epilog 函数。
+</span><span class="c1"></span>			<span class="k">if</span> <span class="nx">abort</span> <span class="p">{</span>
+				<span class="k">return</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="c1">// 正常代码
+</span><span class="c1"></span>	<span class="k">return</span> <span class="nx">json</span><span class="p">.</span><span class="nf">Marshal</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// 插装函数的 prolog 钩子
+</span><span class="c1"></span><span class="kd">var</span> <span class="nx">myInstrumentedFunctionHook</span> <span class="nx">myInstrumentedFunctionPrologHookType</span>
+
+<span class="c1">// 函数的 prelog 和 epilog 钩子定义，强类型并与函数签名保持一致。
+</span><span class="c1"></span><span class="kd">type</span> <span class="p">(</span>
+	<span class="nx">myInstrumentedFunctionPrologHookType</span> <span class="kd">func</span><span class="p">(</span><span class="nx">a</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="nx">myInstrumentedFunctionEpilogHookType</span><span class="p">,</span> <span class="kt">bool</span><span class="p">)</span>
+	<span class="nx">myInstrumentedFunctionEpilogHookType</span> <span class="kd">func</span><span class="p">(</span><span class="nx">result</span> <span class="o">*</span><span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">err</span> <span class="o">*</span><span class="kt">error</span><span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div><p>你可以在 Go Playground 运行完整的示例代码：<a href="https://play.golang.org/p/zAQaf_rGaRs">https://play.golang.org/p/zAQaf_rGaRs</a></p>
+<h2 id="编译时compile-time插装向-go-程序添加钩子点位">编译时（Compile-Time）插装：向 Go 程序添加钩子点位<a href="#编译时compile-time插装向-go-程序添加钩子点位" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>Go 编译器默认不提供这种钩子点位插装。但是，代码生成已经很常见，并且在 Go 语言中也有广泛使用。例如，Go 编译器在代码覆盖率或竞态检测中都有使用到这种技术。Go 语言标准库有解析、修改、重新生成Go 代码所需的所有工具。因此，我们选择在一个独立的插装工具中实现安全的源码层面插装，使其能与 Go 编译器集成，生成插装后的 Go 程序文件。</p>
+<p><img src="../202306-dynamic-instrumentation-agent/instrument.webp" alt=""></p>
+<blockquote>
+<p>集成 Sqreen 插装工具到 Go 编译器中并生成插装后的 Go 程序文件。</p>
+</blockquote>
+<p>这个工具会在每次编译时被 Go 编译器调用，并插装所有定义了的函数。</p>
+<p><img src="../202306-dynamic-instrumentation-agent/instrument_2.webp" alt=""></p>
+<blockquote>
+<p>SQL 执行函数源码层级的插装示例：接收 Go 源码文件作为输入，输出增加了钩子点位插装的新源码。</p>
+</blockquote>
+<p>原有的源码文件不会被修改，插装后的源码会生成到编译器的构建目录（build directory）中。因此，可以使用 Go 构建选项 <code>-work</code> 来查看插装后的代码，它会打印结果并保留构建目录。</p>
+<p>在编译器层级处理插装的另一个好处是，可以完整地对所有 Go 语言涉及到的组件进行插装。我们只对少量的 Go 库包进行了插装，这些库包记录在文档中：<a href="https://docs.sqreen.com/go/instrumentation/#list-of-instrumented-packages">https://docs.sqreen.com/go/instrumentation/#list-of-instrumented-packages</a></p>
+<h2 id="运行时插装挂载安全防护逻辑到钩子点位">运行时插装：挂载安全防护逻辑到钩子点位<a href="#运行时插装挂载安全防护逻辑到钩子点位" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>基于上述的编译时插装方案，Sqreen 的 Go Agent 现在可以通过钩子表（一个由工具生成的 Go 数组）找到钩子点位，并在需要时进行插装。在 SQL 注入防护的例子中，当我们在面板上启用该功能后，Agent 会收到 SQL 注入安全的规则。它会包括插装 SQL 执行函数（当前一共有 3 个：<code>prepare</code>，<code>exec</code> 和 <code>query</code>）所需的信息，以及 SQL 注入防护逻辑。</p>
+<p>借助标准库中的 <code>reflection</code>，钩子点位的 Go 类型（译注：此处应指函数位置、函数签名等信息）也用于检查和挂载防护逻辑。挂载原子操作，在并发使用场景下也是安全的。</p>
+<p><img src="../202306-dynamic-instrumentation-agent/runtime_instrument.gif" alt=""></p>
+<blockquote>
+<p>在这个示例中，Agent 收到 Sqreen 后端的 SQL 注入防护指令。当应用设置中的防护开启，Agent 检索钩子表中的钩子，检验是否和将要挂载的函数类型信息匹配，最后原子地挂载到钩子点位上。</p>
+</blockquote>
+<p>挂载之后，函数的执行就能被观察到，更重要的是，能在检测到攻击时中止执行。安全防护可以在函数调用上下文进行它的检测，并借助 Go 函数的签名，安全地中止函数调用，返回一个不为 <code>nil</code> 的错误。</p>
+<p>我们的安全防护还可以自动通过取消（cancel） Go request context 和根据面板配置响应 HTTP 请求，来中止 HTTP 调用处理。</p>
+<p><img src="../202306-dynamic-instrumentation-agent/http.webp" alt=""></p>
+<blockquote>
+<p>HTTP 请求由 Sqreen 自动管理：根据面板配置进行响应，以及通过取消 Go request context 来中止请求，并正确地传播中止信息。</p>
+</blockquote>
+<h2 id="数据传输">数据传输<a href="#数据传输" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>所有加在请求处理流程中的操作都是设计成异步的，以规避对响应时间的影响。当一个新的 HTTP 请求开始时，我们的中间件函数添加了一些数据结构到请求中，它们可以在挂载的防护中被获取到，用以收集安全相关的信息，例如攻击详情、指标和事件。当请求中止时，请求的数据结构通过非阻塞的 Go channel 异步送往 Agent，这样不会时阻塞到 HTTP 请求的 handler 把它发出去。</p>
+<p>Agent 协程大部分时间都在休眠，仅在 Go channel 有数据时被 Go 调度器唤醒。Agent 收集数据，暂存攒批，最后定时发送至我们的后端服务（默认 20 秒一次）。我们的安全防护不收集敏感数据，Agent 会强制清除所有已发送至后端的数据。总而言之，这个实现就是个简单的异步 Go 程序。</p>
+<h2 id="性能和鲁棒性">性能和鲁棒性<a href="#性能和鲁棒性" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>Sqreen Go Agent 只使用了标准的 Go 语言技术，但是它所充当的角色需要我们仔细考虑以下几方面：</p>
+<ul>
+<li>我们关注它对 Go 调度器的影响以及并发场景下的压力。我们通过设定很少的、固定数量的 goroutine 数（目前为 3）来减轻潜在影响。其中一个不错的例子是我们的指标管理，它是基于原子操作的、无锁的。这些都是为了避免 Go channel 替代方案中引入在阻塞操作进而对调度产生影响。这种选择使其执行开销可以忽略不计，并且不涉及任何数据队列管理。这对于存在大量并发、可以管理上千个 goroutines 的 Go 服务来说是非常重要的；</li>
+<li>我们通过执行的 deadline 来保证 Agent 有时间和内存用量的边界限制（特别是对于我们挂载的防护），以及各种数据结构的最大长度；</li>
+<li>我们关注垃圾回收的压力，通过使用内存池来规避频繁的小内存分配过程。</li>
+</ul>
+<p>Agent还有针对通信失败、大量请求流量、内部发生非预期的行为的鲁棒性设计，其工作不依赖于后端服务，并且可以重启或者停止工作来保证最大程度的安全可靠。</p>
+<h2 id="展望未来">展望未来<a href="#展望未来" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>我们在这篇博客中描述了生产级插装 Agent 的上层概念。动态插装 Agent可以用于处理很多不同的任务，例如性能监控、错误监控或安全防护。</p>
+<p>在 <a href="https://www.sqreen.com/">Sqreen</a>，我们的 Go Agent 利用动态插装技术来保护应用，并且提高 Go 应用的可观测性。如果对 Sqreen 感兴趣或者想动手试试 Go Agent，可以<a href="https://my.sqreen.com/signup">来 Sqreen 官网转一转</a>。</p>
+<p><img src="../202306-dynamic-instrumentation-agent/sqreen.webp" alt=""></p>
+<p>请继续期待下一期关于 Go Agent 内部实现的细节介绍！</p>
+
+			</div>
+
+<hr>
+<div class="related-posts thin">
+	<h2>See Also</h2>
+	<ul>
+	
+	<li><a href="/posts/otlp-remote-write/">OpenTelemetry, Prometheus, and More: 谁是采集监控指标的最佳选择?</a></li>
+	
+	<li><a href="/posts/churn-rate-in-victoriametrics/">社区报障案例：没有新的 Time Series，为什么 Churn Rate 升高？</a></li>
+	
+	<li><a href="/posts/troubleshooting-victoriametrics/">监控数据问题排查：我的指标去哪儿了？</a></li>
+	
+	<li><a href="/posts/one-to-watch-victoriametrics/">[翻译] 聚焦 VictoriaMetrics：一家乌克兰初创企业的故事</a></li>
+	
+	<li><a href="/posts/extending-go-application-with-interface/">用 Interface 扩展 Go 应用：以 VictoriaMetrics 实现 Redis 缓存为例</a></li>
+	
+	</ul>
+</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 4123 字, 约 9 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2023-06-04 13:58 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#tldr">TL;DR</a></li>
+    <li><a href="#插装-go-代码">插装 Go 代码</a></li>
+    <li><a href="#选择正确的插装方案">选择正确的插装方案</a></li>
+    <li><a href="#钩子策略hooking-strategy">钩子策略（Hooking strategy）</a></li>
+    <li><a href="#编译时compile-time插装向-go-程序添加钩子点位">编译时（Compile-Time）插装：向 Go 程序添加钩子点位</a></li>
+    <li><a href="#运行时插装挂载安全防护逻辑到钩子点位">运行时插装：挂载安全防护逻辑到钩子点位</a></li>
+    <li><a href="#数据传输">数据传输</a></li>
+    <li><a href="#性能和鲁棒性">性能和鲁棒性</a></li>
+    <li><a href="#展望未来">展望未来</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

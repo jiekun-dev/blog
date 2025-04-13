@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="cn-zh">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q11C6RN8VS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q11C6RN8VS');
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="15 days">
+<link rel="author" href="/humans.txt">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileImage" content="/mstile-144x144.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<meta name="theme-color" content="#494f5c">
+<meta name="msapplication-TileColor" content="#494f5c">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#494f5c"><meta name="author" content="blog@jiekun.dev">
+<meta itemprop="name" content="可观测性专题: 分布式追踪中的采样">
+<meta itemprop="description" content="1. Warm-up 我们常说 Metrics，Logging，Tracing 是可观测性的三大支柱，而其中 Distributed Tracing 就是当前微服务架构下用来排查服务问题的手段之一。 下"><meta itemprop="datePublished" content="2023-04-17T19:51:13+08:00" />
+<meta itemprop="dateModified" content="2023-04-17T19:51:13+08:00" />
+<meta itemprop="wordCount" content="2433">
+<meta itemprop="keywords" content="" /><meta property="og:title" content="可观测性专题: 分布式追踪中的采样" />
+<meta property="og:description" content="1. Warm-up 我们常说 Metrics，Logging，Tracing 是可观测性的三大支柱，而其中 Distributed Tracing 就是当前微服务架构下用来排查服务问题的手段之一。 下" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jiekun.dev/posts/sampling-in-distributed-traces/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-04-17T19:51:13+08:00" />
+<meta property="article:modified_time" content="2023-04-17T19:51:13+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="可观测性专题: 分布式追踪中的采样"/>
+<meta name="twitter:description" content="1. Warm-up 我们常说 Metrics，Logging，Tracing 是可观测性的三大支柱，而其中 Distributed Tracing 就是当前微服务架构下用来排查服务问题的手段之一。 下"/>
+<title>可观测性专题: 分布式追踪中的采样</title>
+<link rel="stylesheet dns-prefetch preconnect preload prefetch" as="style" href="https://jiekun.dev/css/style.min.208938684808acad4fc3fbb650c7ba09f255ee0c263ff03f917d254978f1c5f8.css" integrity="sha256-IIk4aEgIrK1Pw/u2UMe6CfJV7gwmP/A/kX0lSXjxxfg=" crossorigin="anonymous">
+	</head>
+<body id="page">
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://jiekun.dev">Jiekun&#39;s Blog</a>
+				</div>
+				<nav class="site-nav hide-in-mobile"><a href="https://jiekun.dev/posts/">Posts</a><a href="https://jiekun.dev/about-me/">About Me</a><a href="https://cv.jiekun.dev">Resume</a></nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<button id="toc-btn" class="hdr-btn desktop-only-ib" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3" y2="6"></line><line x1="3" y1="12" x2="3" y2="12"></line><line x1="3" y1="18" x2="3" y2="18"></line></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/ReadTheDuck" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/jiekun" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a><a href="mailto:blog@jiekun.dev" target="_blank" rel="noopener me" title="Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a><a href="https://jiekun.dev/wechat/" target="_blank" rel="noopener me" title="Wechat"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a></span><button id="share-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+ 
+<div id="share-links" class="animated fast">
+    
+    
+    
+    
+    <ul>
+        <li>
+            <a href="https://twitter.com/intent/tweet?hashtags=hermit2&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fsampling-in-distributed-traces%2f&amp;text=%e5%8f%af%e8%a7%82%e6%b5%8b%e6%80%a7%e4%b8%93%e9%a2%98%3a%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%bf%bd%e8%b8%aa%e4%b8%ad%e7%9a%84%e9%87%87%e6%a0%b7" target="_blank" rel="noopener" aria-label="Share on X"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="st0" d="m21.3 21.1 -11.4 -18.2h-7.2l11.4 18.2zm-18.6 0 7.2 -6.6m4.2 -5 7.2 -6.6"/></svg></a>
+        </li>
+        <li>
+            <a href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjiekun.dev%2fposts%2fsampling-in-distributed-traces%2f" target="_blank" rel="noopener" aria-label="Share on Facebook"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+        </li>
+        <li>
+            <a href="mailto:?subject=%e5%8f%af%e8%a7%82%e6%b5%8b%e6%80%a7%e4%b8%93%e9%a2%98%3a%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%bf%bd%e8%b8%aa%e4%b8%ad%e7%9a%84%e9%87%87%e6%a0%b7&amp;body=https%3a%2f%2fjiekun.dev%2fposts%2fsampling-in-distributed-traces%2f" target="_self" rel="noopener" aria-label="Share on Email"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+        </li>
+        <li>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjiekun.dev%2fposts%2fsampling-in-distributed-traces%2f&amp;source=https://jiekun.dev&amp;title=%e5%8f%af%e8%a7%82%e6%b5%8b%e6%80%a7%e4%b8%93%e9%a2%98%3a%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%bf%bd%e8%b8%aa%e4%b8%ad%e7%9a%84%e9%87%87%e6%a0%b7&amp;summary=%e5%8f%af%e8%a7%82%e6%b5%8b%e6%80%a7%e4%b8%93%e9%a2%98%3a%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%bf%bd%e8%b8%aa%e4%b8%ad%e7%9a%84%e9%87%87%e6%a0%b7%2c%20by%20blog%40jiekun.dev%0a%0a%3cnil%3e%0a" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+        </li>
+        <li>
+            <a href="#" onclick="linkShare(&#34;可观测性专题: 分布式追踪中的采样&#34;,&#34;https://jiekun.dev/posts/sampling-in-distributed-traces/&#34;,&#34;可观测性专题: 分布式追踪中的采样, by blog@jiekun.dev\n\n\u003cnil\u003e\n&#34;); return false;" target="_self" rel="noopener" aria-label="Copy Link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a>
+        </li>
+    </ul>
+</div><button id="menu-btn" class="hdr-btn" title=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://jiekun.dev/posts/">Posts</a></li>
+			<li><a href="https://jiekun.dev/about-me/">About Me</a></li>
+			<li><a href="https://cv.jiekun.dev">Resume</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster"><article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Apr 17, 2023</span></div>
+				<h1>可观测性专题: 分布式追踪中的采样</h1>
+			</header>
+			<div class="content">
+				<h2 id="1-warm-up">1. Warm-up<a href="#1-warm-up" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>我们常说 Metrics，Logging，Tracing 是可观测性的三大支柱，而其中 Distributed Tracing 就是当前微服务架构下用来排查服务问题的手段之一。</p>
+<p>下图是由 Zipkin 呈现的可视化调用链路，对于一条完整的调用链路，我们通常用 <strong><code>Trace</code></strong> 来表示，一个 <code>Trace</code> 描述一次请求在（多个）服务中经过的路径。继续细分，每个路径均可称为 <strong><code>Span</code></strong>，<code>Span</code> 代表一个过程，它可以是一次 RPC 调用、中间件调用，也可以是一个 <code>for</code> 循环逻辑。</p>
+<p><img src="../202304-sampling-in-distributed-traces/trace_and_span.png" alt=""></p>
+<p><code>Span</code> 之间有简单的规则，他们可以相互平行，也可以相互包含。例如右侧这个调用图，Service A 调用 Service B，Service B 调用 MySQL 和 Redis，所以 <code>Span 1</code> 包含其他的 <code>Span</code>，<code>Span 2</code> 包含两次中间件操作，<code>Span 3</code> 和 <code>Span 4</code> 相互平行。</p>
+<p><img src="../202304-sampling-in-distributed-traces/relationship_between_spans.png" alt=""></p>
+<p>多个 <code>Span</code> 构成一个 <code>Trace</code>，所以需要有东西描述 <code>Span</code>，描述 <code>Trace</code>，描述 <code>Span</code> 和 <code>Trace</code> 之间的关系，它叫 <strong><code>Span Context</code></strong>。定义这样一个 interface，它可以获取当前 <code>Span</code>，可以知道这个 <code>Span</code> 的上级 Span，也可以知道这些 <code>Span</code> 属于哪一个 <code>Trace</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">SpanContext</span> <span class="kd">interface</span> <span class="p">{</span>
+    <span class="o">...</span>
+    <span class="nf">TraceID</span><span class="p">()</span>    <span class="kt">string</span>
+    <span class="nf">SpanID</span><span class="p">()</span>     <span class="kt">string</span>
+    <span class="nx">ParentSpanID</span> <span class="kt">string</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+
+</code></pre></div><p><code>Span Context</code> 的具体实现形式不限，例如通过定义结构体来实现：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// Defination 定义
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">SpanContext</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">TraceID</span>  <span class="nx">TraceID</span> <span class="s">`json:&#34;trace_id&#34;`</span>
+    <span class="nx">SpanID</span>   <span class="nx">ID</span>      <span class="s">`json:&#34;span_id&#34;`</span>
+    <span class="nx">ParentID</span> <span class="o">*</span><span class="nx">ID</span>     <span class="s">`json:&#34;parent_id,omitempty&#34;`</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+
+
+<span class="c1">// Real-world example 示例
+</span><span class="c1"></span><span class="p">{</span>
+    <span class="s">&#34;trace_id&#34;</span><span class="p">:</span> <span class="s">&#34;d8128872e435850e1c080232c316db96&#34;</span><span class="p">,</span>
+    <span class="s">&#34;span_id&#34;</span><span class="p">:</span> <span class="s">&#34;6cd9b539e437e354&#34;</span><span class="p">,</span>
+    <span class="s">&#34;parent_id&#34;</span><span class="p">:</span> <span class="s">&#34;2d01366826248d1a&#34;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+
+</code></pre></div><p>也可以用一个 Request ID 来实现 <code>Span Context</code>，这个 <code>Request ID</code> 可以分为 3 段，第一段是 <code>Trace ID</code>，第二段是 <code>Span ID</code>，第三段是 <code>Parent Span ID</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// Defination 定义
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">spanContext</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">RequestID</span> <span class="kt">string</span> <span class="s">`json:&#34;reqiest_id&#34;`</span> <span class="c1">// {TraceID}:{SpanID}:{ParentID}
+</span><span class="c1"></span><span class="p">}</span>
+
+
+<span class="c1">// Real-world example 示例
+</span><span class="c1"></span><span class="s">&#34;e9e976fde12bc6745f1c51fa80652d01:000000788c34c719:0000000000000000&#34;</span>
+<span class="s">&#34;e9e976fde12bc6745f1c51fa80652d01:010000a1d0a89300:000000788c34c719&#34;</span>
+</code></pre></div><p>例如上面这个 <code>Request ID</code> 分属于两个不同的 <code>Span</code>，因此他们有不同的 <code>Span ID</code>，但是他们的 <code>Trace ID</code> 是相同的，说明他们属于同一个 <code>Trace</code>；其中，第二个 <code>Request ID</code> 里面的 <code>Parent Span ID</code> 等于第一个 <code>Request ID</code> 里的 <code>Span ID</code>，说明他们存在调用关系。</p>
+<p>随着服务数量的日益增加，承接全量的 Tracing 数据所需的资源越来越多。我们先简单算一下，如果某个链路的调用量 4000 QPS，每个调用产生大概 30 个 <code>Span</code>，每个 <code>Span</code> 大约 500 Byte，那一天产生的数据就是：</p>
+<blockquote>
+<p>4000 * 30 * 500 Bytes * 24 Hours = 4.7 TiB</p>
+</blockquote>
+<p>如果有 100 个调用链路入口，那每天就能产生 <strong>400 TiB</strong> 的数据。要完整接下这些数据比较困难，因此需要借助<strong>采样</strong>来减少数据量。</p>
+<p>本文 2、3 节介绍是当前 Distributed Tracing 中常用的采样策略，第 4 节和第 5 节介绍两篇论文，代表 Distributed Tracing 采样的研究方向，亦作为现有策略的发散和补充。</p>
+<h2 id="2-head-sampling-and-unitary-sampling">2. Head Sampling And Unitary Sampling<a href="#2-head-sampling-and-unitary-sampling" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>通常来说，<code>Trace ID</code> 里面可以携带一些信息，例如下图的实现方式：<code>Trace ID</code> 转成二进制后，用了最后 8 位作为标记位，其中最后两位分别是 <code>Sample Flag</code> 和 <code>Debug Flag</code>。</p>
+<p><img src="../202304-sampling-in-distributed-traces/head_based_sampling.png" alt=""></p>
+<p>因为同一个 <code>Trace</code> 中，各个 <code>Span Context</code> 都持有相同的 <code>Trace ID</code>，因此他们都会遵循 <code>Trace ID</code> 中的采样标记。<code>Trace ID</code> 是在调用链路入口的地方就生成好的，也就是调用链路开头，所以这种采样决策称为 <strong>头部采样</strong>。</p>
+<p>这种采样方式的特点是非常轻量，也保持了 Trace 的连贯性（我们后面会提及一些不连贯的采样方式），它是在应用上报的时候采样的，没命中采样标记位的数据不会上报，不产生网络、磁盘 I/O，最终只有少量数据送往应用之外。</p>
+<p>我们现在换一个视角考虑采样问题，如果我们是一个中间服务，例如下图中的蓝色服务，它的上游有 1000 QPS 的调用量和固定 0.1% 的头部采样率，但是它自身仅收到其中的 3% 调用，最终每秒仅能上报 0.03 次。</p>
+<p><img src="../202304-sampling-in-distributed-traces/downstream_aspect.png" alt=""></p>
+<p>我们知道通过 Trace 除了观察外部的调用链路以外，也可用于观察自己服务内打点上报的内容，例如自身对 MySQL、Redis 的调用。在这个场景里面，中间服务由于极低的上报率，难以借助 Trace 观测到自身的问题。难道它就没有任何办法去影响采样决策？当然是有解法的，对于愿意忽略上下文，把 Trace 当做服务内可观测性强化工具使用的场景，可以使用单元采样的策略。</p>
+<p>假设入口处采样率为 0.1%，正常情况下，下游所有服务都要遵循它的决策。而单元采样允许链路中某个小单元忽略采样标记位，无视上下文强行上报，它可以保证单元内的调用链路是完整采集的，但是缺失外部上下游的信息。例如图里的服务无视上下游100%上报，最后能看到的结果就是 0.1% 的 <code>Trace</code> 是完整的、连贯的，另外99.9% 的 <code>Trace</code> 只有它自己应用内的一些调用链路。</p>
+<p>具体举例子，下图深色的 <code>Span</code> 是开启了单元采样的服务产生的，浅色的 <code>Span</code> 是其他服务产生的。0.1% 的 <code>Trace</code>（就全链路而言）是完整的，而 99.9% 的 <code>Trace</code> 仅部分完整。</p>
+<p><img src="../202304-sampling-in-distributed-traces/unitary_sampling_2.png" alt=""></p>
+<h2 id="3-tail-based-sampling">3. Tail-based Sampling<a href="#3-tail-based-sampling" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>在讨论尾部采样之前，我们要知道头部采样有什么样的缺点。由于 <code>Trace</code> 诞生瞬间，它的命运就已经决定了，所以它不能知道未来是否会发生错误、是否会阻塞很久，这些信息无法作为采样决策的依据，那就会导致我们使用了大量空间存放正常 <code>Trace</code>，丢失很多异常 <code>Trace</code>。</p>
+<p>例如下图，一段时间内，共有 10w 个正常 <code>Trace</code> 以及少量错误或者长耗时 <code>Trace</code>，0.1% 采样的结果极有可能是留存 100 个 正常 <code>Trace</code>。</p>
+<p><img src="../202304-sampling-in-distributed-traces/troubles_of_head_based_sampling.png" alt=""></p>
+<p>我们理想的效果更应该是：有问题的 <code>Trace</code> 全部保留，并且搭配一些正常 <code>Trace</code> 作为样本，怎样才能达到这个效果呢？</p>
+<p>通常 Tracing 基础设施的架构都可以用下图来概括，不同服务把数据上报到 Collector，Collector 兼容不同服务上报的数据格式，对 Trace 平台后端输出统一格式的数据，后端把数据落库，并且提供接口让前端查询和展示。那这里存在一个中间的 Collector，看起来非常适合做数据的收集和分析。我们很容易考虑让 Collector 临时承载所有数据，等到 Trace 结束再依据其中信息做采样决策。</p>
+<p><img src="../202304-sampling-in-distributed-traces/typical_tracing_architecture.png" alt=""></p>
+<p>这种采样方式叫尾部采样，因为它是在调用结束的时候才决策的。通常 Collector 在一个 <code>Trace</code> 第一个 <code>Span</code> 抵达的时候会将它暂存一段时间，等待这个 <code>Trace</code> 的其他 <code>Span</code> 也上报上来。等待窗口期结束后，按照 <code>Trace ID</code> 组织好各个 <code>Span</code> 的数据，然后使用不同的 Filter 对这些 <code>Span</code> 进行遍历，例如检查里面有没有携带错误信息的 <code>Span</code>，或者 <code>Span</code> 里面有没有一些自定义的 Tag 等等。依据这些信息决定丢弃还是保留这个 <code>Trace</code>，最后按照 Trace 后端约定的格式输出。</p>
+<p><img src="../202304-sampling-in-distributed-traces/tail_based_sampling.png" alt=""></p>
+<p>尾部采样的好处是可以尽可能观察到整个 <code>Trace</code>，取决于暂存的时间窗口有多宽，因为特殊情况有的 <code>Trace</code> 可以长达数分钟，还是存在在不完整的情况下做决策的可能的。因为需要大量内存来暂存数据，所以尾部采样对基础设施的要求很高，它减少了最终送达 Trace 后端落库的数据量，并且不像头部采样一样都是些没用的数据。理想情况下它可以自由控制后端数据的比例，例如正常 <code>Trace</code> 占 30%，异常 <code>Trace</code> 占70%。</p>
+<h2 id="4-capturing-more-needles-and-less-hay">4. Capturing More Needles And Less Hay<a href="#4-capturing-more-needles-and-less-hay" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h2 id="5-one-step-forward-tracing-edge-cases">5. One Step Forward: Tracing Edge-Cases<a href="#5-one-step-forward-tracing-edge-cases" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<h2 id="6-conclusion">6. Conclusion<a href="#6-conclusion" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+
+			</div>
+
+			<hr class="post-end">
+			<footer class="post-info"><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg><a href="" target="_blank">blog@jiekun.dev</a></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>共计 2433 字, 约 5 分钟。</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2023-04-17 19:51 &#43;0800</p>
+            <div><img src="/qr_code.png" width="40%"></div></footer>		
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-warm-up">1. Warm-up</a></li>
+    <li><a href="#2-head-sampling-and-unitary-sampling">2. Head Sampling And Unitary Sampling</a></li>
+    <li><a href="#3-tail-based-sampling">3. Tail-based Sampling</a></li>
+    <li><a href="#4-capturing-more-needles-and-less-hay">4. Capturing More Needles And Less Hay</a></li>
+    <li><a href="#5-one-step-forward-tracing-edge-cases">5. One Step Forward: Tracing Edge-Cases</a></li>
+    <li><a href="#6-conclusion">6. Conclusion</a></li>
+  </ul>
+</nav>
+		</aside>
+		
+		<div id="comments" class="thin">
+<div id="comments" class="thin">
+	<script src="https://giscus.app/client.js"
+        data-repo="jiekun-dev/blog-comment"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkzMDQ4NDc0ODg="
+        data-category="General"
+        data-category-id="DIC_kwDOEiuagM4CU4sp"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+	</script>
+</div></div>
+	</main>
+
+<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+	<p>
+		&copy; 2025 <a href="https://jiekun.dev">杰坤</a>
+		&#183; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+		&#183; Made with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+		&#183; Theme <a href="https://github.com/1bl4z3r/hermit-V2" target="_blank" rel="noopener">Hermit-V2 Mod</a>
+		
+		&#183; <a href="https://jiekun.dev/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a>
+		
+	</p>
+
+</footer>
+<script async src="https://jiekun.dev/js/bundle.min.f729b0a644738cbb3405caafa8735874eba6536eb64e9e37a191f4b79fad62c9.js" integrity="sha256-9ymwpkRzjLs0BcqvqHNYdOumU262Tp43oZH0t5+tYsk=" crossorigin="anonymous"></script><script async src="https://jiekun.dev/js/link-share.min.20ddc5b895a2cb52c811efd9bcf38168838be5cb8671b12ae2997bf38c34f9f0.js" integrity="sha256-IN3FuJWiy1LIEe/ZvPOBaIOL5cuGcbEq4pl784w0+fA=" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+    
+    
+    <script type="text/javascript" id="MathJax-script" async src="https://jiekun.dev/js/mathjaxs.min.f77cb9433392371db27ff65a8dc9b4ba7b837f8de668f1943f3dcbd6d07ad6a0.js" integrity="sha256-93y5QzOSNx2yf/Zajcm0unuDf43maPGUPz3L1tB61qA=" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

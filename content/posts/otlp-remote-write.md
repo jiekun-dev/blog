@@ -11,7 +11,7 @@ toc: true
 
 {{<admonition type=note title="Medium">}}
 This blog post is also available in **English**: 
-- [OpenTelemetry, Prometheus, and More: Which Is Better for Metrics Collection and Propagation?]()
+- [OpenTelemetry, Prometheus, and More: Which Is Better for Metrics Collection and Propagation?](https://victoriametrics.com/blog/opentelemetry-prometheus-and-more/)
 {{< /admonition >}}
 
 ## Prometheus and Remote Write
