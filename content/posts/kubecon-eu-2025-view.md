@@ -148,7 +148,7 @@ KubeCon 首先是技术会议，大大小小几百场分享很丰富，但是这
 
 除了伦敦以外，离得比较近的城市也时可以找 2 天空闲时间去看一下。我原本计划去 Eastbourne 的白崖（Birling Gap and Seven Sisters），但是因为一些交通原因被困在了 Brighton，所以就在附近海滩打卡吃饭了。另外还有一天安排了去牛津（University of Oxford），因为临近返程有点疲惫也取消了行程，略可惜。
 
-![](../202504-kubecon-eu-view/brighten.png.webp)
+![](../202504-kubecon-eu-view/brighton.png.webp)
 
 ## 4. 总结
 
