@@ -1,5 +1,5 @@
 ---
-title: "KubeCon 欧洲 2025 见闻"
+title: "KubeCon 欧洲 2025 小记"
 date: 2025-04-12T20:37:00+00:00
 author: blog@jiekun.dev
 type: post
@@ -20,7 +20,9 @@ toc: true
 
 Anyways，如果你也想在今年或者明年参与欧美举行的 KubeCon，相信本文会对你有所帮助。
 
-![](gate)
+![](../202504-kubecon-eu-view/gate.png.webp)
+
+![](../202504-kubecon-eu-view/gate2.png.webp)
 
 ## 0. 活动准备
 
@@ -107,7 +109,9 @@ KubeCon 首先是技术会议，大大小小几百场分享很丰富，但是这
 
 {{< /admonition >}}
 
-![](victoriametrics booth)
+![](../202504-kubecon-eu-view/booth1.png.webp)
+
+![](../202504-kubecon-eu-view/booth2.png.webp)
 
 我原本预期应该跟用户沟通起来会比较麻烦，毕竟英语口语能力有限，不过所幸用户问的难题也不多，主要还是以介绍为主，再附赠一些竞品（比如 Prometheus、Thanos、Mimir）的对比。
 
@@ -123,15 +127,16 @@ KubeCon 首先是技术会议，大大小小几百场分享很丰富，但是这
 
 每日从早餐开始，先花 7 GBP（66 CNY）还不算高，正餐 20-40 GBP（190-381 CNY） 是常事。至于住宿，我选择在了狗岛金丝雀码头的 Point A Hotel，离会场比较近，并且交通有三条地铁线，非常便利，不过是最低规格的无窗房，平均每天是 110 GBP（1049 CNY），也算是住宿里面比较便宜的选择。
 
-![](早餐)
+![](../202504-kubecon-eu-view/breakfast.png.webp)
 
-![](酒店)
+![](../202504-kubecon-eu-view/hotel1.png.webp)
 
 最超出预期的当然要数交通了，地铁起步价大约 2.9 GBP（27 CNY），一天下来要来回会场、去 1-2 个景点开销差不多 12 GBP（114 CNY）。再算上首尾两天往返机场都是单程 13.9 GBP（132 CNY），总之在伦敦 8 天花掉的地铁钱一千多 CNY 肯定是有的。
 
 说完了最头疼的成本，再介绍一点好的风光吧。必打卡的三件套大本钟（Big Ben）、伦敦眼（London Eye）、伦敦塔桥（Tower Bridge）离得不远，最好傍晚的时候去景色会比较好，不过一些热门机位排队拍照的人也多就是了。
 
-![](大本钟)
+![](../202504-kubecon-eu-view/bigben.png.webp)
+
 
 离会场 ExCeL London 不远处还有落日飞车（IFS Cloud Cable Car），同样是傍晚时分风景最佳，可以看到很漂亮的城市剪影以及会场。
 
@@ -139,11 +144,11 @@ KubeCon 首先是技术会议，大大小小几百场分享很丰富，但是这
 
 白金汉宫（Buckingham Palace）我在落地伦敦的第二天就去了，因为周日有卫兵交接，大概类似于国内首都升旗仪式，观看的人也很多，围得水泄不通。第一次去可能很难找到最佳观景点，最好早上 9 点 15 分去到占住位置，然后晒 45 分钟就可以开始拍视频了。
 
-![](白金汉宫)
+![](../202504-kubecon-eu-view/buckingham_palace.png.webp)
 
 除了伦敦以外，离得比较近的城市也时可以找 2 天空闲时间去看一下。我原本计划去 Eastbourne 的白崖（Birling Gap and Seven Sisters），但是因为一些交通原因被困在了 Brighton，所以就在附近海滩打卡吃饭了。另外还有一天安排了去牛津（University of Oxford），因为临近返程有点疲惫也取消了行程，略可惜。
 
-![](Brighton)
+![](../202504-kubecon-eu-view/brighten.png.webp)
 
 ## 4. 总结
 

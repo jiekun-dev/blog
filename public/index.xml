@@ -7,7 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>cn-zh</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Fri, 21 Mar 2025 21:48:21 +0800</lastBuildDate><atom:link href="https://jiekun.dev/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 12 Apr 2025 20:37:00 +0000</lastBuildDate><atom:link href="https://jiekun.dev/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>KubeCon 欧洲 2025 小记</title>
+      <link>https://jiekun.dev/posts/kubecon-eu-2025-view/</link>
+      <pubDate>Sat, 12 Apr 2025 20:37:00 +0000</pubDate>
+      
+      <guid>https://jiekun.dev/posts/kubecon-eu-2025-view/</guid>
+      <description>上周，我随公司一同参加了在英国举行的 KubeCon + CloudNativeCon Europe 2025 以及几个同地活动。今年的伦敦也是热闹非凡，吸引了超过 12500 人来到了 ExCeL London。 如果你错过了这次</description>
+    </item>
+    
     <item>
       <title>2024 Annual Review: My New Role At VictoriaMetrics</title>
       <link>https://jiekun.dev/posts/2024-summary/</link>
@@ -87,15 +96,6 @@
       
       <guid>https://jiekun.dev/posts/playing-with-high-cardinality/</guid>
       <description>Medium This blog post is also available in English: Rethinking Huya’s Journey: Leveraging OpenTelemetry and VictoriaMetrics for Monitoring 上周在深圳参加了 GOPS 大会，来自虎牙的同学分享了他们在监控指标标准化和管理方面的实践，核心要点在于</description>
-    </item>
-    
-    <item>
-      <title>KubeCon 欧洲 2024: 云原生在浪漫之都 | 舞台之上</title>
-      <link>https://jiekun.dev/posts/kubecon-eu-2024-ii/</link>
-      <pubDate>Sat, 23 Mar 2024 03:06:00 +0100</pubDate>
-      
-      <guid>https://jiekun.dev/posts/kubecon-eu-2024-ii/</guid>
-      <description>Medium This blog post is also available in English: KubeCon Europe 2024: Cloud Native In La Ville-Lumière | In The Spotlight 现在是法国巴黎时间周六凌晨，KubeCon + CloudNativeCon Europe 2024 —— 至今 CNCF 主办的规模最大</description>
     </item>
     
   </channel>
