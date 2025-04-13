@@ -7,6 +7,7 @@ category:
  - Observability
 comments: true
 toc: true
+draft: true
 ---
 
 从巴黎到伦敦，这是我的第二次 KubeCon Europe 之旅。
