@@ -20,6 +20,8 @@ toc: true
 
 Anyways，如果你也想在今年或者明年参与欧美举行的 KubeCon，相信本文会对你有所帮助。
 
+![](gate)
+
 ## 0. 活动准备
 
 在 KubeCon 开始之前，有几件事是特别重要的：
@@ -38,7 +40,8 @@ KubeCon 的[议题投递](https://sessionize.com/kubecon-cloudnativecon-europe-2
 
 除了上面这些例行事项，今年我还作为 KubeCon Observability 方向以及同地活动 Observability Day 的 Program Committee 与其他成员一同为众多提案打分。我一共评价了 125（KubeCon）+ 95（Observability Day）份提案，这只是所有提案中的一小部分。
 
-![](review state)
+![](../202504-kubecon-eu-view/pc.png.webp)
+
 
 如果不需要写评分和评语的话，阅读别人的提案、了解别人做过什么事情还是挺有趣的。尽管 KubeCon 是云原生领域几乎最大的盛会，它每年还是会**收到很多面向初学者的提案**，这些提案无非是**介绍一些新项目、新功能**，要在它们之中分个高低很困难。另一方面，来自 **Vendor 的投稿比例很高**，有些议题看似很美好，但是**没有提及它们在 End-user 的实践中表现如何**，所以也很难去评价。
 
@@ -56,7 +59,9 @@ KubeCon 首先是技术会议，大大小小几百场分享很丰富，但是这
 
 但是如果我说，你能在 KubeCon 见到各个项目的维护者、项目背后的企业，你会想和他们聊上几句，并顺便带走一件文化衫和钥匙扣吗？
 
-![](Sponsor showcase)
+![](../202504-kubecon-eu-view/ss2.jpg.webp)
+
+![](../202504-kubecon-eu-view/ss3.jpg.webp)
 
 ### Sponsor Showcase & Project Pavilion
 
@@ -76,7 +81,9 @@ KubeCon 首先是技术会议，大大小小几百场分享很丰富，但是这
 
 另外 Prometheus、Thanos、Cortex、OpenTelemetry、Jaeger 这些 CNCF 项目都有自己的小展台，虽然一般没礼品，但是路过也可以交流一下。
 
-![](project pavilion)
+![](../202504-kubecon-eu-view/pp3.jpg.webp)
+
+![](../202504-kubecon-eu-view/pp2.jpg.webp)
 
 总体来说，挎着大包小包、盆满钵满地离开会场人很多，所以 KubeCon 对喜欢收集文创参会者来说算是很不错的活动。
 
@@ -84,7 +91,7 @@ KubeCon 首先是技术会议，大大小小几百场分享很丰富，但是这
 
 看到小标题不要误会，这不是真人 CS。Headshot 是为参会者提供专业形象摄影的服务，摄影师会给你打好光，只需几分钟，就能帮你拍出专业的简历照片。如果你想找个例子看看到底会拍成什么样子，可以参考 [Google: KubeCon Headshot](https://www.google.com/search?q=headshot+kubecon&udm=2)。
 
-![](headshot)
+![](../202504-kubecon-eu-view/headshot.png.webp)
 
 ## 2. 对话用户
 
@@ -128,7 +135,7 @@ KubeCon 首先是技术会议，大大小小几百场分享很丰富，但是这
 
 离会场 ExCeL London 不远处还有落日飞车（IFS Cloud Cable Car），同样是傍晚时分风景最佳，可以看到很漂亮的城市剪影以及会场。
 
-![](落日飞车)
+![](../202504-kubecon-eu-view/cable_car.jpg.webp)
 
 白金汉宫（Buckingham Palace）我在落地伦敦的第二天就去了，因为周日有卫兵交接，大概类似于国内首都升旗仪式，观看的人也很多，围得水泄不通。第一次去可能很难找到最佳观景点，最好早上 9 点 15 分去到占住位置，然后晒 45 分钟就可以开始拍视频了。
 
@@ -148,3 +155,15 @@ KubeCon 首先是技术会议，大大小小几百场分享很丰富，但是这
 具体到应该侧重休闲还是抓紧时间 Social 和学习，完全取决于个人需求，但是至少 KubeCon 给了你出去一趟的理由 —— 或许还有申请公司差旅补贴和假期的理由。
 
 到写下本文的时候，11 月的 KubeCon North America 2025 [CFP 已经开始了](https://sessionize.com/kubecon-cloudnativecon-north-america-2025/)。如果你也想工作之余趁机休息调整一下，不妨将你的宝贵经验整理成议题在 KubeCon 分享，希望能在亚特兰大见面！
+
+## 5. KubeCon 相册
+
+![](../202504-kubecon-eu-view/event1.jpg.webp)
+
+![](../202504-kubecon-eu-view/keynote1.jpg.webp)
+
+![](../202504-kubecon-eu-view/breakout2.jpg.webp)
+
+![](../202504-kubecon-eu-view/ss4.jpg.webp)
+
+![](../202504-kubecon-eu-view/breakout3.jpg.webp)
